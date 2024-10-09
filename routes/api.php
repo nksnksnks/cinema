@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\APP\AuthController;
+use App\Http\Controllers\Api\app\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 // API APP
 Route::group(['prefix' => 'app', 'middleware' => ['role:user', 'auth:sanctum']], function () {
@@ -14,4 +15,5 @@ Route::group(['prefix' => 'admin', 'middleware' => ['role:admin', 'auth:sanctum'
 
     \App\Helpers\RouteHelper::includeRouteFiles(__DIR__ . '/admin');
 });
+
 

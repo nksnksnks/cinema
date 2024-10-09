@@ -2,7 +2,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\app\AuthController;
+
+use App\Http\Controllers\Api\app\AuthController;
 
 // auth app
 Route::group(['prefix' => '/auth'], function () {
