@@ -7,6 +7,7 @@ use App\Models\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Http\Requests\admin\GenreRequest;
 
 /**
  * @OA\Schema(
@@ -22,12 +23,10 @@ use Illuminate\Http\Response;
  */
 class GenreController extends Controller
 {
- 
-
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/genre/genres",
+     *     path="/api/admin/genres",
      *     tags={"Genres"},
      *     summary="Get all genres",
      *     operationId="getGenres",
@@ -57,7 +56,7 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Post(
-     *     path="/api/admin/genre/genres",
+     *     path="/api/admin/genres",
      *     tags={"Genres"},
      *     summary="Create a new genre",
      *     operationId="createGenre",
@@ -101,15 +100,10 @@ class GenreController extends Controller
      *     )
      * )
      */
-    public function store(Request $request)
+    public function store(GenreRequest $request)
     {
         try {
             DB::beginTransaction();
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_genre,name',
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
 
             $genre = Genre::create($request->all());
 
@@ -135,7 +129,7 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/genre/genres/{genre}",
+     *     path="/api/admin/genres/{genre}",
      *     tags={"Genres"},
      *     summary="Get a genre by ID",
      *     operationId="getGenreById",
@@ -173,7 +167,7 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/genre/genres/{genre}",
+     *     path="/api/admin/genres/{genre}",
      *     tags={"Genres"},
      *     summary="Update a genre",
      *     operationId="updateGenre",
@@ -224,15 +218,12 @@ class GenreController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, Genre $genre)
+    public function update(GenreRequest $request, Genre $genre)
     {
         try {
             DB::beginTransaction();
 
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_genre,name,' . $genre->id,
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
+            
 
             $genre->update($request->all());
 
@@ -258,7 +249,7 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/genre/genres/{genre}",
+     *     path="/api/admin/genres/{genre}",
      *     tags={"Genres"},
      *     summary="Delete a genre",
      *     operationId="deleteGenre",

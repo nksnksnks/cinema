@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API\app;
+namespace App\Http\Controllers\Api\app;
 
 use App\Enums\Constant;
 use App\Http\Requests\app\AuthRequest;
@@ -9,8 +9,9 @@ use App\Repositories\user\Account\AccountInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller;
 
-class AuthController
+class AuthController extends Controller
 {
 
     private $accountInterface;
@@ -58,6 +59,7 @@ class AuthController
      */
     public function register(AuthRequest $request){
         try {
+            
             DB::beginTransaction();
             $data = $request->all();
             $this->accountInterface->register($data);

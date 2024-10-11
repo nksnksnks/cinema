@@ -7,6 +7,7 @@ use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Http\Requests\admin\CountryRequest;
 
 /**
  * @OA\Schema(
@@ -27,7 +28,7 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/country/countries",
+     *     path="/api/admin/countries",
      *     tags={"Countries"},
      *     summary="Get all countries",
      *     operationId="getcountries",
@@ -57,7 +58,7 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Post(
-     *     path="/api/admin/country/countries",
+     *     path="/api/admin/countries",
      *     tags={"Countries"},
      *     summary="Create a new country",
      *     operationId="createcountry",
@@ -101,15 +102,10 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function store(Request $request)
+    public function store(CountryRequest $request)
     {
         try {
             DB::beginTransaction();
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_country,name',
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
 
             $country = Country::create($request->all());
 
@@ -135,7 +131,7 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/country/countries/{country}",
+     *     path="/api/admin/countries/{country}",
      *     tags={"Countries"},
      *     summary="Get a country by ID",
      *     operationId="getcountryById",
@@ -173,7 +169,7 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/country/countries/{country}",
+     *     path="/api/admin/countries/{country}",
      *     tags={"Countries"},
      *     summary="Update a country",
      *     operationId="updatecountry",
@@ -224,15 +220,10 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, country $country)
+    public function update(CountryRequest $request, country $country)
     {
         try {
             DB::beginTransaction();
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_country,name,' . $country->id,
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
 
             $country->update($request->all());
 
@@ -258,7 +249,7 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/country/countries/{country}",
+     *     path="/api/admin/countries/{country}",
      *     tags={"Countries"},
      *     summary="Delete a country",
      *     operationId="deletecountry",
