@@ -7,7 +7,7 @@ use App\Models\Rated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
-
+use App\Http\Requests\admin\RatedRequest;
 /**
  * @OA\Schema(
  *     schema="rated",
@@ -101,15 +101,10 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function store(Request $request)
+    public function store(RatedRequest $request)
     {
         try {
             DB::beginTransaction();
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_rated,name',
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
 
             $rated = Rated::create($request->all());
 
@@ -224,15 +219,11 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, rated $rated)
+    public function update(RatedRequest $request, rated $rated)
     {
         try {
             DB::beginTransaction();
 
-            $request->validate([
-                'name' => 'required|string|max:255|unique:ci_rated,name,' . $rated->id,
-                'description' => 'string|max:255', // Thêm validation cho description
-            ]);
 
             $rated->update($request->all());
 
