@@ -18,9 +18,9 @@ return [
 
     'time_otp' => 3,
 
-    'locale' => 'en',
+    'locale' => 'vi',
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => 'vi',
 
     'faker_locale' => 'en_US',
 

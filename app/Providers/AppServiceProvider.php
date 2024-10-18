@@ -4,6 +4,12 @@ namespace App\Providers;
 
 use App\Models\Account;
 use App\Models\Bill;
+use App\Models\Room;
+use App\Models\Seat;
+use App\Repositories\admin\Room\RoomInterface;
+use App\Repositories\admin\Room\RoomRepository;
+use App\Repositories\admin\Seat\SeatInterface;
+use App\Repositories\admin\Seat\SeatRepository;
 use App\Repositories\user\Account\AccountInterface;
 use App\Repositories\user\Account\AccountRepository;
 use App\Repositories\user\Bill\BillInterface;
@@ -26,6 +32,15 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(BillInterface::class, function () {
             return new BillRepository(new Container(), new Request(), new Bill());
+        });
+
+        $this->app->bind(RoomInterface::class, function () {
+            return new RoomRepository(new Container(), new Request(), new Room());
+        });
+
+
+        $this->app->bind(SeatInterface::class, function () {
+            return new SeatRepository(new Container(), new Request(), new Seat());
         });
     }
 
