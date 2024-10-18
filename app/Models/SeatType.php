@@ -19,9 +19,8 @@ class SeatType extends Model
      */
     protected $fillable = [
         'id',
-        'room_id',
-        'seat_type_id',
-        'seat_code'
+        'name',
+        'description'
     ];
     public $timestamps = true;
 }

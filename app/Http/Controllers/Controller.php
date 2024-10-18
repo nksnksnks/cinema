@@ -8,7 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
 /**
- * @OA\Info(title="Quán cà phê", version="0.1")
+ * @OA\Info(title="Rạp chiếu phim", version="0.1")
  * @OA\PathItem (
  *     path="/api/doc",
  *     ),
