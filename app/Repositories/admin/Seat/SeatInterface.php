@@ -4,5 +4,5 @@ namespace App\Repositories\admin\Seat;
 
 interface SeatInterface
 {
-    public function creatSeat($request);
+    public function creatSeat($request, $roomId);
 }

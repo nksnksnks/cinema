@@ -41,6 +41,9 @@ return [
             'get' => 'Lấy loại ghế không thành công!',
             'id_found' => 'Không tồn tại id loại ghế!',
         ],
+        'show_time' => [
+            'exist' => 'Đã tồn tại suất chiếu trong thời gian này',
+        ],
         'errors' => 'Thất bại!',
         'not_found' => 'Bản ghi không tồn tại!',
         'users' => [

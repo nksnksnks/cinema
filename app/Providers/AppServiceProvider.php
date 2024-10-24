@@ -42,6 +42,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SeatInterface::class, function () {
             return new SeatRepository(new Container(), new Request(), new Seat());
         });
+
+        $this->app->bind(SeatInterface::class, function () {
+            return new SeatRepository(new Container(), new Request(), new Seat());
+        });
+        $this->app->bind(\App\Repositories\user\Room\RoomInterface::class, function() {
+            return new \App\Repositories\user\Room\RoomRepository(new Container(), new Request(), new Seat());
+        });
     }
 
 
