@@ -11,7 +11,7 @@ class MovieShowtime extends Model
 
     protected $connection = 'mysql';
 
-    protected $table = 'ci_movie_showtime';
+    protected $table = 'ci_movie_show_time';
     /**
      * The attributes that are mass assignable.
      *

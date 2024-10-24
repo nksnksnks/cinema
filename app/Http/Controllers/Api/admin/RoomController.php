@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\admin\CinemaRequest;
 use App\Models\Cinema;
 use App\Repositories\admin\Room\RoomInterface;
+use App\Repositories\admin\Seat\SeatInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,12 +15,15 @@ use Symfony\Component\HttpFoundation\Response;
 class RoomController extends Controller
 {
     public $roomInterface;
+    public $seatInterface;
     public function __construct
     (
-        RoomInterface $roomInterface
+        RoomInterface $roomInterface,
+        SeatInterface $seatInterface
     )
     {
         $this->roomInterface = $roomInterface;
+        $this->seatInterface = $seatInterface;
     }
     /**
      * @author son.nk
@@ -40,7 +44,41 @@ class RoomController extends Controller
      *              value = {
      *                  "name": "Cinema 1",
      *                  "cinema_id": 1,
-     *                  "seat_map": "[[1,1,0],[1,1,1],[1,1,1]]"
+     *                  "seat_map": "[[1,1,0],[1,1,1],[1,1,1]]",
+     *                  "seat_list": {
+     *                          {
+     *                               "seat_type_id": 1,
+     *                               "seat_code": "A1"
+     *                           },
+     *                           {
+     *                                "seat_type_id": 2,
+     *                                "seat_code": "A2"
+     *                           },
+     *                           {
+     *                                 "seat_type_id": 1,
+     *                                 "seat_code": "B1"
+     *                           },
+     *                           {
+     *                                  "seat_type_id": 2,
+     *                                  "seat_code": "B2"
+     *                            },
+     *                            {
+     *                                  "seat_type_id": 3,
+     *                                  "seat_code": "B3"
+     *                            },
+     *                            {
+     *                                   "seat_type_id": 2,
+     *                                   "seat_code": "C1"
+     *                             },
+     *                             {
+     *                                  "seat_type_id": 2,
+     *                                  "seat_code": "C2"
+     *                            },
+     *                            {
+     *                                   "seat_type_id": 2,
+     *                                   "seat_code": "C3"
+     *                             },
+     *                       }
      *                  },
      *              ),
      *          )
@@ -64,7 +102,11 @@ class RoomController extends Controller
                     'data' => []
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            $this->roomInterface->createRoom($request);
+            $roomId = $this->roomInterface->createRoom($request);
+            $seat = $request->all();
+            foreach ($seat['seat_list'] as $data){
+                $this->seatInterface->creatSeat($data, $roomId);
+            }
             DB::commit();
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
@@ -80,7 +122,6 @@ class RoomController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-}
 //    /**
 //     * @author son.nk
 //     * @OA\Post (
@@ -181,51 +222,45 @@ class RoomController extends Controller
 //        }
 //    }
 //
-//    /**
-//     * @author son.nk
-//     * @OA\Get (
-//     *     path="/api/admin/cinema/get/{id}",
-//     *     tags={"Admin Quản lý rạp chiếu phim"},
-//     *     summary="Lấy theo id",
-//     *     operationId="admin/cinema/get",
-//     *     @OA\Parameter(
-//     *          name="id",
-//     *          in="path",
-//     *          description="ID cinema",
-//     *          required=true,
-//     *               @OA\Schema(type="integer")
-//     *     ),
-//     *     @OA\Response(
-//     *         response=200,
-//     *         description="Success",
-//     *             @OA\JsonContent(
-//     *              @OA\Property(property="message", type="string", example="Success."),
-//     *          )
-//     *     ),
-//     * )
-//     */
-//    public function getCinema($id){
-//        try {
-//            $data = Cinema::find($id);
-//            if (!$data) {
-//                return response()->json([
-//                    'status' => Constant::FALSE_CODE,
-//                    'message' => trans('messages.errors.cinema.id_found'),
-//                    'data' => []
-//                ], Constant::SUCCESS_CODE);
-//            }
-//            return response()->json([
-//                'status' => Constant::SUCCESS_CODE,
-//                'message' => trans('messages.success.success'),
-//                'data' => $data
-//            ], Constant::SUCCESS_CODE);
-//
-//        } catch (\Throwable $th) {
-//            return response()->json([
-//                'status' => Constant::FALSE_CODE,
-//                'message' => $th->getMessage(),
-//                'data' => []
-//            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-//        }
-//    }
-//}
+    /**
+     * @OA\Get (
+     *     path="/api/admin/room/get/{id}",
+     *     tags={"Admin Quản lý phòng chiếu"},
+     *     summary="Lấy theo id",
+     *     operationId="admin/room/get",
+     *     @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID room",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success."),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred.")
+     *         )
+     *     )
+     * )
+     */
+    public function getRoom($id){
+        try {
+            $data = $this->roomInterface->getRoom($id);
+            return $data;
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+}
