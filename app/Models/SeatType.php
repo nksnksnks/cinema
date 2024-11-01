@@ -21,7 +21,8 @@ class SeatType extends Model
         'id',
         'room_id',
         'seat_type_id',
-        'seat_code'
+        'seat_code',
+        'extra_fee',
     ];
     public $timestamps = true;
 }
