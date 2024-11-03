@@ -3,10 +3,11 @@
 return [
     'success' => [
         'success' => 'Thành công.',
-        'category' => [
-            'create' => 'Tạo danh mục thành công!',
-            'edit' => 'Sửa danh mục thành công!',
-            'delete' => 'Xóa danh mục thành công!',
+        'cinema' => [
+            'create' => 'Tạo rạp chiếu thành công!',
+            'edit' => 'Sửa rạp chiếu thành công!',
+            'delete' => 'Xóa rạp chiếu thành công!',
+            'get' => 'Lấy rạp chiếu thành công!'
         ],
         'users' => [
             'create' => 'Tạo người dùng thành công!',
@@ -23,24 +24,28 @@ return [
         ],
     ],
     'errors' => [
+        'cinema' => [
+            'create' => 'Tạo rạp chiếu không thành công!',
+            'edit' => 'Sửa rạp chiếu không thành công!',
+            'delete' => 'Xóa rạp chiếu không thành công!',
+            'get' => 'Lấy rạp chiếu không thành công!',
+            'id_found' => 'Không tồn tại id rạp chiếu!',
+        ],
+        'room' => [
+            'exist' => 'Phòng chiếu đã tồn tại!',
+        ],
+        'seat_type' => [
+            'create' => 'Tạo loại ghế không thành công!',
+            'edit' => 'Sửa loại ghế không thành công!',
+            'delete' => 'Xóa loại ghế không thành công!',
+            'get' => 'Lấy loại ghế không thành công!',
+            'id_found' => 'Không tồn tại id loại ghế!',
+        ],
+        'show_time' => [
+            'exist' => 'Đã tồn tại suất chiếu trong thời gian này',
+        ],
         'errors' => 'Thất bại!',
         'not_found' => 'Bản ghi không tồn tại!',
-        'category' => [
-            'create' => 'Tạo danh mục không thành công!',
-            'edit' => 'Sửa danh mục không thành công!',
-            'delete' => 'Xóa danh mục không mục thành công!',
-            'not_found' => 'Danh mục không tồn tại!',
-        ],
-        'road' => [
-            'not_found' => 'Không tìm thấy chuyến xe'
-        ],
-        'merchandise' => [
-            'create' => 'Tạo sản phẩm không thành công!',
-            'edit' => 'Sửa sản phẩm không thành công!',
-            'delete' => 'Xóa sản phẩm không mục thành công!',
-            'not_found' => 'Sản phẩm không tồn tại!',
-            'not_permission' => 'Bạn không có quyền sửa sản phẩm này!',
-        ],
         'users' => [
             'create' => 'Tạo người dùng không thành công!',
             'edit' => 'Sửa người dùng không thành công!',
@@ -64,71 +69,6 @@ return [
         ],
         'date' => [
             'not_available' => 'Ngày không hợp lệ!',
-        ],
-        'chat' => [
-            'create' => 'Tạo tin nhắn không thành công!',
-            'edit' => 'Sửa tin nhắn không thành công!',
-            'delete' => 'Xóa tin nhắn không mục thành công!',
-            'not_found' => 'Tin nhắn không tồn tại!',
-            'cannot_chat' => 'Bạn không thể nhắn tin với người dùng này!',
-        ],
-        'rating' => [
-            'create' => 'Tạo đánh giá không thành công!',
-            'edit' => 'Sửa đánh giá không thành công!',
-            'delete' => 'Xóa đánh giá không mục thành công!',
-            'not_found' => 'Đánh giá không tồn tại!',
-            'rating_self' => 'Không thể tự đánh giá sản phẩm của bản thân!',
-        ],
-        'transaction' => [
-            'create' => 'Tạo giao dịch không thành công!',
-            'edit' => 'Sửa giao dịch không thành công!',
-            'delete' => 'Xóa giao dịch không mục thành công!',
-            'not_found' => 'Giao dịch không tồn tại!',
-            'not_permission' => 'Bạn không có quyền tặng sản phẩm!',
-            'receiver_required' => 'Vui lòng chọn người tặng!',
-            'not_enough' => 'Số lượng đơn hàng không đủ!',
-        ],
-        'states' => [
-            'create' => 'Tạo khu vực không thành công!',
-            'edit' => 'Sửa khu vực không thành công!',
-            'delete' => 'Xóa khu vực không thành công!',
-            'not_found' => 'Không tìm thấy khu vực',
-        ],
-        'station' => [
-            'create' => 'Tạo trạm - chi nhánh không thành công',
-            'edit' => 'Sửa trạm - chi nhánh không thành công',
-            'delete' => 'Xóa trạm - chi nhánh không thành công',
-            'not_found' => 'Trạm - chi nhánh không tồn tại!',
-        ],
-        'fcm' => [
-            'create' => 'Tạo thông báo FCM không thành công',
-            'edit' => 'Sửa thông báo FCM không thành công',
-            'delete' => 'Xóa thông báo FCM không thành công',
-            'not_found' => 'Thông báo FCM không tồn tại!',
-            'push_success' => 'Đẩy thông báo FCM thất bại!',
-        ],
-        'contact' => [
-            'not_found' => 'Liên hệ không tồn tại!'
-        ],
-        'media' => [
-            'file_not_found' => 'File không tồn tại!',
-            'not_exist_file' => 'Không thể xác định tập tin!',
-            'file_too_big' => 'Tập tin quá lớn. Giới hạn tải lên là :size',
-            'can_not_identify_file_type' => 'File tải lên phải có định dạng (:values)',
-        ],
-        'validation' => [
-            'uploaded' => 'Quá trình tải file lên lên thất bại.',
-            'required' => 'Trường :field không được bỏ trống.',
-            'integer' => 'Trường :field phải là số nguyên.',
-            'string' => 'Trường :field phải là một chuỗi',
-            'max' => 'Trường :field không được vượt quá :values kí tự',
-            'in' => 'Trường :field phải là :values',
-        ],
-        'static_page' => [
-            'not_found' => 'Không tồn tại trang tĩnh',
-        ],
-        'ticket' => [
-            'not_found' => 'Vé không tồn tại',
         ],
         'rules' => [
             'required'  => ':attribute là trường bắt buộc.',

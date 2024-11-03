@@ -2,13 +2,10 @@
 
 namespace App\Http\Requests\app;
 
-use App\Models\Account;
-use App\Models\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Validation\Rule;
 
 class AuthRequest extends FormRequest
 {

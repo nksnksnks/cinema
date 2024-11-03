@@ -173,3 +173,21 @@ class AuthController extends Controller
         }
     }
 }
+
+///**
+// * @author Sonnk
+// * @OA\Get (
+// *     path="/api/app/bill/get-list-bill",
+// *     tags={"APP Đơn hàng"},
+// *     summary="Danh sách đơn hàng",
+// *     security={{"bearerAuth":{}}},
+// *     operationId="get-list-bill",
+// *     @OA\Response(
+// *         response=200,
+// *         description="Success",
+// *             @OA\JsonContent(
+// *              @OA\Property(property="message", type="string", example="Success."),
+// *          )
+// *     ),
+// * )
+// */
