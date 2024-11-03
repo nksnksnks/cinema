@@ -35,8 +35,8 @@ class MovieRequest extends FormRequest
                     'slug' => 'required|string|max:255|unique:ci_movie,slug', // Bắt buộc và duy nhất theo slug
                     'country_id' => 'required|integer|exists:ci_country,id',
                     'rated_id' => 'required|integer|exists:ci_rated,id',
-                    'avatar' => 'nullable|string',
-                    'poster' => 'nullable|string',
+                    'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+                    'poster' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
                     'trailer_url' => 'nullable|string',
                     'duration' => 'required|integer',
                     'date' => 'required|date',
@@ -52,8 +52,8 @@ class MovieRequest extends FormRequest
                     'slug' => 'required|string|max:255|unique:ci_movie,slug,' . $this->route('movie'), // Unique bỏ qua slug của phim hiện tại
                     'country_id' => 'required|integer|exists:ci_country,id',
                     'rated_id' => 'required|integer|exists:ci_rated,id',
-                    'avatar' => 'nullable|string',
-                    'poster' => 'nullable|string',
+                    'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+                    'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
                     'trailer_url' => 'nullable|string',
                     'duration' => 'required|integer',
                     'date' => 'required|date',
