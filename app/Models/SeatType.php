@@ -18,9 +18,11 @@ class SeatType extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
+        'id',        
+        'extra_fee',
         'name',
-        'description'
+        'description',
+
     ];
     public $timestamps = true;
 }
