@@ -1,42 +1,41 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rated;
+use App\Models\WeeklyTicketPrice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
-use App\Http\Requests\admin\RatedRequest;
+use App\Http\Requests\Admin\WeeklyTicketPriceRequest;
+
 /**
  * @OA\Schema(
- *     schema="rated",
+ *     schema="weekly_ticket_price",
  *     type="object",
- *     required={"id", "name", "description"},
+ *     required={"id", "name", "description", "extra_fee"},
  *     @OA\Property(property="id", type="integer", format="int64", example=1),
- *     @OA\Property(property="name", type="string", example="T18"),
- *     @OA\Property(property="description", type="string", example="T18 - Phim được phổ biến đến người xem từ đủ 18 tuổi trở lên (18+)"),
+ *     @OA\Property(property="name", type="string", example="Monday"),
+ *     @OA\Property(property="description", type="string", example="Price for weekdays."),
+ *     @OA\Property(property="extra_fee", type="integer", example=45000),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-10-09T12:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-10-09T12:00:00Z")
  * )
  */
-class RatedController extends Controller
+class WeeklyTicketPriceController extends Controller
 {
- 
-
     /**
-     * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/rateds",
-     *     tags={"Admin Rateds"},
-     *     summary="Get all rateds",
-     *     operationId="getrateds",
+     *     path="/api/admin/weekly-ticket-prices",
+     *     tags={"Admin WeeklyTicketPrices"},
+     *     summary="Get all weekly ticket prices",
+     *     operationId="getWeeklyTicketPrices",
      *     @OA\Response(
      *         response=200,
      *         description="Success",
      *         @OA\JsonContent(
      *             type="array",
-     *             @OA\Items(ref="#/components/schemas/rated")
+     *             @OA\Items(ref="#/components/schemas/weekly_ticket_price")
      *         )
      *     ),
      *     @OA\Response(
@@ -50,46 +49,47 @@ class RatedController extends Controller
      */
     public function index()
     {
-        $rateds = Rated::all();
-        return response()->json($rateds);
+        $weeklyTicketPrices = WeeklyTicketPrice::all();
+        return response()->json($weeklyTicketPrices);
     }
 
     /**
-     * @author quynhndmq
      * @OA\Post(
-     *     path="/api/admin/rateds",
-     *     tags={"Admin Rateds"},
-     *     summary="Create a new rated",
-     *     operationId="createrated",
+     *     path="/api/admin/weekly-ticket-prices",
+     *     tags={"Admin WeeklyTicketPrices"},
+     *     summary="Create a new weekly ticket price",
+     *     operationId="createWeeklyTicketPrice",
      *     @OA\RequestBody(
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="extra_fee", type="integer"),
      *             @OA\Examples(
-     *                 example="CreateratedExample",
-     *                 summary="Sample rated creation data",
+     *                 example="CreateWeeklyTicketPriceExample",
+     *                 summary="Sample weekly ticket price creation data",
      *                 value={
-     *                     "name": "18+",
-     *                     "description": "T18 - Phim được phổ biến đến người xem từ đủ 18 tuổi trở lên (18+)"
+     *                     "name": "Monday",
+     *                     "description": "Price for weekends.",
+     *                     "extra_fee": 45000
      *                 }
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="rated created successfully",
+     *         description="Weekly ticket price created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="rated created successfully."),
-     *             @OA\Property(property="data", ref="#/components/schemas/rated")
+     *             @OA\Property(property="message", type="string", example="Weekly ticket price created successfully."),
+     *             @OA\Property(property="data", ref="#/components/schemas/weekly_ticket_price")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Validation Error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The name has already been taken.")
+     *             @OA\Property(property="message", type="string", example="Validation error.")
      *         )
      *     ),
      *     @OA\Response(
@@ -101,19 +101,19 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function store(RatedRequest $request)
+    public function store(WeeklyTicketPriceRequest $request)
     {
         try {
             DB::beginTransaction();
 
-            $rated = Rated::create($request->all());
+            $weeklyTicketPrice = WeeklyTicketPrice::create($request->all());
 
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'rated created successfully',
-                'data' => $rated
+                'message' => 'Weekly ticket price created successfully',
+                'data' => $weeklyTicketPrice
             ], Response::HTTP_CREATED);
 
         } catch (\Throwable $th) {
@@ -128,54 +128,51 @@ class RatedController extends Controller
     }
 
     /**
-     * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/rateds/{rated}",
-     *     tags={"Admin Rateds"},
-     *     summary="Get a rated by ID",
-     *     operationId="getratedById",
+     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     tags={"Admin WeeklyTicketPrices"},
+     *     summary="Get a weekly ticket price by ID",
+     *     operationId="getWeeklyTicketPriceById",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="weekly_ticket_price",
      *         in="path",
-     *         description="ID of rated",
+     *         description="ID of weekly ticket price",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Success",
-     *         @OA\JsonContent(ref="#/components/schemas/rated")
+     *         @OA\JsonContent(ref="#/components/schemas/weekly_ticket_price")
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="rated not found",
+     *         description="Weekly ticket price not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="rated not found.")
+     *             @OA\Property(property="message", type="string", example="Weekly ticket price not found.")
      *         )
      *     )
      * )
      */
-    public function show(rated $rated)
+    public function show(WeeklyTicketPrice $weekly_ticket_price)
     {
-        // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
             'status' => 'success',
-            'message' => 'rated retrieved successfully',
-            'data' => $rated
+            'message' => 'Weekly ticket price retrieved successfully',
+            'data' => $weekly_ticket_price
         ]);
     }
 
     /**
-     * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/rateds/{rated}",
-     *     tags={"Admin Rateds"},
-     *     summary="Update a rated",
-     *     operationId="updaterated",
+     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     tags={"Admin WeeklyTicketPrices"},
+     *     summary="Update a weekly ticket price",
+     *     operationId="updateWeeklyTicketPrice",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="weekly_ticket_price",
      *         in="path",
-     *         description="ID of rated to update",
+     *         description="ID of weekly ticket price to update",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -184,30 +181,16 @@ class RatedController extends Controller
      *             type="object",
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="description", type="string"),
-     *             @OA\Examples(
-     *                 example="UpdateratedExample",
-     *                 summary="Sample rated update data",
-     *                 value={
-     *                     "name": "T13",
-     *                     "description": "T13 - Phim được phổ biến đến người xem từ đủ 13 tuổi trở lên (13+)"
-     *                 }
-     *             )
+     *             @OA\Property(property="extra_fee", type="integer")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="rated updated successfully",
+     *         description="Weekly ticket price updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="rated updated successfully."),
-     *             @OA\Property(property="data", ref="#/components/schemas/rated")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Validation Error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The name has already been taken.")
+     *             @OA\Property(property="message", type="string", example="Weekly ticket price updated successfully."),
+     *             @OA\Property(property="data", ref="#/components/schemas/weekly_ticket_price")
      *         )
      *     ),
      *     @OA\Response(
@@ -219,20 +202,19 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function update(RatedRequest $request, rated $rated)
+    public function update(WeeklyTicketPriceRequest $request, WeeklyTicketPrice $weekly_ticket_price)
     {
         try {
             DB::beginTransaction();
 
-
-            $rated->update($request->all());
+            $weekly_ticket_price->update($request->all());
 
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'rated updated successfully',
-                'data' => $rated
+                'message' => 'Weekly ticket price updated successfully',
+                'data' => $weekly_ticket_price
             ]);
 
         } catch (\Throwable $th) {
@@ -247,22 +229,21 @@ class RatedController extends Controller
     }
 
     /**
-     * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/rateds/{rated}",
-     *     tags={"Admin Rateds"},
-     *     summary="Delete a rated",
-     *     operationId="deleterated",
+     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     tags={"Admin WeeklyTicketPrices"},
+     *     summary="Delete a weekly ticket price",
+     *     operationId="deleteWeeklyTicketPrice",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="weekly_ticket_price",
      *         in="path",
-     *         description="ID of rated to delete",
+     *         description="ID of weekly ticket price to delete",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
-     *         response=204,
-     *         description="rated deleted successfully",
+     *         response=200,
+     *         description="Weekly ticket price deleted successfully",
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -273,20 +254,20 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function destroy(rated $rated)
+    public function destroy(WeeklyTicketPrice $weekly_ticket_price)
     {
         try {
             DB::beginTransaction();
 
-            $rated->delete();
+            $weekly_ticket_price->delete();
 
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'rated deleted successfully',
+                'message' => 'Weekly ticket price deleted successfully',
                 'data' => []
-            ], Response::HTTP_OK); // Sử dụng 200 OK hoặc 202 Accepted
+            ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             DB::rollBack();
 

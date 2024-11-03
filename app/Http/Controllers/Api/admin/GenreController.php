@@ -27,7 +27,7 @@ class GenreController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/genres",
-     *     tags={"Genres"},
+     *     tags={"Admin Genres"},
      *     summary="Get all genres",
      *     operationId="getGenres",
      *     @OA\Response(
@@ -57,7 +57,7 @@ class GenreController extends Controller
      * @author quynhndmq
      * @OA\Post(
      *     path="/api/admin/genres",
-     *     tags={"Genres"},
+     *     tags={"Admin Genres"},
      *     summary="Create a new genre",
      *     operationId="createGenre",
      *     @OA\RequestBody(
@@ -130,7 +130,7 @@ class GenreController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/genres/{genre}",
-     *     tags={"Genres"},
+     *     tags={"Admin Genres"},
      *     summary="Get a genre by ID",
      *     operationId="getGenreById",
      *     @OA\Parameter(
@@ -168,7 +168,7 @@ class GenreController extends Controller
      * @author quynhndmq
      * @OA\Put(
      *     path="/api/admin/genres/{genre}",
-     *     tags={"Genres"},
+     *     tags={"Admin Genres"},
      *     summary="Update a genre",
      *     operationId="updateGenre",
      *     @OA\Parameter(
@@ -250,7 +250,7 @@ class GenreController extends Controller
      * @author quynhndmq
      * @OA\Delete(
      *     path="/api/admin/genres/{genre}",
-     *     tags={"Genres"},
+     *     tags={"Admin Genres"},
      *     summary="Delete a genre",
      *     operationId="deleteGenre",
      *     @OA\Parameter(

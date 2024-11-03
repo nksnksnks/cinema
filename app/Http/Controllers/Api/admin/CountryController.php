@@ -23,13 +23,11 @@ use App\Http\Requests\admin\CountryRequest;
  */
 class CountryController extends Controller
 {
- 
-
     /**
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/countries",
-     *     tags={"Countries"},
+     *     tags={"Admin Countries"},
      *     summary="Get all countries",
      *     operationId="getcountries",
      *     @OA\Response(
@@ -59,7 +57,7 @@ class CountryController extends Controller
      * @author quynhndmq
      * @OA\Post(
      *     path="/api/admin/countries",
-     *     tags={"Countries"},
+     *     tags={"Admin Countries"},
      *     summary="Create a new country",
      *     operationId="createcountry",
      *     @OA\RequestBody(
@@ -132,7 +130,7 @@ class CountryController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/countries/{country}",
-     *     tags={"Countries"},
+     *     tags={"Admin Countries"},
      *     summary="Get a country by ID",
      *     operationId="getcountryById",
      *     @OA\Parameter(
@@ -170,7 +168,7 @@ class CountryController extends Controller
      * @author quynhndmq
      * @OA\Put(
      *     path="/api/admin/countries/{country}",
-     *     tags={"Countries"},
+     *     tags={"Admin Countries"},
      *     summary="Update a country",
      *     operationId="updatecountry",
      *     @OA\Parameter(
@@ -250,7 +248,7 @@ class CountryController extends Controller
      * @author quynhndmq
      * @OA\Delete(
      *     path="/api/admin/countries/{country}",
-     *     tags={"Countries"},
+     *     tags={"Admin Countries"},
      *     summary="Delete a country",
      *     operationId="deletecountry",
      *     @OA\Parameter(
