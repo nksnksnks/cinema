@@ -40,7 +40,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/movies",
-     *     tags={"Movies"},
+     *     tags={"Admin Movies"},
      *     summary="Get all movies",
      *     operationId="getMovies",
      *     @OA\Response(
@@ -70,7 +70,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Post(
      *     path="/api/admin/movies",
-     *     tags={"Movies"},
+     *     tags={"Admin Movies"},
      *     summary="Create a new movie",
      *     operationId="createMovie",
      *     @OA\RequestBody(
@@ -217,7 +217,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/admin/movies/{id}",
-     *     tags={"Movies"},
+     *     tags={"Admin Movies"},
      *     summary="Get a movie by ID",
      *     operationId="getMovieById",
      *     @OA\Parameter(
@@ -263,7 +263,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Put(
      *     path="/api/admin/movies/{id}",
-     *     tags={"Movies"},
+     *     tags={"Admin Movies"},
      *     summary="Update a movie",
      *     operationId="updateMovie",
      *     @OA\Parameter(
@@ -415,7 +415,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Delete(
      *     path="/api/admin/movies/{id}",
-     *     tags={"Movies"},
+     *     tags={"Admin Movies"},
      *     summary="Delete a movie",
      *     operationId="deleteMovie",
      *     @OA\Parameter(
@@ -467,5 +467,7 @@ class MovieController extends Controller
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+
+
 
 }
