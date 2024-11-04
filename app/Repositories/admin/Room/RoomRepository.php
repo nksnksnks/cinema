@@ -45,6 +45,7 @@ class RoomRepository implements RoomInterface{
             foreach ($item as $item2) {
                 if ($item2 == 0) {
                     $rowData[] = [
+                        'seat_id' => null,
                         'seat_code' => null,
                         'seat_type_id' => null,
                         'seat_type' => null,
@@ -52,6 +53,7 @@ class RoomRepository implements RoomInterface{
                 } else {
                     $seatData = $seats[$seatId];
                     $rowData[] = [
+                        'seat_id' => $seatData->id,
                         'seat_code' => $seatData->seat_code,
                         'seat_type_id' => $seatData->seatType->id,
                         'seat_name' => $seatData->seatType->name,

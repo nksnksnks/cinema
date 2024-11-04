@@ -254,7 +254,11 @@ class RoomController extends Controller
     public function getRoom($id){
         try {
             $data = $this->roomInterface->getRoom($id);
-            return $data;
+            return response()->json([
+                'status' => 'success',
+                'message' => 'success.success',
+                'data' => $data
+            ], Constant::SUCCESS_CODE);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
