@@ -24,6 +24,9 @@ return [
         ],
     ],
     'errors' => [
+        'ticket' => [
+            'time_out' => 'Hết hạn giữ chỗ',
+        ],
         'cinema' => [
             'create' => 'Tạo rạp chiếu không thành công!',
             'edit' => 'Sửa rạp chiếu không thành công!',
