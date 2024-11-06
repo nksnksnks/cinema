@@ -50,7 +50,7 @@ class TicketRepository{
 
     public function getSeatSold($showTimeId)
     {
-        $data = Ticket::where('movie_show_time_id', $showTimeId)
+        $data = Ticket::where('movie_showtime_id', $showTimeId)
             ->pluck('seat_id')
             ->toArray();
         return $data;

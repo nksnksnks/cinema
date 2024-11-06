@@ -24,6 +24,7 @@ class TicketController extends Controller
     private $requestType;
     private $redirectUrl;
     private $ipnUrl;
+    private $secretKey;
     public $ticketRepository;
     public function __construct
     (
