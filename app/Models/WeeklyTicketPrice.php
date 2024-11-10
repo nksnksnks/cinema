@@ -17,5 +17,6 @@ class WeeklyTicketPrice extends Model
         'name',
         'description',
         'extra_fee',
+        'start_time',
     ];
 }

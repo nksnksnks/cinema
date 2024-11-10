@@ -15,7 +15,7 @@ class TicketRepository{
     }
 
     public function getDatareservation($key){
-        list($cinemaId, $showTimeId, $userId) = explode('_', $data, 3);
+        list($cinemaId, $showTimeId, $userId, $time) = explode('_', $key, 4);
         $data = Redis::get($cinemaId . '_' . $showTimeId . '_' . $userId);
         return [
             'cinema_id' => $cinemaId,
@@ -28,37 +28,38 @@ class TicketRepository{
     public function createBill($key, $amount)
     {
         $data = self::getDatareservation($key);
+        list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
         if($data['seat_list']){
             $billId = Bill::create([
-                'account_id' => $data['user_id'],
+                'account_id' => (int)$data['user_id'],
                 'cinema_id' => $data['cinema_id'],
                 'total' => $amount,
                 'status' => '1'
             ])->id;
-            foreach ($data['seat_list'] as $key){
+            foreach (json_decode($data['seat_list']) as $key){
                 $ticket = Ticket::create([
                     'seat_id' => $key,
                     'bill_id' => $billId,
-                    'movie_show_time' => $data['show_time_id'],
+                    'movie_showtime_id' => (int)$showTimeId,
                     'price' => 1000
                 ]);
             }
             return $billId;
         }
+        self::cancelReservation($key);
         return false;
     }
 
     public function getSeatSold($showTimeId)
     {
         $data = Ticket::where('movie_showtime_id', $showTimeId)
-            ->pluck('seat_id')
-            ->toArray();
+            ->get();
         return $data;
     }
 
-    public function cancelReservation($key)
+    public static function cancelReservation($key)
     {
-        list($cinemaId, $showTimeId, $userId) = explode('_', $key, 3);
+        list($cinemaId, $showTimeId, $userId, $time) = explode('_', $key, 4);
         $data = Redis::del($cinemaId . '_' . $showTimeId . '_' . $userId);
         return 0;
     }

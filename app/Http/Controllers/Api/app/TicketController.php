@@ -101,6 +101,7 @@ class TicketController extends Controller
      *     summary="Thanh toán Momo",
      *     security={{"bearerAuth":{}}},
      *     operationId="ticket/momo-payment",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *          in="header",
      *          name="X-localication",

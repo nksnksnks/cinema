@@ -6,6 +6,7 @@ use App\Models\MovieShowtime;
 use App\Models\Room;
 use App\Models\Seat;
 use App\Repositories\user\Ticket\TicketRepository;
+use App\Repositories\user\WeeklyTicketPrices\WeeklyTicketPricesRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 
@@ -45,7 +46,12 @@ class RoomRepository{
             }
         }
         $listSeatSold = $this->ticketRepository->getSeatSold($id);
+        $arrayListSeatSold = [];
+        foreach ($listSeatSold as $sold){
+            $arrayListSeatSold[] = (int)$sold->seat_id ;
+        }
         $seatId = 0;
+        $ticketPrice = WeeklyTicketPricesRepository::getTicketPrice($showTime->start_date, $showTime->start_time);
         foreach ($seatMap as $item) {
             $rowData = [];
             foreach ($item as $item2) {
@@ -68,11 +74,16 @@ class RoomRepository{
                     if (in_array($seatItem['seat_id'], $listSeats)) {
                         $seatItem['status'] = 1;
                     }
-                    else if(in_array($seatItem['seat_id'] ,$listSeatSold)){
+                    if(in_array((int)$seatItem['seat_id'], $arrayListSeatSold)){
                         $seatItem['status'] = 2;
                     }
                     else {
                         $seatItem['status'] = 0;
+                    }
+                    if($seatData->seatType->id == 1){
+                        $seatItem['ticket_price'] = (int)$ticketPrice + 10000;
+                    }else{
+                        $seatItem['ticket_price'] = (int)$ticketPrice;
                     }
                     $rowData[] = $seatItem;
                     $seatId++;
