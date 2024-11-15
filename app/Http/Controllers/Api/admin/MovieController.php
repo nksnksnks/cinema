@@ -345,7 +345,16 @@ class MovieController extends Controller
         // Lưu đường dẫn ảnh cũ
         $oldAvatar = $movie->avatar;
         $oldPoster = $movie->poster;
-
+        if($oldAvatar){
+            $path = parse_url($oldAvatar, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+        }
+        if($oldPoster){
+            $path = parse_url($oldPoster, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+        }
         // Cập nhật thông tin phim
         $movie->update($request->only([
             'name', 'slug', 'country_id', 'rated_id',
@@ -363,7 +372,7 @@ class MovieController extends Controller
 
             // Xóa ảnh cũ trên Cloudinary
             if ($oldAvatar) {
-                cloudinary()->destroy($oldAvatar); // Xóa ảnh cũ
+                cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
             }
         }else{
             $movie->avatar = $oldAvatar;
@@ -379,7 +388,7 @@ class MovieController extends Controller
 
             // Xóa ảnh cũ trên Cloudinary
             if ($oldPoster) {
-                cloudinary()->destroy($oldPoster); // Xóa ảnh cũ
+                cloudinary()->destroy($posterPart); // Xóa ảnh cũ
             }
         }else{
             $movie->poster = $oldPoster;
@@ -444,7 +453,21 @@ class MovieController extends Controller
         DB::beginTransaction();
 
         $movie = Movie::findOrFail($id);
-
+        $oldAvatar = $movie->avatar;
+        $oldPoster = $movie->poster;
+        if($oldAvatar){
+            $path = parse_url($oldAvatar, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            cloudinary()->destroy($avatarPart);
+        }
+        if($oldPoster){
+            $path = parse_url($oldPoster, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            cloudinary()->destroy($posterPart);
+        }
+        
         // Xóa các genre liên quan
         Movie_Genre::where('movie_id', $movie->id)->delete();
 
