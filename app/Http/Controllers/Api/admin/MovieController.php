@@ -495,7 +495,7 @@ class MovieController extends Controller
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/app/movieBygenre/{genre_id}",
-     *     tags={"Admin Movies"},
+     *     tags={"User Movies"},
      *     summary="Get a movie by genre",
      *     operationId="getMovieByGenre",
      *     @OA\Parameter(
@@ -519,7 +519,7 @@ class MovieController extends Controller
      *     )
      * )
      */
-    public function getMovieByGenre($genre_id)// get movie by genre
+    public function getMovieByGenre($genre_id)// get movie by genre 1
     {
         if($genre_id == 0){
             $movies = Movie::with('movie_genre')->where('status',1)->get();
