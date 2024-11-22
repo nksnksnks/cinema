@@ -40,6 +40,7 @@ class Movie extends Model
         'performer',
         'director',
         'description',
+        'status',
 
     ];
     public $timestamps = true;
@@ -62,9 +63,5 @@ class Movie extends Model
         return $this->belongsToMany(Genre::class, 'ci_movie_genre', 'movie_id', 'genre_id');
     }
 
-    public function genres()
-{
-    return $this->belongsToMany(Genre::class, 'ci_movie_genre');
-}
 
 }
