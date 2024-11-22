@@ -526,7 +526,7 @@ class MovieController extends Controller
      *     )
      * )
      */
-    public function getMovieByGenre($genre_id) // get movie by genre 123
+    public function getMovieByGenre($genre_id) // get movie by genre 
     {
         if ($genre_id == 0) {
             $movies = Movie::with('movie_genre')->where('status', 1)->get();
@@ -538,7 +538,7 @@ class MovieController extends Controller
         }
 
 
-        // Trả về danh sách phim dạng JSON 123
+        // Trả về danh sách phim dạng JSON 
         if (!$movies) {
             return response()->json([
                 'status' => 'error',
