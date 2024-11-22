@@ -139,7 +139,7 @@ class MovieController extends Controller
     {
         try {
             DB::beginTransaction();
-    
+
             // Kiểm tra genre_ids có tồn tại không
             foreach ($request->input('genre_ids') as $genreId) {
                 if (!Genre::find($genreId)) {
@@ -149,18 +149,18 @@ class MovieController extends Controller
                     ], Response::HTTP_BAD_REQUEST);
                 }
             }
-    
+
             // Upload ảnh avatar lên Cloudinary
             $avatarUrl = null;
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
-                $avatarResult = cloudinary()->upload($avatar->getRealPath(), [ 
+                $avatarResult = cloudinary()->upload($avatar->getRealPath(), [
                     'folder' => 'movie',
                     'upload_preset' => 'movie-upload',
                 ]);
                 $avatarUrl = $avatarResult->getSecurePath(); // Lấy URL an toàn
             }
-    
+
             // Upload ảnh poster lên Cloudinary
             $posterUrl = null;
             if ($request->hasFile('poster')) {
@@ -171,7 +171,7 @@ class MovieController extends Controller
                 ]);
                 $posterUrl = $posterResult->getSecurePath();
             }
-    
+
             // Tạo phim mới
             $movie = Movie::create([
                 'name' => $request->input('name'),
@@ -189,21 +189,20 @@ class MovieController extends Controller
                 'description' => $request->input('description'),
                 'status' => 1
             ]);
-    
+
             // Lưu tất cả genre_id vào bảng ci_movie_genre sử dụng attach
             $movie->movie_genre()->attach($request->input('genre_ids'));
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Movie created successfully',
                 'data' => $movie
             ], Response::HTTP_CREATED);
-    
         } catch (\Throwable $th) {
             DB::rollBack();
-    
+
             return response()->json([
                 'status' => 'error',
                 'message' => $th->getMessage(),
@@ -211,7 +210,7 @@ class MovieController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 
 
     /**
@@ -337,87 +336,95 @@ class MovieController extends Controller
      * )
      */
     public function update(MovieRequest $request, $id)
-{
-    try {
-        DB::beginTransaction();
+    {
+        try {
+            DB::beginTransaction();
 
-        $movie = Movie::findOrFail($id);
-        
-        // Lưu đường dẫn ảnh cũ
-        $oldAvatar = $movie->avatar;
-        $oldPoster = $movie->poster;
-        if($oldAvatar){
-            $path = parse_url($oldAvatar, PHP_URL_PATH);
-            $parts = explode('/movie/', $path);
-            $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-        }
-        if($oldPoster){
-            $path = parse_url($oldPoster, PHP_URL_PATH);
-            $parts = explode('/movie/', $path);
-            $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-        }
-        // Cập nhật thông tin phim
-        $movie->update($request->only([
-            'name', 'slug', 'country_id', 'rated_id',
-            'trailer_url', 'duration', 'date', 'performer', 
-            'director', 'description','status'
-        ]));
+            $movie = Movie::findOrFail($id);
 
-        // Xử lý upload avatar nếu có
-        if ($request->hasFile('avatar')) {
-            $avatarResult = cloudinary()->upload($request->file('avatar')->getRealPath(), [
-                'folder' => 'movie',
-                'upload_preset' => 'movie-upload',
-            ]);
-            $movie->avatar = $avatarResult->getSecurePath();
-
-            // Xóa ảnh cũ trên Cloudinary
+            // Lưu đường dẫn ảnh cũ
+            $oldAvatar = $movie->avatar;
+            $oldPoster = $movie->poster;
             if ($oldAvatar) {
-                cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
+                $path = parse_url($oldAvatar, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
             }
-        }else{
-            $movie->avatar = $oldAvatar;
-        }
-
-        // Xử lý upload poster nếu có
-        if ($request->hasFile('poster')) {
-            $posterResult = cloudinary()->upload($request->file('poster')->getRealPath(), [
-                'folder' => 'movie',
-                'upload_preset' => 'movie-upload',
-            ]);
-            $movie->poster = $posterResult->getSecurePath();
-
-            // Xóa ảnh cũ trên Cloudinary
             if ($oldPoster) {
-                cloudinary()->destroy($posterPart); // Xóa ảnh cũ
+                $path = parse_url($oldPoster, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
             }
-        }else{
-            $movie->poster = $oldPoster;
+            // Cập nhật thông tin phim
+            $movie->update($request->only([
+                'name',
+                'slug',
+                'country_id',
+                'rated_id',
+                'trailer_url',
+                'duration',
+                'date',
+                'performer',
+                'director',
+                'description',
+                'status'
+            ]));
+
+            // Xử lý upload avatar nếu có
+            if ($request->hasFile('avatar')) {
+                $avatarResult = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $movie->avatar = $avatarResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldAvatar) {
+                    cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
+                }
+            } else {
+                $movie->avatar = $oldAvatar;
+            }
+
+            // Xử lý upload poster nếu có
+            if ($request->hasFile('poster')) {
+                $posterResult = cloudinary()->upload($request->file('poster')->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $movie->poster = $posterResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldPoster) {
+                    cloudinary()->destroy($posterPart); // Xóa ảnh cũ
+                }
+            } else {
+                $movie->poster = $oldPoster;
+            }
+
+            // Lưu thông tin phim
+            $movie->save();
+
+            // Sử dụng sync để cập nhật mối quan hệ giữa phim và thể loại
+            $movie->movie_genre()->sync($request->input('genre_ids'));
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Movie updated successfully',
+                'data' => $movie
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        // Lưu thông tin phim
-        $movie->save();
-
-        // Sử dụng sync để cập nhật mối quan hệ giữa phim và thể loại
-        $movie->movie_genre()->sync($request->input('genre_ids'));
-
-        DB::commit();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Movie updated successfully',
-            'data' => $movie
-        ]);
-    } catch (\Throwable $th) {
-        DB::rollBack();
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $th->getMessage(),
-            'data' => []
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
 
 
 
@@ -449,53 +456,53 @@ class MovieController extends Controller
      * )
      */
     public function destroy($id)
-{
-    try {
-        DB::beginTransaction();
+    {
+        try {
+            DB::beginTransaction();
 
-        $movie = Movie::findOrFail($id);
-        $oldAvatar = $movie->avatar;
-        $oldPoster = $movie->poster;
-        if($oldAvatar){
-            $path = parse_url($oldAvatar, PHP_URL_PATH);
-            $parts = explode('/movie/', $path);
-            $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-            cloudinary()->destroy($avatarPart);
+            $movie = Movie::findOrFail($id);
+            $oldAvatar = $movie->avatar;
+            $oldPoster = $movie->poster;
+            if ($oldAvatar) {
+                $path = parse_url($oldAvatar, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                cloudinary()->destroy($avatarPart);
+            }
+            if ($oldPoster) {
+                $path = parse_url($oldPoster, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                cloudinary()->destroy($posterPart);
+            }
+
+            // Xóa các genre liên quan
+            Movie_Genre::where('movie_id', $movie->id)->delete();
+
+            $movie->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Movie deleted successfully',
+                'data' => []
+            ], Response::HTTP_OK); // Sử dụng mã trạng thái 200 OK
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        if($oldPoster){
-            $path = parse_url($oldPoster, PHP_URL_PATH);
-            $parts = explode('/movie/', $path);
-            $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-            cloudinary()->destroy($posterPart);
-        }
-        
-        // Xóa các genre liên quan
-        Movie_Genre::where('movie_id', $movie->id)->delete();
-
-        $movie->delete();
-        
-        DB::commit();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Movie deleted successfully',
-            'data' => []
-        ], Response::HTTP_OK); // Sử dụng mã trạng thái 200 OK
-    } catch (\Throwable $th) {
-        DB::rollBack();
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $th->getMessage(),
-            'data' => []
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
     /**
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/app/movieBygenre/{genre_id}",
-     *     tags={"Admin Movies"},
+     *     tags={"User Movies"},
      *     summary="Get a movie by genre",
      *     operationId="getMovieByGenre",
      *     @OA\Parameter(
@@ -519,19 +526,19 @@ class MovieController extends Controller
      *     )
      * )
      */
-    public function getMovieByGenre($genre_id)// get movie by genre
+    public function getMovieByGenre($genre_id) // get movie by genre 
     {
-        if($genre_id == 0){
-            $movies = Movie::with('movie_genre')->where('status',1)->get();
-        }else{
-           // Tìm tất cả movie_id từ bảng ci_movie_genre dựa trên genre_id
+        if ($genre_id == 0) {
+            $movies = Movie::with('movie_genre')->where('status', 1)->get();
+        } else {
+            // Tìm tất cả movie_id từ bảng ci_movie_genre dựa trên genre_id
             $movies = Movie::with('movie_genre')->whereHas('movie_genre', function ($query) use ($genre_id) {
                 $query->where('genre_id', $genre_id);
-            })->where('status',1)->get();
+            })->where('status', 1)->get();
         }
-           
-        
-        // Trả về danh sách phim dạng JSON
+
+
+        // Trả về danh sách phim dạng JSON 
         if (!$movies) {
             return response()->json([
                 'status' => 'error',
@@ -589,6 +596,4 @@ class MovieController extends Controller
             'upcoming_movies' => $upcomingMovies
         ]);
     }
-
-
 }
