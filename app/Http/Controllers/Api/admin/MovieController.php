@@ -187,10 +187,11 @@ class MovieController extends Controller
                 'performer' => $request->input('performer'),
                 'director' => $request->input('director'),
                 'description' => $request->input('description'),
+                'status' => 1
             ]);
     
             // Lưu tất cả genre_id vào bảng ci_movie_genre sử dụng attach
-            $movie->genres()->attach($request->input('genre_ids'));
+            $movie->movie_genre()->attach($request->input('genre_ids'));
     
             DB::commit();
     
@@ -359,7 +360,7 @@ class MovieController extends Controller
         $movie->update($request->only([
             'name', 'slug', 'country_id', 'rated_id',
             'trailer_url', 'duration', 'date', 'performer', 
-            'director', 'description'
+            'director', 'description','status'
         ]));
 
         // Xử lý upload avatar nếu có
@@ -490,7 +491,104 @@ class MovieController extends Controller
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+    /**
+     * @author quynhndmq
+     * @OA\Get(
+     *     path="/api/app/movieBygenre/{genre_id}",
+     *     tags={"Admin Movies"},
+     *     summary="Get a movie by genre",
+     *     operationId="getMovieByGenre",
+     *     @OA\Parameter(
+     *         name="genre_id",
+     *         in="path",
+     *         description="ID of movie",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(ref="#/components/schemas/Movie")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Movie not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Movie not found.")
+     *         )
+     *     )
+     * )
+     */
+    public function getMovieByGenre($genre_id)// get movie by genre
+    {
+        if($genre_id == 0){
+            $movies = Movie::with('movie_genre')->where('status',1)->get();
+        }else{
+           // Tìm tất cả movie_id từ bảng ci_movie_genre dựa trên genre_id
+            $movies = Movie::with('movie_genre')->whereHas('movie_genre', function ($query) use ($genre_id) {
+                $query->where('genre_id', $genre_id);
+            })->where('status',1)->get();
+        }
+           
+        
+        // Trả về danh sách phim dạng JSON
+        if (!$movies) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Movie not found.'
+            ], Response::HTTP_NOT_FOUND);
+        }
 
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Movie retrieved successfully',
+            'data' => $movies
+        ]);
+    }
+
+    /**
+     * @author quynhndmq
+     * @OA\Get(
+     *     path="/api/app/movieBystatus",
+     *     tags={"User Movies"},
+     *     summary="Get status movies (đang chiếu , sắp chiếu)",
+     *     operationId="getMoviesByStatus",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Movie")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred.")
+     *         )
+     *     )
+     * )
+     */
+    public function getMovieByStatus(Request $request)
+    {
+        $today = now()->toDateString(); // Lấy ngày hôm nay theo định dạng Y-m-d
+
+        // Lọc phim đang chiếu (status = 1 và ngày khởi chiếu <= hôm nay)
+        $currentMovies = Movie::with('movie_genre')->where('status', 1)
+            ->where('date', '<=', $today)
+            ->get();
+
+        // Lọc phim sắp chiếu (status = 1 và ngày khởi chiếu > hôm nay)
+        $upcomingMovies = Movie::with('movie_genre')->where('status', 1)
+            ->where('date', '>', $today)
+            ->get();
+
+        return response()->json([
+            'current_movies' => $currentMovies,
+            'upcoming_movies' => $upcomingMovies
+        ]);
+    }
 
 
 }
