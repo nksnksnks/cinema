@@ -66,7 +66,7 @@ class CinemaController extends Controller{
      *           name="movie_id",
      *           in="query",
      *           description="ID của phim",
-     *           required=true,
+     *           required=false,
      *           @OA\Schema(type="integer")
      *      ),
      *     @OA\Parameter(
@@ -95,6 +95,7 @@ class CinemaController extends Controller{
     public function getListShowTime(Request $request){
         try {
             $data = $request->all();
+            $data['movie_id'] = $data['movie_id'] ?? null;
             $response = $this->movieShowTimeRepository->getShowTime($data['cinema_id'], $data['movie_id'], $data['date']);
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,

@@ -22,7 +22,7 @@ class RoomController extends Controller
     /**
      * @OA\Get (
      *     path="/api/app/room/get/{id}",
-     *     tags={"User Phòng chiếu"},
+     *     tags={"App Phòng chiếu"},
      *     summary="Lấy thông tin suất chiếu",
      *     operationId="app/room/get",
      *     security={{"bearerAuth":{}}},
