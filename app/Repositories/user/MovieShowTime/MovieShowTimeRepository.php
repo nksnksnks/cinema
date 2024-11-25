@@ -26,7 +26,7 @@ class MovieShowTimeRepository{
                 ->groupBy('ci_movie.id')
                 ->get();
             foreach ($movie as $key){
-                $showTime = MovieShowtime::join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
+                $showTime = MovieShowtime::select('ci_movie_show_time.*')->join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
                     ->where('ci_room.cinema_id', '=', $cinemaId)
                     ->where('ci_movie_show_time.movie_id' , '=', $key->id)
                     ->where('ci_movie_show_time.start_date', '=', $date)
@@ -39,7 +39,7 @@ class MovieShowTimeRepository{
     }
     public function mapData($movie, $showTime)
     {
-        $data['movie'][] = $movie;
+        $data['movie'] = $movie;
         $data['movie']['show_time'] = $showTime;
         return $data;
     }
