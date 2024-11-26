@@ -49,7 +49,7 @@ class MovieRequest extends FormRequest
             case 'PUT': // Xử lý khi cập nhật (update)
                 return [
                     'name' => 'required|string|max:255',
-                    'slug' => 'required|string|max:255|unique:ci_movie,slug,' . $this->route('movie'), // Unique bỏ qua slug của phim hiện tại
+                    'slug' => 'required|string|max:255|unique:ci_movie,slug,'.$this->id.'', // Unique bỏ qua slug của phim hiện tại
                     'country_id' => 'required|integer|exists:ci_country,id',
                     'rated_id' => 'required|integer|exists:ci_rated,id',
                     'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
@@ -96,9 +96,19 @@ class MovieRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

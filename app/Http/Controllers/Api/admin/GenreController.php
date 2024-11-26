@@ -7,6 +7,7 @@ use App\Models\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
 use App\Http\Requests\admin\GenreRequest;
 
 /**
@@ -23,6 +24,64 @@ use App\Http\Requests\admin\GenreRequest;
  */
 class GenreController extends Controller
 {
+
+    public function genreIndex(){
+        $genres = Genre::all();
+        return view('admin.genre.index',compact('genres'));
+    }
+    public function genreCreate(){
+        $config['method'] = 'create';
+        return view('admin.genre.create',compact('config'));
+    }
+    public function genreStore(GenreRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            Genre::create($data);
+            DB::commit();
+            return redirect()
+                ->route('genre.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('genre.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function genreEdit(string $id){
+        $genre = Genre::find($id);
+        $config['method'] = 'edit';
+        return view('admin.genre.create', compact('config','genre'));
+    }
+  
+    public function genreUpdate($id, GenreRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = Genre::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('genre.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('genre.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function genreDestroy(string $id){
+        Genre::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa genre thành công.');
+    }
+
+
     /**
      * @author quynhndmq
      * @OA\Get(
@@ -49,8 +108,21 @@ class GenreController extends Controller
      */
     public function index()
     {
-        $genres = Genre::all();
-        return response()->json($genres);
+        try {
+            $genres = Genre::all();
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => $genres
+            ], Constant::SUCCESS_CODE);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -110,7 +182,7 @@ class GenreController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Genre created successfully',
                 'data' => $genre
             ], Response::HTTP_CREATED);
@@ -119,7 +191,7 @@ class GenreController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -129,12 +201,12 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/genres/{genre}",
+     *     path="/api/admin/genres/{id}",
      *     tags={"Admin Genres"},
      *     summary="Get a genre by ID",
      *     operationId="getGenreById",
      *     @OA\Parameter(
-     *         name="genre",
+     *         name="id",
      *         in="path",
      *         description="ID of genre",
      *         required=true,
@@ -154,11 +226,12 @@ class GenreController extends Controller
      *     )
      * )
      */
-    public function show(Genre $genre)
+    public function show($id)
     {
+        $genre = Genre::find($id);
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Genre retrieved successfully',
             'data' => $genre
         ]);
@@ -167,12 +240,12 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/genres/{genre}",
+     *     path="/api/admin/genres/{id}",
      *     tags={"Admin Genres"},
      *     summary="Update a genre",
      *     operationId="updateGenre",
      *     @OA\Parameter(
-     *         name="genre",
+     *         name="id",
      *         in="path",
      *         description="ID of genre to update",
      *         required=true,
@@ -218,19 +291,17 @@ class GenreController extends Controller
      *     )
      * )
      */
-    public function update(GenreRequest $request, Genre $genre)
+    public function update(GenreRequest $request, $id)
     {
         try {
             DB::beginTransaction();
-
-            
-
+            $genre = Genre::findOrFail($id);
             $genre->update($request->all());
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Genre updated successfully',
                 'data' => $genre
             ]);
@@ -239,7 +310,7 @@ class GenreController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -249,12 +320,12 @@ class GenreController extends Controller
     /**
      * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/genres/{genre}",
+     *     path="/api/admin/genres/{id}",
      *     tags={"Admin Genres"},
      *     summary="Delete a genre",
      *     operationId="deleteGenre",
      *     @OA\Parameter(
-     *         name="genre",
+     *         name="id",
      *         in="path",
      *         description="ID of genre to delete",
      *         required=true,
@@ -273,17 +344,17 @@ class GenreController extends Controller
      *     )
      * )
      */
-    public function destroy(Genre $genre)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
-
+            $genre = Genre::findOrFail($id);
             $genre->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Genre deleted successfully',
                 'data' => []
             ], Response::HTTP_OK); // Sử dụng 200 OK hoặc 202 Accepted
@@ -291,7 +362,7 @@ class GenreController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

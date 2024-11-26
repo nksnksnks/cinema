@@ -36,7 +36,7 @@ class GenreRequest extends FormRequest
                 ];
             case 'PUT': // Xử lý khi cập nhật (update)
                 return [
-                    'name' => 'required|string|max:255|unique:ci_genre,name,' . $this->route('genre')->id, // Bỏ qua kiểm tra unique cho chính thể loại hiện tại
+                    'name' => 'required|string|max:255|unique:ci_genre,name,'.$this->id.'', // Bỏ qua kiểm tra unique cho chính thể loại hiện tại
                     'description' => 'nullable|string|max:255', // Có thể bỏ trống và không quá 255 ký tự
                 ];
             default:
@@ -61,9 +61,19 @@ class GenreRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

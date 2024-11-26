@@ -37,7 +37,7 @@ class WeeklyTicketPriceRequest extends FormRequest
                 ];
             case 'PUT': // Rules for updating an existing weekly ticket price
                 return [
-                    'name' => 'required|string|max:255|unique:ci_weekly_ticket_prices,name,' . $this->route('weekly_ticket_price')->id,
+                    'name' => 'required|string|max:255|unique:ci_weekly_ticket_prices,name,'.$this->id.'',
                     'description' => 'nullable|string|max:500',
                     'extra_fee' => 'required|integer|min:0',
                 ];
@@ -73,9 +73,19 @@ class WeeklyTicketPriceRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

@@ -7,6 +7,8 @@ use App\Models\WeeklyTicketPrice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
+
 use App\Http\Requests\Admin\WeeklyTicketPriceRequest;
 
 /**
@@ -24,6 +26,64 @@ use App\Http\Requests\Admin\WeeklyTicketPriceRequest;
  */
 class WeeklyTicketPriceController extends Controller
 {
+    public function weeklyticketpriceIndex()
+    {
+        $weeklyticketprices = WeeklyTicketPrice::all();
+        return view('admin.weekly_ticket_prices.index', compact('weeklyticketprices'));
+    }
+    public function weeklyticketpriceCreate()
+    {
+        $config['method'] = 'create';
+        return view('admin.weekly_ticket_prices.create', compact('config'));
+    }
+    public function weeklyticketpriceStore(WeeklyTicketPriceRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            WeeklyTicketPrice::create($data);
+            DB::commit();
+            return redirect()
+                ->route('weeklyticketprice.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('weeklyticketprice.create')
+                ->with('error', $th->getMessage());
+        }
+    }
+
+    public function weeklyticketpriceEdit(string $id)
+    {
+        $weeklyticketprice = WeeklyTicketPrice::find($id);
+        $config['method'] = 'edit';
+        return view('admin.weekly_ticket_prices.create', compact('config', 'weeklyticketprice'));
+    }
+
+    public function weeklyticketpriceUpdate($id, WeeklyTicketPriceRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = WeeklyTicketPrice::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+                ->route('weeklyticketprice.index')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('weeklyticketprice.index')
+                ->with('error', $th->getMessage());
+        }
+    }
+    public function weeklyticketpriceDestroy(string $id)
+    {
+        WeeklyTicketPrice::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa weeklyticketprice thành công.');
+    }
     /**
      * @OA\Get(
      *     path="/api/admin/weekly-ticket-prices",
@@ -111,16 +171,15 @@ class WeeklyTicketPriceController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Weekly ticket price created successfully',
                 'data' => $weeklyTicketPrice
             ], Response::HTTP_CREATED);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -129,12 +188,12 @@ class WeeklyTicketPriceController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     path="/api/admin/weekly-ticket-prices/{id}",
      *     tags={"Admin WeeklyTicketPrices"},
      *     summary="Get a weekly ticket price by ID",
      *     operationId="getWeeklyTicketPriceById",
      *     @OA\Parameter(
-     *         name="weekly_ticket_price",
+     *         name="id",
      *         in="path",
      *         description="ID of weekly ticket price",
      *         required=true,
@@ -154,10 +213,11 @@ class WeeklyTicketPriceController extends Controller
      *     )
      * )
      */
-    public function show(WeeklyTicketPrice $weekly_ticket_price)
+    public function show($id)
     {
+        $weekly_ticket_price = WeeklyTicketPrice::find($id);
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Weekly ticket price retrieved successfully',
             'data' => $weekly_ticket_price
         ]);
@@ -165,12 +225,12 @@ class WeeklyTicketPriceController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     path="/api/admin/weekly-ticket-prices/{id}",
      *     tags={"Admin WeeklyTicketPrices"},
      *     summary="Update a weekly ticket price",
      *     operationId="updateWeeklyTicketPrice",
      *     @OA\Parameter(
-     *         name="weekly_ticket_price",
+     *         name="id",
      *         in="path",
      *         description="ID of weekly ticket price to update",
      *         required=true,
@@ -202,26 +262,25 @@ class WeeklyTicketPriceController extends Controller
      *     )
      * )
      */
-    public function update(WeeklyTicketPriceRequest $request, WeeklyTicketPrice $weekly_ticket_price)
+    public function update(WeeklyTicketPriceRequest $request, $id)
     {
         try {
             DB::beginTransaction();
-
+            $weekly_ticket_price = WeeklyTicketPrice::find($id);
             $weekly_ticket_price->update($request->all());
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Weekly ticket price updated successfully',
                 'data' => $weekly_ticket_price
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -230,12 +289,12 @@ class WeeklyTicketPriceController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/admin/weekly-ticket-prices/{weekly_ticket_price}",
+     *     path="/api/admin/weekly-ticket-prices/{id}",
      *     tags={"Admin WeeklyTicketPrices"},
      *     summary="Delete a weekly ticket price",
      *     operationId="deleteWeeklyTicketPrice",
      *     @OA\Parameter(
-     *         name="weekly_ticket_price",
+     *         name="id",
      *         in="path",
      *         description="ID of weekly ticket price to delete",
      *         required=true,
@@ -254,17 +313,17 @@ class WeeklyTicketPriceController extends Controller
      *     )
      * )
      */
-    public function destroy(WeeklyTicketPrice $weekly_ticket_price)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
-
+            $weekly_ticket_price = WeeklyTicketPrice::find($id);
             $weekly_ticket_price->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Weekly ticket price deleted successfully',
                 'data' => []
             ], Response::HTTP_OK);
@@ -272,7 +331,7 @@ class WeeklyTicketPriceController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

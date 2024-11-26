@@ -7,6 +7,7 @@ use App\Models\Rated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
 use App\Http\Requests\admin\RatedRequest;
 /**
  * @OA\Schema(
@@ -22,7 +23,62 @@ use App\Http\Requests\admin\RatedRequest;
  */
 class RatedController extends Controller
 {
- 
+    
+    public function ratedIndex(){
+        $rateds = Rated::all();
+        return view('admin.rated.index',compact('rateds'));
+    }
+    public function ratedCreate(){
+        $config['method'] = 'create';
+        return view('admin.rated.create',compact('config'));
+    }
+    public function ratedStore(RatedRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            Rated::create($data);
+            DB::commit();
+            return redirect()
+                ->route('rated.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('rated.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function ratedEdit(string $id){
+        $rated = Rated::find($id);
+        $config['method'] = 'edit';
+        return view('admin.rated.create', compact('config','rated'));
+    }
+  
+    public function ratedUpdate($id, RatedRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = Rated::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('rated.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('rated.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function ratedDestroy(string $id){
+        Rated::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa rated thành công.');
+    }
 
     /**
      * @author quynhndmq
@@ -50,8 +106,21 @@ class RatedController extends Controller
      */
     public function index()
     {
-        $rateds = Rated::all();
-        return response()->json($rateds);
+        try {
+            $rateds = Rated::all();
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => $rateds
+            ], Constant::SUCCESS_CODE);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -111,7 +180,7 @@ class RatedController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'rated created successfully',
                 'data' => $rated
             ], Response::HTTP_CREATED);
@@ -130,12 +199,12 @@ class RatedController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/rateds/{rated}",
+     *     path="/api/admin/rateds/{id}",
      *     tags={"Admin Rateds"},
      *     summary="Get a rated by ID",
      *     operationId="getratedById",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="id",
      *         in="path",
      *         description="ID of rated",
      *         required=true,
@@ -155,11 +224,12 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function show(rated $rated)
+    public function show($id)
     {
+        $rated = Rated::find($id);
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'rated retrieved successfully',
             'data' => $rated
         ]);
@@ -168,12 +238,12 @@ class RatedController extends Controller
     /**
      * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/rateds/{rated}",
+     *     path="/api/admin/rateds/{id}",
      *     tags={"Admin Rateds"},
      *     summary="Update a rated",
      *     operationId="updaterated",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="id",
      *         in="path",
      *         description="ID of rated to update",
      *         required=true,
@@ -219,18 +289,18 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function update(RatedRequest $request, rated $rated)
+    public function update(RatedRequest $request, $id)
     {
         try {
             DB::beginTransaction();
 
-
+            $rated = Rated::findOrFail($id);
             $rated->update($request->all());
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'rated updated successfully',
                 'data' => $rated
             ]);
@@ -249,12 +319,12 @@ class RatedController extends Controller
     /**
      * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/rateds/{rated}",
+     *     path="/api/admin/rateds/{id}",
      *     tags={"Admin Rateds"},
      *     summary="Delete a rated",
      *     operationId="deleterated",
      *     @OA\Parameter(
-     *         name="rated",
+     *         name="id",
      *         in="path",
      *         description="ID of rated to delete",
      *         required=true,
@@ -273,17 +343,17 @@ class RatedController extends Controller
      *     )
      * )
      */
-    public function destroy(rated $rated)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
-
+            $rated = Rated::findOrFail($id);
             $rated->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'rated deleted successfully',
                 'data' => []
             ], Response::HTTP_OK); // Sử dụng 200 OK hoặc 202 Accepted

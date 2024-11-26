@@ -34,6 +34,7 @@ class Account extends Authenticatable
     protected $fillable = [
         'id',
         'role_id',
+        'cinema_id',
         'username',
         'email',
         'password',

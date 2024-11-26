@@ -26,4 +26,14 @@ class MovieShowtime extends Model
         'start_date',
     ];
     public $timestamps = true;
+
+    public function movie()
+    {
+        return $this->belongsTo(Movie::class, 'movie_id', 'id');
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id', 'id');
+    }
 }
