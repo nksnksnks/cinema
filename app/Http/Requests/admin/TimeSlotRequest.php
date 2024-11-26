@@ -32,15 +32,15 @@ class TimeSlotRequest extends FormRequest
             case 'POST': // Rules for creating a new time slot
                 return [
                     'slot_name' => 'required|string|max:255|unique:ci_time_slots,slot_name',
-                    'start_time' => 'required|date_format:H:i:s',
-                    'end_time' => 'required|date_format:H:i:s|after:start_time',
+                    'start_time' => 'required|date_format:H:i',
+                    'end_time' => 'required|date_format:H:i|after:start_time',
                     'extra_fee' => 'required|integer|min:0',
                 ];
             case 'PUT': // Rules for updating an existing time slot
                 return [
                     'slot_name' => 'required|string|max:255|unique:ci_time_slots,slot_name,'.$this->id.'',
-                    'start_time' => 'required|date_format:H:i:s',
-                    'end_time' => 'required|date_format:H:i:s|after:start_time',
+                    'start_time' => 'required|date_format:H:i',
+                    'end_time' => 'required|date_format:H:i|after:start_time',
                     'extra_fee' => 'required|integer|min:0',
                 ];
             default:
