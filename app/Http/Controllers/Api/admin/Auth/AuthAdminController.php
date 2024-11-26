@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use App\Http\Requests\app\AuthRequest;
+
 class AuthAdminController extends Controller
 {
-    public function viewlogin(){
+    public function viewlogin()
+    {
         $config['method'] = 'get_login';
         return view("admin.auth.login", compact('config'));
     }
@@ -28,18 +30,19 @@ class AuthAdminController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Get user info
 
-            
+
             if ($user->role_id == 1) {
                 return redirect()->route('dashboard.index')->with('success', 'Đăng nhập thành công');
             } else {
                 return redirect()->route('homepage')->with('success', 'Đăng nhập thành công');
             }
         }
-        
+
         return back()->withErrors(['login' => 'Username hoặc password không chính xác!']);
     }
 
-    public function viewregister(){
+    public function viewregister()
+    {
         return view("admin.auth.register");
     }
     public function register(Request $request)
@@ -56,16 +59,16 @@ class AuthAdminController extends Controller
             'password.min' => 'Mật khẩu có độ dài tối thiểu là 6 kí tự',
             'password.max' => 'Mật khẩu có độ dài tối đa là 55 kí tự',
             'username.unique' => 'User name đã tồn tại',
-            
+
         ]);
         Account::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => 1, // Set status to 'active'
-            'role_id' => 4, 
+            'role_id' => 4,
         ]);
-        
+
         return redirect()->route("auth.login")->with('success', 'Đăng ký thành công! Bạn có thể đăng nhập ngay.');
     }
     public function logout(Request $request)
