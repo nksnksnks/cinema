@@ -88,7 +88,7 @@ final class Auth implements Contract\Auth
 
     public function getUsers(array $uids): array
     {
-        $uids = array_map(static fn($uid) => Uid::fromString($uid)->value, $uids);
+        $uids = array_map(static fn($uid): string => Uid::fromString($uid)->value, $uids);
 
         $users = array_fill_keys($uids, null);
 
@@ -389,7 +389,7 @@ final class Auth implements Contract\Auth
         // The ID Token is annotated as non-empty-string or a valid Token, so it cannot be empty
         // Static analysis are not always sure about that, so we'll help them here.
         // The assertion is necessary for lcobucci/jwt 4.* but not needed for 5.*
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore function.alreadyNarrowedType, notIdentical.alwaysTrue
         assert($idTokenString !== '');
 
         try {
@@ -490,7 +490,7 @@ final class Auth implements Contract\Auth
         $provider = array_values(
             array_filter(
                 array_map('strval', (array) $provider),
-                static fn(string $value) => $value !== '',
+                static fn(string $value): bool => $value !== '',
             ),
         );
 

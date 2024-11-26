@@ -7,9 +7,10 @@
 namespace OpenApi\Attributes;
 
 use OpenApi\Generator;
+use OpenApi\Annotations as OA;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class Webhook extends \OpenApi\Annotations\Webhook
+class Webhook extends OA\Webhook
 {
     /**
      * @param string|class-string|object|null $ref
@@ -21,7 +22,7 @@ class Webhook extends \OpenApi\Annotations\Webhook
     public function __construct(
         ?string $webhook = null,
         ?string $path = null,
-        mixed $ref = null,
+        string|object|null $ref = null,
         ?string $summary = null,
         ?string $description = null,
         ?Get $get = null,

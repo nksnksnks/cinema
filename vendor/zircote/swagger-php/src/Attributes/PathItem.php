@@ -7,9 +7,10 @@
 namespace OpenApi\Attributes;
 
 use OpenApi\Generator;
+use OpenApi\Annotations as OA;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-class PathItem extends \OpenApi\Annotations\PathItem
+class PathItem extends OA\PathItem
 {
     /**
      * @param string|class-string|object|null $ref
@@ -20,7 +21,7 @@ class PathItem extends \OpenApi\Annotations\PathItem
      */
     public function __construct(
         ?string $path = null,
-        mixed $ref = null,
+        string|object|null $ref = null,
         ?string $summary = null,
         ?string $description = null,
         ?Get $get = null,

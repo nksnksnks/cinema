@@ -1,44 +1,23 @@
 <?php
 
-/**
- * Vonage Client Library for PHP
- *
- * @copyright Copyright (c) 2016-2022 Vonage, Inc. (http://vonage.com)
- * @license https://github.com/Vonage/vonage-php-sdk-core/blob/master/LICENSE.txt Apache License 2.0
- */
-
 declare(strict_types=1);
 
 namespace Vonage\Client\Credentials;
 
-use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token;
 use Vonage\Application\Application;
-use Vonage\Client\Exception\Validation;
 use Vonage\JWT\TokenGenerator;
 
-use function base64_encode;
-use function mt_rand;
-use function time;
-
-/**
- * @property mixed application
- */
 class Keypair extends AbstractCredentials
 {
-    public function __construct(protected string $key, $application = null)
+    public function __construct(protected string $key, protected ?string $application = null)
     {
         $this->credentials['key'] = $key;
 
         if ($application) {
-            if ($application instanceof Application) {
-                $application = $application->getId();
-            }
-
             $this->credentials['application'] = $application;
         }
     }
@@ -54,6 +33,17 @@ class Keypair extends AbstractCredentials
     public function getKeyRaw(): string
     {
         return $this->key;
+    }
+
+    public function getApplication(): ?string
+    {
+        return $this->application;
+    }
+
+    public function setApplication(mixed $application): Keypair
+    {
+        $this->application = $application;
+        return $this;
     }
 
     public function generateJwt(array $claims = []): Token

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Kreait\Firebase;
 
+use Beste\Cache\InMemoryCache;
 use Beste\Clock\SystemClock;
 use Beste\Clock\WrappingClock;
 use Beste\Json;
 use Firebase\JWT\CachedKeySet;
 use Google\Auth\ApplicationDefaultCredentials;
-use Google\Auth\Cache\MemoryCacheItemPool;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Google\Auth\FetchAuthTokenCache;
 use Google\Auth\FetchAuthTokenInterface;
@@ -38,6 +38,7 @@ use Kreait\Firebase\Http\Middleware;
 use Kreait\Firebase\JWT\IdTokenVerifier;
 use Kreait\Firebase\JWT\SessionCookieVerifier;
 use Kreait\Firebase\Messaging\AppInstanceApiClient;
+use Kreait\Firebase\Messaging\RequestFactory;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Message\UriInterface;
@@ -48,7 +49,6 @@ use Throwable;
 use UnexpectedValueException;
 
 use function array_filter;
-use function is_array;
 use function is_string;
 use function sprintf;
 use function trim;
@@ -130,22 +130,10 @@ final class Factory
     {
         $this->clock = SystemClock::create();
         $this->httpFactory = new HttpFactory();
-        $this->verifierCache = new MemoryCacheItemPool();
-        $this->authTokenCache = new MemoryCacheItemPool();
-        $this->keySetCache = new MemoryCacheItemPool();
+        $this->verifierCache = new InMemoryCache($this->clock);
+        $this->authTokenCache = new InMemoryCache($this->clock);
+        $this->keySetCache = new InMemoryCache($this->clock);
         $this->httpClientOptions = HttpClientOptions::default();
-
-        $googleApplicationCredentials = Util::getenv('GOOGLE_APPLICATION_CREDENTIALS');
-
-        if ($googleApplicationCredentials === null) {
-            return;
-        }
-
-        if (!str_starts_with($googleApplicationCredentials, '{')) {
-            return;
-        }
-
-        $this->serviceAccount = Json::decode($googleApplicationCredentials, true);
     }
 
     /**
@@ -342,8 +330,9 @@ final class Factory
     public function createAppCheck(): Contract\AppCheck
     {
         $projectId = $this->getProjectId();
+        $serviceAccount = $this->getServiceAccount();
 
-        if ($this->serviceAccount === null) {
+        if ($serviceAccount === null) {
             throw new RuntimeException('Unable to use AppCheck without credentials');
         }
 
@@ -363,8 +352,8 @@ final class Factory
         return new AppCheck(
             new AppCheck\ApiClient($http),
             new AppCheckTokenGenerator(
-                $this->serviceAccount['client_email'],
-                $this->serviceAccount['private_key'],
+                $serviceAccount['client_email'],
+                $serviceAccount['private_key'],
                 $this->clock,
             ),
             new AppCheckTokenVerifier($projectId, $keySet),
@@ -418,13 +407,15 @@ final class Factory
         $projectId = $this->getProjectId();
 
         $errorHandler = new MessagingApiExceptionConverter($this->clock);
+        $requestFactory = new RequestFactory(
+            requestFactory: $this->httpFactory,
+            streamFactory: $this->httpFactory,
+        );
 
         $messagingApiClient = new Messaging\ApiClient(
             $this->createApiClient(),
             $projectId,
-            $this->httpFactory,
-            $this->httpFactory,
-            $errorHandler,
+            $requestFactory,
         );
 
         $appInstanceApiClient = new AppInstanceApiClient(
@@ -437,10 +428,16 @@ final class Factory
             $errorHandler,
         );
 
-        return new Messaging($messagingApiClient, $appInstanceApiClient);
+        return new Messaging($messagingApiClient, $appInstanceApiClient, $errorHandler);
     }
 
     /**
+     * @deprecated 7.14.0 Firebase Dynamic Links is deprecated and should not be used in new projects. The service will
+     *                    shut down on August 25, 2025. The component will remain in the SDK until then, but as the
+     *                    Firebase service is deprecated, this component is also deprecated
+     *
+     * @see https://firebase.google.com/support/dynamic-links-faq Dynamic Links Deprecation FAQ
+     *
      * @param Stringable|non-empty-string|null $defaultDynamicLinksDomain
      */
     public function createDynamicLinksService($defaultDynamicLinksDomain = null): Contract\DynamicLinks
@@ -525,7 +522,7 @@ final class Factory
             'databaseUrl' => $databaseUrl,
             'defaultStorageBucket' => $this->defaultStorageBucket,
             'projectId' => $projectId,
-            'serviceAccount' => $this->serviceAccount,
+            'serviceAccount' => $this->getServiceAccount(),
             'tenantId' => $this->tenantId,
             'tokenCacheType' => $this->authTokenCache::class,
             'verifierCacheType' => $this->verifierCache::class,
@@ -601,8 +598,10 @@ final class Factory
             $config['credentialsFetcher'] = $credentials;
         }
 
-        if (is_array($this->serviceAccount)) {
-            $config['keyFile'] = $this->serviceAccount;
+        $serviceAccount = $this->getServiceAccount();
+
+        if ($serviceAccount !== null) {
+            $config['keyFile'] = $serviceAccount;
         }
 
         return $config;
@@ -683,14 +682,38 @@ final class Factory
         return SessionCookieVerifier::createWithProjectIdAndCache($this->getProjectId(), $this->verifierCache);
     }
 
+    /**
+     * @return ServiceAccountShape|null
+     */
+    private function getServiceAccount(): ?array
+    {
+        if ($this->serviceAccount === null) {
+            $googleApplicationCredentials = Util::getenv('GOOGLE_APPLICATION_CREDENTIALS');
+
+            if ($googleApplicationCredentials === null) {
+                return null;
+            }
+
+            if (!str_starts_with($googleApplicationCredentials, '{')) {
+                return null;
+            }
+
+            $this->serviceAccount = Json::decode($googleApplicationCredentials, true);
+        }
+
+        return $this->serviceAccount;
+    }
+
     private function getGoogleAuthTokenCredentials(): ?FetchAuthTokenInterface
     {
         if ($this->googleAuthTokenCredentials !== null) {
             return $this->googleAuthTokenCredentials;
         }
 
-        if ($this->serviceAccount !== null) {
-            return $this->googleAuthTokenCredentials = new ServiceAccountCredentials(self::API_CLIENT_SCOPES, $this->serviceAccount);
+        $serviceAccount = $this->getServiceAccount();
+
+        if ($serviceAccount !== null) {
+            return $this->googleAuthTokenCredentials = new ServiceAccountCredentials(self::API_CLIENT_SCOPES, $serviceAccount);
         }
 
         try {

@@ -1,0 +1,104 @@
+@extends('admin.dashboard.layout')
+@section('content')
+
+@php
+    if ($config['method'] == 'create') {
+        $url = route('timeslot.store');
+        $title = 'Thêm mới timeslot';
+        $year = null; // Đảm bảo biến $year không được sử dụng trong chế độ tạo mới
+        $method = 'POST';
+    } else {
+        $url = route('timeslot.update', $timeslot->id);
+        $title = 'Cập nhật timeslot';
+        $method = 'PUT';
+    }
+@endphp
+
+@include('admin.dashboard.component.breadcrumb', ['title' => $title])
+    <form action="{{$url}}" method="POST">
+    @csrf
+    @method($method)
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="panel-head">
+                    <div class="panel-title">Thông tin TimeSlot</div>
+                    <div class="panel-description">
+                        <p>Nhập thông tin của TimeSlot mới</p>
+                        <p>Lưu ý: Những trường đánh dấu <span class="text-danger">(*)</span> là bắt buộc</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
+                                    <label for="slot_name" class="control-label text-left">Slot_name <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="text"
+                                        name="slot_name"
+                                        id="slot_name"
+                                        value="{{ old('slot_name', $timeslot->slot_name ?? '') }}"
+                                        class="form-control"
+                                        placeholder="..."
+                                        autocomplete="off"
+                                    >
+                                    @if($errors->has('slot_name'))
+                                        <p class="error-message">* {{ $errors->first('slot_name') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
+                                    <label for="special_day" class="control-label text-left">Start <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="date"
+                                        name="special_day"
+                                        id="special_day"
+                                        value="{{ old('special_day', $timeslot->special_day ?? '') }}"
+                                        class="form-control"
+                                        placeholder="..."
+                                        autocomplete="off"
+                                    >
+                                    @if($errors->has('special_day'))
+                                        <p class="error-message">* {{ $errors->first('special_day') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
+                                    <label for="extra_fee" class="control-label text-left">Extra_fee <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="text"
+                                        name="extra_fee"
+                                        id="extra_fee"
+                                        value="{{ old('extra_fee', $timeslot->extra_fee ?? '') }}"
+                                        class="form-control"
+                                        placeholder="..."
+                                        autocomplete="off"
+                                    >
+                                    @if($errors->has('extra_fee'))
+                                        <p class="error-message">* {{ $errors->first('extra_fee') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-right mb15">
+            <button class="btn btn-primary" type="submit" name="send" value="send">Lưu lại</button>
+        </div>
+    </div>
+</form>
+
+
+@endsection
