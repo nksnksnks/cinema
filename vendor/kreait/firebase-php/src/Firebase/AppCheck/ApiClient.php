@@ -47,12 +47,11 @@ final class ApiClient
     }
 
     /**
-     * @param string|UriInterface $uri
+     * @param non-empty-string $method
      * @param array<string, mixed>|null $options
-     *
      * @throws AppCheckException
      */
-    private function requestApi(string $method, $uri, ?array $options = null): ResponseInterface
+    private function requestApi(string $method, string|UriInterface $uri, ?array $options = null): ResponseInterface
     {
         $options ??= [];
 

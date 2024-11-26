@@ -19,13 +19,11 @@ use Psr\Cache\CacheItemPoolInterface;
 final class IdTokenVerifier
 {
     /**
-     * @var non-empty-string
+     * @var non-empty-string|null
      */
     private ?string $expectedTenantId = null;
 
-    public function __construct(private readonly Handler $handler)
-    {
-    }
+    public function __construct(private readonly Handler $handler) {}
 
     /**
      * @param non-empty-string $projectId

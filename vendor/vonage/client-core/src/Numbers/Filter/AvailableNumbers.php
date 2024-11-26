@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Vonage Client Library for PHP
- *
- * @copyright Copyright (c) 2016-2022 Vonage, Inc. (http://vonage.com)
- * @license https://github.com/Vonage/vonage-php-sdk-core/blob/master/LICENSE.txt Apache License 2.0
- */
-
 declare(strict_types=1);
 
 namespace Vonage\Numbers\Filter;
@@ -39,40 +32,19 @@ class AvailableNumbers implements FilterInterface
         'type' => 'string',
     ];
 
-    /**
-     * @var string
-     */
-    protected $country;
+    protected ?string $country = null;
 
-    /**
-     * @var string
-     */
-    protected $features;
+    protected ?string $features = null;
 
-    /**
-     * @var int
-     */
-    protected $pageIndex = 1;
+    protected int $pageIndex = 1;
 
-    /**
-     * @var int
-     */
-    protected $pageSize = 10;
+    protected int $pageSize = 10;
 
-    /**
-     * @var string
-     */
-    protected $pattern;
+    protected ?string $pattern = null;
 
-    /**
-     * @var int
-     */
-    protected $searchPattern = 0;
+    protected int $searchPattern = 0;
 
-    /**
-     * @var string
-     */
-    protected $type;
+    protected ?string $type = null;
 
     protected ?bool $hasApplication = null;
 
