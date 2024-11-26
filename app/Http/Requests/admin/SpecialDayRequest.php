@@ -40,7 +40,7 @@ class SpecialDayRequest extends FormRequest
                 return [
                     'day_type' => 'required|string|max:255',
                     'description' => 'nullable|string|max:255',
-                    'special_day' => 'required|date|date_format:Y-m-d|unique:ci_special_days,special_day,' . $this->route('specialday')->id,
+                    'special_day' => 'required|date|date_format:Y-m-d|unique:ci_special_days,special_day,'.$this->id.'',
                     'extra_fee' => 'required|integer|min:0',
                 ];
             default:
@@ -80,9 +80,19 @@ class SpecialDayRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

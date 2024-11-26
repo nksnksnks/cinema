@@ -38,7 +38,7 @@ class TimeSlotRequest extends FormRequest
                 ];
             case 'PUT': // Rules for updating an existing time slot
                 return [
-                    'slot_name' => 'required|string|max:255|unique:ci_time_slots,slot_name,' . $this->route('timeslot')->id,
+                    'slot_name' => 'required|string|max:255|unique:ci_time_slots,slot_name,'.$this->id.'',
                     'start_time' => 'required|date_format:H:i:s',
                     'end_time' => 'required|date_format:H:i:s|after:start_time',
                     'extra_fee' => 'required|integer|min:0',
@@ -79,9 +79,19 @@ class TimeSlotRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

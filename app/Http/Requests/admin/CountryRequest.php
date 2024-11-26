@@ -37,7 +37,7 @@ class CountryRequest extends FormRequest
                 ];
             case 'PUT': // Xử lý khi cập nhật (update)
                 return [
-                    'name' => 'required|string|max:255|unique:ci_country,name,' . $this->route('country')->id, // Bỏ qua kiểm tra unique cho chính quốc gia hiện tại
+                    'name' => 'required|string|max:255|unique:ci_country,name,'.$this->id.'', // Bỏ qua kiểm tra unique cho chính quốc gia hiện tại
                     'description' => 'nullable|string|max:255', // Có thể bỏ trống và không quá 255 ký tự
                 ];
             default:
@@ -62,9 +62,19 @@ class CountryRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();
-        throw new HttpResponseException(response()->json([
-            'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        if ($this->expectsJson()) {
+            // Trả về JSON nếu request là API
+            throw new HttpResponseException(response()->json([
+                'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        }
+
+        // Trả về redirect nếu request là từ form web
+        throw new HttpResponseException(redirect()
+            ->back()
+            ->withErrors($errors)
+            ->withInput());
     }
 }

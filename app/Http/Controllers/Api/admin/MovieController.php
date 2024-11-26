@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Movie;
 use App\Models\Movie_Genre;
 use App\Models\Genre;
+use App\Models\Country;
+use App\Models\Rated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
 use App\Http\Requests\admin\MovieRequest;
+use App\Enums\Constant;
 use Cloudinary\Cloudinary;
 
 /**
@@ -34,8 +37,184 @@ use Cloudinary\Cloudinary;
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-10-09T12:00:00Z")
  * )
  */
+
 class MovieController extends Controller
 {
+    public function movieIndex(){
+        $movies = Movie::all();
+        return view('admin.movie.index',compact('movies'));
+    }
+    public function movieCreate(){
+        $config['method'] = 'create';
+        $genre = Genre::pluck('name', 'id');
+        $rated = Rated::pluck('name', 'id');
+        $country = Country::pluck('name', 'id');
+        return view('admin.movie.create',compact('config','genre','rated','country'));
+    }
+    public function movieStore(MovieRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            // Upload ảnh avatar lên Cloudinary
+            $avatarUrl = null;
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarResult = cloudinary()->upload($avatar->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $avatarUrl = $avatarResult->getSecurePath(); // Lấy URL an toàn
+            }
+
+            // Upload ảnh poster lên Cloudinary
+            $posterUrl = null;
+            if ($request->hasFile('poster')) {
+                $poster = $request->file('poster');
+                $posterResult = cloudinary()->upload($poster->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $posterUrl = $posterResult->getSecurePath();
+            }
+
+            $data = $request->all();
+            $movie = new Movie();
+            $movie->name = $data['name'];
+            $movie->slug = $data['slug'];
+            $movie->country_id = $data['country_id'];
+            $movie->rated_id = $data['rated_id'];
+            $movie->avatar = $avatarUrl;
+            $movie->poster = $posterUrl;
+            $movie->trailer_url = $data['trailer_url'];
+            $movie->duration = $data['duration'];
+            $movie->date = $data['date'];
+            $movie->performer = $data['performer'];
+            $movie->director = $data['director'];
+            $movie->description = $data['description'];
+            $movie->status = 1;
+            foreach($data['genre_ids'] as $key => $gen){
+                $movie->genre_id = $gen[0];
+            }
+            $movie->save();
+
+            // Lưu tất cả genre_id vào bảng ci_movie_genre sử dụng attach
+            $movie->movie_genre()->attach($request->input('genre_ids'));
+
+            DB::commit();
+
+            return redirect()
+                ->route('movie.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('movie.create')
+                ->with('error', $th->getMessage());
+        }
+    }
+
+
+    public function movieEdit(string $id){
+        $movie = Movie::find($id);
+        $genre = Genre::pluck('name', 'id');
+        $rated = Rated::pluck('name', 'id');
+        $country = Country::pluck('name', 'id');
+        $config['method'] = 'edit';
+        return view('admin.movie.create', compact('config','movie','genre','rated','country'));
+    }
+  
+    public function movieUpdate($id, MovieRequest $request){
+        try {
+            DB::beginTransaction();
+
+            $movie = Movie::findOrFail($id);
+
+            // Lưu đường dẫn ảnh cũ
+            $oldAvatar = $movie->avatar;
+            $oldPoster = $movie->poster;
+            if ($oldAvatar) {
+                $path = parse_url($oldAvatar, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            }
+            if ($oldPoster) {
+                $path = parse_url($oldPoster, PHP_URL_PATH);
+                $parts = explode('/movie/', $path);
+                $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            }
+            // Cập nhật thông tin phim
+            $movie->update($request->only([
+                'name',
+                'slug',
+                'country_id',
+                'rated_id',
+                'trailer_url',
+                'duration',
+                'date',
+                'performer',
+                'director',
+                'description',
+                'status'
+            ]));
+
+            // Xử lý upload avatar nếu có
+            if ($request->hasFile('avatar')) {
+                $avatarResult = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $movie->avatar = $avatarResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldAvatar) {
+                    cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
+                }
+            } else {
+                $movie->avatar = $oldAvatar;
+            }
+
+            // Xử lý upload poster nếu có
+            if ($request->hasFile('poster')) {
+                $posterResult = cloudinary()->upload($request->file('poster')->getRealPath(), [
+                    'folder' => 'movie',
+                    'upload_preset' => 'movie-upload',
+                ]);
+                $movie->poster = $posterResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldPoster) {
+                    cloudinary()->destroy($posterPart); // Xóa ảnh cũ
+                }
+            } else {
+                $movie->poster = $oldPoster;
+            }
+
+            // Lưu thông tin phim
+            $movie->save();
+
+            // Sử dụng sync để cập nhật mối quan hệ giữa phim và thể loại
+            $movie->movie_genre()->sync($request->input('genre_ids'));
+
+            DB::commit();
+
+            return redirect()
+            ->route('movie.index')
+            ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return redirect()
+            ->route('movie.index')
+            ->with('error', $th->getMessage());
+        }
+        
+    }
+    public function movieDestroy(string $id){
+        Movie::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa movie thành công.');
+    }
+
     /**
      * @author quynhndmq
      * @OA\Get(
@@ -61,9 +240,22 @@ class MovieController extends Controller
      * )
      */
     public function index()
-    {
-        $movies = Movie::with('movie_genre')->get();
-        return response()->json($movies);
+    {      
+        try {
+            $movies = Movie::with('movie_genre')->get();
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => $movies
+            ], Constant::SUCCESS_CODE);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -89,6 +281,7 @@ class MovieController extends Controller
      *             @OA\Property(property="director", type="string"),
      *             @OA\Property(property="description", type="string"),
      *             @OA\Property(property="genre_ids", type="array", @OA\Items(type="integer")),
+     *             @OA\Property(property="status", type="integer"),
      *             @OA\Examples(
      *                 example="CreateMovieExample",
      *                 summary="Sample movie creation data",
@@ -105,7 +298,8 @@ class MovieController extends Controller
      *                     "performer": "Diễn viên chính",
      *                     "director": "Đạo diễn nổi tiếng",
      *                     "description": "Mô tả phim",
-     *                     "genre_ids": {1, 2}
+     *                     "status": 1,
+     *                     "genre_ids": {1, 2},
      *                 }
      *             )
      *         )
@@ -144,7 +338,7 @@ class MovieController extends Controller
             foreach ($request->input('genre_ids') as $genreId) {
                 if (!Genre::find($genreId)) {
                     return response()->json([
-                        'status' => 'error',
+                        'status' => Constant::FALSE_CODE,
                         'message' => "Genre ID {$genreId} does not exist."
                     ], Response::HTTP_BAD_REQUEST);
                 }
@@ -196,7 +390,7 @@ class MovieController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Movie created successfully',
                 'data' => $movie
             ], Response::HTTP_CREATED);
@@ -204,7 +398,7 @@ class MovieController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -247,13 +441,14 @@ class MovieController extends Controller
 
         if (!$movie) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Movie not found.'
-            ], Response::HTTP_NOT_FOUND);
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Movie not found.',
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Movie retrieved successfully',
             'data' => $movie
         ]);
@@ -288,6 +483,7 @@ class MovieController extends Controller
      *             @OA\Property(property="performer", type="string"),
      *             @OA\Property(property="director", type="string"),
      *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="status", type="integer"),
      *             @OA\Property(property="genre_ids", type="array", @OA\Items(type="integer")),
      *             @OA\Examples(
      *                 example="UpdateMovieExample",
@@ -305,6 +501,7 @@ class MovieController extends Controller
      *                     "performer": "Diễn viên chính cập nhật",
      *                     "director": "Đạo diễn nổi tiếng cập nhật",
      *                     "description": "Mô tả phim cập nhật",
+     *                     "status": 1,
      *                     "genre_ids": {1, 2}
      *                 }
      *             )
@@ -411,7 +608,7 @@ class MovieController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Movie updated successfully',
                 'data' => $movie
             ]);
@@ -419,7 +616,7 @@ class MovieController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -484,7 +681,7 @@ class MovieController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Movie deleted successfully',
                 'data' => []
             ], Response::HTTP_OK); // Sử dụng mã trạng thái 200 OK
@@ -492,7 +689,7 @@ class MovieController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -541,13 +738,13 @@ class MovieController extends Controller
         // Trả về danh sách phim dạng JSON 
         if (!$movies) {
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => 'Movie not found.'
             ], Response::HTTP_NOT_FOUND);
         }
 
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Movie retrieved successfully',
             'data' => $movies
         ]);

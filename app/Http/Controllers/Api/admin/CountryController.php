@@ -7,6 +7,7 @@ use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
 use App\Http\Requests\admin\CountryRequest;
 
 /**
@@ -23,6 +24,62 @@ use App\Http\Requests\admin\CountryRequest;
  */
 class CountryController extends Controller
 {
+    public function countryIndex(){
+        $countries = Country::all();
+        return view('admin.country.index',compact('countries'));
+    }
+    public function countryCreate(){
+        $config['method'] = 'create';
+        return view('admin.country.create',compact('config'));
+    }
+    public function countryStore(CountryRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            Country::create($data);
+            DB::commit();
+            return redirect()
+                ->route('country.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('country.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function countryEdit(string $id){
+        $country = Country::find($id);
+        $config['method'] = 'edit';
+        return view('admin.country.create', compact('config','country'));
+    }
+  
+    public function countryUpdate($id, CountryRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = Country::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('country.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('country.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function countryDestroy(string $id){
+        Country::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa country thành công.');
+    }
+
     /**
      * @author quynhndmq
      * @OA\Get(
@@ -49,8 +106,21 @@ class CountryController extends Controller
      */
     public function index()
     {
-        $countries = Country::all();
-        return response()->json($countries);
+        try {
+            $countries = Country::all();
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => $countries
+            ], Constant::SUCCESS_CODE);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -110,7 +180,7 @@ class CountryController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'country created successfully',
                 'data' => $country
             ], Response::HTTP_CREATED);
@@ -119,7 +189,7 @@ class CountryController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -129,12 +199,12 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/admin/countries/{country}",
+     *     path="/api/admin/countries/{id}",
      *     tags={"Admin Countries"},
      *     summary="Get a country by ID",
      *     operationId="getcountryById",
      *     @OA\Parameter(
-     *         name="country",
+     *         name="id",
      *         in="path",
      *         description="ID of country",
      *         required=true,
@@ -154,11 +224,12 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function show(country $country)
+    public function show($id)
     {
+        $country = Country::find($id);
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'country retrieved successfully',
             'data' => $country
         ]);
@@ -167,12 +238,12 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Put(
-     *     path="/api/admin/countries/{country}",
+     *     path="/api/admin/countries/{id}",
      *     tags={"Admin Countries"},
      *     summary="Update a country",
      *     operationId="updatecountry",
      *     @OA\Parameter(
-     *         name="country",
+     *         name="id",
      *         in="path",
      *         description="ID of country to update",
      *         required=true,
@@ -218,17 +289,17 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function update(CountryRequest $request, country $country)
+    public function update($id, CountryRequest $request)
     {
         try {
             DB::beginTransaction();
-
-            $country->update($request->all());
-
+            $country = Country::find($id);
+            $data = $request->all();
+            $country->update($data);
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'country updated successfully',
                 'data' => $country
             ]);
@@ -237,7 +308,7 @@ class CountryController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -247,12 +318,12 @@ class CountryController extends Controller
     /**
      * @author quynhndmq
      * @OA\Delete(
-     *     path="/api/admin/countries/{country}",
+     *     path="/api/admin/countries/{id}",
      *     tags={"Admin Countries"},
      *     summary="Delete a country",
      *     operationId="deletecountry",
      *     @OA\Parameter(
-     *         name="country",
+     *         name="id",
      *         in="path",
      *         description="ID of country to delete",
      *         required=true,
@@ -271,17 +342,17 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function destroy(country $country)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
-
+            $country = Country::findOrFail($id);
             $country->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'country deleted successfully',
                 'data' => []
             ], Response::HTTP_OK); // Sử dụng 200 OK hoặc 202 Accepted
@@ -289,7 +360,7 @@ class CountryController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

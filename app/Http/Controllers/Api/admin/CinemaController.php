@@ -11,6 +11,32 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CinemaController extends Controller
 {
+    public function index()
+    {
+        $cinemas = Cinema::all();
+        return view('admin.cinema.index', compact('cinemas'));
+    }
+
+    public function create()
+    {
+        $config['method'] = 'create';
+        return view('admin.cinema.create', compact('config'));
+    }
+
+    public function edit(string $id)
+    {
+        $cinema = Cinema::find($id);
+        $config['method'] = 'edit';
+        return view('admin.cinema.create', compact('config','cinema'));
+    }
+
+    public function destroy($id)
+    {
+        Cinema::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa chi nhánh thành công.');
+    }
+
+
     /**
      * @author son.nk
      * @OA\Post (
@@ -62,6 +88,26 @@ class CinemaController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function CinemaStore(CinemaRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            Cinema::create($data);
+            DB::commit();
+            return redirect()
+                ->route('cinema.store')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('cinema.store')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
 
     /**
      * @author son.nk
@@ -127,6 +173,24 @@ class CinemaController extends Controller
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function CinemaUpdate($id, CinemaRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = Cinema::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('cinema.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('cinema.index')
+            ->with('error', $th->getMessage());
         }
     }
     /**

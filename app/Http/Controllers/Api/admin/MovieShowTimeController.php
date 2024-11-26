@@ -6,8 +6,14 @@ use App\Enums\Constant;
 use App\Http\Controllers\Controller;
 use App\Repositories\admin\MovieShowtime\MovieShowTimeRepository;
 use Illuminate\Http\Request;
+use App\Models\MovieShowtime;
+use App\Models\Movie;
+use App\Models\Cinema;
+use App\Models\Room;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\admin\MovieShowtimeRequest;
 
 class MovieShowTimeController extends Controller
 {
@@ -19,6 +25,131 @@ class MovieShowTimeController extends Controller
     )
     {
         $this->movieShowTimeRepository = $movieShowTimeRepository;
+    }
+    public function movieshowtimeIndex(){
+        $movieshowtimes = MovieShowtime::all();
+        $movie = Movie::pluck('name','id');
+        $room = Room::pluck('name','id');
+        return view('admin.movieshowtime.index',compact('movieshowtimes','movie','room'));
+    }
+    public function movieshowtimeCreate(){
+        $config['method'] = 'create';
+        $movie = Movie::pluck('name','id');
+        // Lấy cinema_id của người dùng đang đăng nhập
+        $cinema_id = Auth::user()->cinema_id;
+        $cinema = Cinema::find($cinema_id);
+        $room = Room::where('cinema_id',$cinema_id)->pluck('name','id');
+        return view('admin.movieshowtime.create',compact('config','room','movie','cinema'));
+    }
+    public function movieshowtimeStore(MovieShowtimeRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+    
+            // Lấy tất cả dữ liệu từ request
+            $data = $request->all();
+    
+            // Kiểm tra xem showtime có bị trùng thời gian không
+            $existingShowtime = MovieShowtime::where('room_id', $data['room_id'])
+            ->where('start_date', $data['start_date'])
+            ->where(function ($query) use ($data) {
+                $query->where('start_time', '<', $data['end_time'])
+                    ->where('end_time', '>', $data['start_time']);
+            })
+            ->exists();
+
+    
+            if ($existingShowtime) {
+                // Nếu có showtime trùng, hiển thị lỗi và không tạo mới
+                return redirect()
+                    ->route('movieshowtime.create')
+                    ->with('error', 'trùng thời gian');
+            }
+    
+            // Tạo mới MovieShowtime nếu không trùng thời gian
+            MovieShowtime::create($data);
+    
+            DB::commit();
+    
+            // Redirect về trang tạo showtime và hiển thị thông báo thành công
+            return redirect()
+                ->route('movieshowtime.create')
+                ->with('success', trans('messages.success.success'));
+    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+    
+            // Nếu có lỗi, redirect lại và hiển thị thông báo lỗi
+            return redirect()
+                ->route('movieshowtime.create')
+                ->with('error', $th->getMessage());
+        }
+    }
+    
+
+    public function movieshowtimeEdit(string $id){
+        $movieshowtime = MovieShowtime::find($id);
+        $movie = Movie::pluck('name','id');
+        // Lấy cinema_id của người dùng đang đăng nhập
+        $cinema_id = Auth::user()->cinema_id;
+        $cinema = Cinema::find($cinema_id);
+        $room = Room::where('cinema_id',$cinema_id)->pluck('name','id');
+
+        $config['method'] = 'edit';
+        return view('admin.movieshowtime.create', compact('config','movieshowtime','movie','room','cinema'));
+    }
+  
+    public function movieshowtimeUpdate($id, MovieShowtimeRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Lấy tất cả dữ liệu từ request
+            $data = $request->all();
+
+            // Kiểm tra xem showtime có bị trùng thời gian không (trừ chính bản ghi hiện tại)
+            $existingShowtime = MovieShowtime::where('room_id', $data['room_id'])
+                ->where('start_date', $data['start_date'])
+                ->where(function ($query) use ($data) {
+                    $query->where('start_time', '<', $data['end_time'])
+                        ->where('end_time', '>', $data['start_time']);
+                })
+                ->where('id', '<>', $id) // Trừ chính bản ghi hiện tại
+                ->exists();
+
+            if ($existingShowtime) {
+                // Nếu có showtime trùng, hiển thị lỗi và không cập nhật
+                return redirect()
+                    ->route('movieshowtime.index')
+                    ->with('error', 'Trùng thời gian với showtime khác.');
+            }
+
+            // Cập nhật MovieShowtime nếu không trùng thời gian
+            $query = MovieShowtime::find($id);
+            if ($query) {
+                $query->update($data);
+            }
+
+            DB::commit();
+
+            // Redirect về trang index và hiển thị thông báo thành công
+            return redirect()
+                ->route('movieshowtime.index')
+                ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            // Nếu có lỗi, redirect lại và hiển thị thông báo lỗi
+            return redirect()
+                ->route('movieshowtime.index')
+                ->with('error', $th->getMessage());
+        }
+    }
+
+    public function movieshowtimeDestroy(string $id){
+        MovieShowtime::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa movieshowtime thành công.');
     }
     /**
      * @author son.nk

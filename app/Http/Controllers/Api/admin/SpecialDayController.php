@@ -7,6 +7,7 @@ use App\Models\SpecialDay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
 use App\Http\Requests\Admin\SpecialDayRequest;
 
 /**
@@ -25,6 +26,62 @@ use App\Http\Requests\Admin\SpecialDayRequest;
  */
 class SpecialDayController extends Controller
 {
+    public function specialdayIndex(){
+        $specialdays = SpecialDay::all();
+        return view('admin.specialday.index',compact('specialdays'));
+    }
+    public function specialdayCreate(){
+        $config['method'] = 'create';
+        return view('admin.specialday.create',compact('config'));
+    }
+    public function specialdayStore(SpecialDayRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            SpecialDay::create($data);
+            DB::commit();
+            return redirect()
+                ->route('specialday.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('specialday.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function specialdayEdit(string $id){
+        $specialday = SpecialDay::find($id);
+        $config['method'] = 'edit';
+        return view('admin.specialday.create', compact('config','specialday'));
+    }
+  
+    public function specialdayUpdate($id, SpecialDayRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = SpecialDay::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('specialday.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('specialday.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function specialdayDestroy(string $id){
+        SpecialDay::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa specialday thành công.');
+    }
+
     /**
      * @OA\Get(
      *     path="/api/admin/specialdays",
@@ -71,7 +128,7 @@ class SpecialDayController extends Controller
      *                 example="CreateSpecialDayExample",
      *                 summary="Sample special day creation data",
      *                 value={
-     *                     "day_type": "Holiday",
+     *                     "day_type": "holiday", 
      *                     "description": "New Year's Day",
      *                     "special_day": "2024-01-01",
      *                     "extra_fee": 10000
@@ -114,7 +171,7 @@ class SpecialDayController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Special day created successfully',
                 'data' => $specialDay
             ], Response::HTTP_CREATED);
@@ -123,7 +180,7 @@ class SpecialDayController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -132,12 +189,12 @@ class SpecialDayController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/specialdays/{specialday}",
+     *     path="/api/admin/specialdays/{id}",
      *     tags={"Admin SpecialDays"},
      *     summary="Get a special day by ID",
      *     operationId="getSpecialDayById",
      *     @OA\Parameter(
-     *         name="specialday",
+     *         name="id",
      *         in="path",
      *         description="ID of special day",
      *         required=true,
@@ -157,10 +214,11 @@ class SpecialDayController extends Controller
      *     )
      * )
      */
-    public function show(SpecialDay $specialday)
+    public function show($id)
     {
+        $specialday = SpecialDay::find($id);
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Special day retrieved successfully',
             'data' => $specialday
         ]);
@@ -168,12 +226,12 @@ class SpecialDayController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/admin/specialdays/{specialday}",
+     *     path="/api/admin/specialdays/{id}",
      *     tags={"Admin SpecialDays"},
      *     summary="Update a special day",
      *     operationId="updateSpecialDay",
      *     @OA\Parameter(
-     *         name="specialday",
+     *         name="id",
      *         in="path",
      *         description="ID of special day to update",
      *         required=true,
@@ -206,17 +264,17 @@ class SpecialDayController extends Controller
      *     )
      * )
      */
-    public function update(SpecialDayRequest $request, SpecialDay $specialday)
+    public function update(SpecialDayRequest $request, $id)
     {
         try {
             DB::beginTransaction();
-
+            $specialday = SpecialDay::find($id);
             $specialday->update($request->all());
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Special day updated successfully',
                 'data' => $specialday
             ]);
@@ -225,7 +283,7 @@ class SpecialDayController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -234,12 +292,12 @@ class SpecialDayController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/admin/specialdays/{specialday}",
+     *     path="/api/admin/specialdays/{id}",
      *     tags={"Admin SpecialDays"},
      *     summary="Delete a special day",
      *     operationId="deleteSpecialDay",
      *     @OA\Parameter(
-     *         name="specialday",
+     *         name="id",
      *         in="path",
      *         description="ID of special day to delete",
      *         required=true,
@@ -259,16 +317,16 @@ class SpecialDayController extends Controller
      * )
      */
 
-    public function destroy(SpecialDay $specialday){
+    public function destroy($id){
          try {
             DB::beginTransaction();
-
+            $specialday = SpecialDay::find($id);
             $specialday->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Special day deleted successfully',
                 'data' => []
             ]);

@@ -7,6 +7,7 @@ use App\Models\TimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use App\Enums\Constant;
 use App\Http\Requests\Admin\TimeSlotRequest;
 
 /**
@@ -25,6 +26,61 @@ use App\Http\Requests\Admin\TimeSlotRequest;
  */
 class TimeSlotController extends Controller
 {
+    public function timeslotIndex(){
+        $timeslots = TimeSlot::all();
+        return view('admin.timeslot.index',compact('timeslots'));
+    }
+    public function timeslotCreate(){
+        $config['method'] = 'create';
+        return view('admin.timeslot.create',compact('config'));
+    }
+    public function timeslotStore(TimeSlotRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            TimeSlot::create($data);
+            DB::commit();
+            return redirect()
+                ->route('timeslot.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('timeslot.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function timeslotEdit(string $id){
+        $timeslot = TimeSlot::find($id);
+        $config['method'] = 'edit';
+        return view('admin.timeslot.create', compact('config','timeslot'));
+    }
+  
+    public function timeslotUpdate($id, TimeSlotRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = TimeSlot::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('timeslot.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('timeslot.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function timeslotDestroy(string $id){
+        TimeSlot::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa timeslot thành công.');
+    }
     /**
      * @OA\Get(
      *     path="/api/admin/timeslots",
@@ -114,7 +170,7 @@ class TimeSlotController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Time slot created successfully',
                 'data' => $timeSlot
             ], Response::HTTP_CREATED);
@@ -123,7 +179,7 @@ class TimeSlotController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -132,12 +188,12 @@ class TimeSlotController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/timeslots/{timeslot}",
+     *     path="/api/admin/timeslots/{id}",
      *     tags={"Admin TimeSlots"},
      *     summary="Get a time slot by ID",
      *     operationId="getTimeSlotById",
      *     @OA\Parameter(
-     *         name="timeslot",
+     *         name="id",
      *         in="path",
      *         description="ID of time slot",
      *         required=true,
@@ -157,10 +213,11 @@ class TimeSlotController extends Controller
      *     )
      * )
      */
-    public function show(TimeSlot $timeslot)
+    public function show($id)
     {
+        $timeslot = TimeSlot::find($id);
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Time slot retrieved successfully',
             'data' => $timeslot
         ]);
@@ -168,12 +225,12 @@ class TimeSlotController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/admin/timeslots/{timeslot}",
+     *     path="/api/admin/timeslots/{id}",
      *     tags={"Admin TimeSlots"},
      *     summary="Update a time slot",
      *     operationId="updateTimeSlot",
      *     @OA\Parameter(
-     *         name="timeslot",
+     *         name="id",
      *         in="path",
      *         description="ID of time slot to update",
      *         required=true,
@@ -206,17 +263,17 @@ class TimeSlotController extends Controller
      *     )
      * )
      */
-    public function update(TimeSlotRequest $request, TimeSlot $timeslot)
+    public function update(TimeSlotRequest $request, $id)
     {
         try {
             DB::beginTransaction();
-
+            $timeslot = TimeSlot::find($id);
             $timeslot->update($request->all());
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Time slot updated successfully',
                 'data' => $timeslot
             ]);
@@ -225,7 +282,7 @@ class TimeSlotController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -234,12 +291,12 @@ class TimeSlotController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/admin/timeslots/{timeSlot}",
+     *     path="/api/admin/timeslots/{id}",
      *     tags={"Admin TimeSlots"},
      *     summary="Delete a time slot",
      *     operationId="deleteTimeSlot",
      *     @OA\Parameter(
-     *         name="timeSlot",
+     *         name="id",
      *         in="path",
      *         description="ID of time slot to delete",
      *         required=true,
@@ -258,17 +315,17 @@ class TimeSlotController extends Controller
      *     )
      * )
      */
-    public function destroy(TimeSlot $timeslot)
+    public function destroy($id)
     {
         try {
             DB::beginTransaction();
-
+            $timeslot = TimeSlot::find($id);
             $timeslot->delete();
 
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Time slot deleted successfully',
                 'data' => []
             ], Response::HTTP_OK);
@@ -276,7 +333,7 @@ class TimeSlotController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

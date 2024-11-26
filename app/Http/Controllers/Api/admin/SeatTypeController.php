@@ -10,9 +10,66 @@ use App\Models\SeatType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\admin\SeatTypeRequest;
 
 class SeatTypeController extends Controller
 {
+
+    public function seattypeIndex(){
+        $seattypes = SeatType::all();
+        return view('admin.seattype.index',compact('seattypes'));
+    }
+    public function seattypeCreate(){
+        $config['method'] = 'create';
+        return view('admin.seattype.create',compact('config'));
+    }
+    public function seattypeStore(SeatTypeRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            SeatType::create($data);
+            DB::commit();
+            return redirect()
+                ->route('seattype.create')
+                ->with('success', trans('messages.success.success'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+                ->route('seattype.create')
+                ->with('error', $th->getMessage());
+        }
+        
+    }
+
+    public function seattypeEdit(string $id){
+        $seattype = SeatType::find($id);
+        $config['method'] = 'edit';
+        return view('admin.seattype.create', compact('config','seattype'));
+    }
+  
+    public function seattypeUpdate($id, SeatTypeRequest $request){
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $query = SeatType::find($id);
+            $query->update($data);
+            DB::commit();
+            return redirect()
+            ->route('seattype.index')
+            ->with('success', trans('messages.success.success'));
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()
+            ->route('seattype.index')
+            ->with('error', $th->getMessage());
+        }
+    }
+    public function seattypeDestroy(string $id){
+        SeatType::find($id)->delete();
+        return redirect()->back()->with('success', 'Xóa seattype thành công.');
+    }
     /**
      * @author son.nk
      * @OA\Post (
@@ -44,7 +101,7 @@ class SeatTypeController extends Controller
      *     ),
      * )
      */
-    public function createSeatType(Request $request){
+    public function createSeatType(SeatTypeRequest $request){
         try {
             DB::beginTransaction();
             $data = $request->all();
@@ -103,7 +160,7 @@ class SeatTypeController extends Controller
      *     ),
      * )
      */
-    public function updateSeatType($id, Request $request){
+    public function updateSeatType($id, SeatTypeRequest $request){
         try {
             DB::beginTransaction();
             $data = $request->all();

@@ -41,7 +41,6 @@ class Movie extends Model
         'director',
         'description',
         'status',
-
     ];
     public $timestamps = true;
 
