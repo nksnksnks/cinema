@@ -7,5 +7,5 @@ use App\Http\Controllers\Api\admin\MovieController;
 
 // auth app
 
-Route::get('movieBygenre/{genre_id}', [MovieController::class, 'getMovieByGenre'])->withoutMiddleware(['role:user', 'auth:sanctum']);
-Route::get('movieBystatus', [MovieController::class, 'getMovieByStatus'])->withoutMiddleware(['role:user', 'auth:sanctum']);;
+
+Route::get('movies', [MovieController::class, 'getMovies'])->withoutMiddleware(['role:user', 'auth:sanctum']);
