@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Movie;
 use App\Models\Movie_Genre;
+use App\Models\MovieShowtime;
 use App\Models\Genre;
 use App\Models\Country;
 use App\Models\Rated;
@@ -210,10 +211,49 @@ class MovieController extends Controller
         }
         
     }
-    public function movieDestroy(string $id){
-        Movie::find($id)->delete();
+    public function movieDestroy($id)
+{
+    try {
+        DB::beginTransaction();
+
+        // Tìm phim
+        $movie = Movie::findOrFail($id);
+
+        // Xóa ảnh avatar trên Cloudinary
+        $oldAvatar = $movie->avatar;
+        if ($oldAvatar) {
+            $path = parse_url($oldAvatar, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME);
+            cloudinary()->destroy($avatarPart);
+        }
+
+        // Xóa ảnh poster trên Cloudinary
+        $oldPoster = $movie->poster;
+        if ($oldPoster) {
+            $path = parse_url($oldPoster, PHP_URL_PATH);
+            $parts = explode('/movie/', $path);
+            $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME);
+            cloudinary()->destroy($posterPart);
+        }
+
+        // Xóa các liên kết `movie_genre`
+        Movie_Genre::where('movie_id', $movie->id)->delete();
+        MovieShowtime::where('movie_id', $movie->id)->delete();
+        // Xóa phim
+        $movie->delete();
+
+        DB::commit();
+
+        // Trả về thông báo thành công
         return redirect()->back()->with('success', 'Xóa movie thành công.');
+    } catch (\Throwable $th) {
+        DB::rollBack();
+
+        // Trả về thông báo lỗi nếu có
+        return redirect()->back()->with('error', 'Xóa movie thất bại: ' . $th->getMessage());
     }
+}
 
     /**
      * @author quynhndmq
@@ -675,7 +715,7 @@ class MovieController extends Controller
 
             // Xóa các genre liên quan
             Movie_Genre::where('movie_id', $movie->id)->delete();
-
+            MovieShowtime::where('movie_id', $movie->id)->delete();
             $movie->delete();
 
             DB::commit();
@@ -689,7 +729,7 @@ class MovieController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status' => Constant::SUCCESS_CODE,
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
