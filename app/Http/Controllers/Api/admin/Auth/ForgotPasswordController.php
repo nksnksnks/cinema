@@ -56,8 +56,6 @@ class ForgotPasswordController extends Controller
             Mail::to($request->email)->send(new ForgotPassword($user, $token));
             return redirect()->back()->with('success', 'Chúng tôi đã gửi email hãy xác nhận.');
         }
-
-
         return redirect()->back()->with('error', 'Lỗi! Vui lòng thử lại.');
     }
     public function showResetPasswordForm($token)

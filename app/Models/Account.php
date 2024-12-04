@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Promotion;
 class Account extends Authenticatable
 {
     use HasFactory, HasApiTokens;
@@ -60,4 +61,6 @@ class Account extends Authenticatable
     {
         return $this->belongsTo('App\Models\Role', 'role_id', 'id');
     }
+   
+
 }

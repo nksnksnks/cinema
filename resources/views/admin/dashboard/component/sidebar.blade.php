@@ -110,6 +110,17 @@
                     </li>
                 </ul>
             </li>
+            <li class="{{ request()->routeIs('promotion.*') ? 'active' : '' }}">
+                <a href="#"><i class="fa-solid fa-percent"></i> <span class="nav-label">Quản lý khuyến mãi</span> <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{{ request()->routeIs('promotion.create') ? 'active' : '' }}">
+                        <a href="{{ route('promotion.create') }}">Thêm khuyến mãi</a>
+                    </li>
+                    <li class="{{ request()->routeIs('promotion.index') ? 'active' : '' }}">
+                        <a href="{{ route('promotion.index') }}">Quản lý khuyến mãi</a>
+                    </li>
+                </ul>
+            </li>
             
             <li class="{{ request()->routeIs('specialday.*', 'timeslot.*', 'weeklyticketprice.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-dollar-sign"></i> <span class="nav-label">QL phí phụ thu</span> <span class="fa arrow"></span></a>

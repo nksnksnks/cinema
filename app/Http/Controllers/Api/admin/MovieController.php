@@ -211,6 +211,20 @@ class MovieController extends Controller
         }
         
     }
+    public function updateAjax(Request $request, $id)
+    {
+        if ($request->ajax()) {
+            $movie = Movie::find($id);
+    
+            // Cập nhật trạng thái
+            if ($request->has('status')) {
+                $movie->status = $request->status;
+            } 
+            $movie->save();
+    
+            return response()->json(['success' => 'Thông tin đã được cập nhật']);
+        }
+    }
     public function movieDestroy($id)
 {
     try {

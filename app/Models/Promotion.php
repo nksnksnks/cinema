@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Account;
 
 class Promotion extends Model
 {
@@ -12,8 +13,15 @@ class Promotion extends Model
 
     protected $fillable = [
         'promo_name',
-        'discount_percent',
+        'discount',
         'start_date',
         'end_date',
+        'description',
+        'quantity',
+        'status',
     ];
+    public function users()
+    {
+        return $this->belongsToMany(Account::class, 'ci_promotion_user', 'promotion_id', 'account_id')->withTimestamps();
+    }
 }

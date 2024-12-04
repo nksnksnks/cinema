@@ -105,7 +105,7 @@
         var status = $(this).val();
 
         $.ajax({
-            url: '{{ route('movie.update', '') }}/' + movieId,
+            url: '{{ route('movie.updateajax', '') }}/' + movieId,
             type: 'PUT',
             data: {
                 _token: '{{ csrf_token() }}',

@@ -82,6 +82,7 @@
             type: 'PUT',
             data: {
                 _token: '{{ csrf_token() }}',
+                _method: 'PUT',
                 status: status
             },
             success: function(response) {

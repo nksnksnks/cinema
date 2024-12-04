@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\admin\WeeklyTicketPriceController;
 use App\Http\Controllers\Api\admin\RoomController;
 use App\Http\Controllers\Api\admin\SeatTypeController;
 use App\Http\Controllers\Api\admin\MovieShowTimeController;
+use App\Http\Controllers\Api\admin\PromotionController;
 
 
 Route::get('/', [DashboardController::class, 'homepage']);
@@ -79,6 +80,7 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::post('movie/store', [MovieController::class,'movieStore'])->name('movie.store');
         Route::get('movie/edit/{id}', [MovieController::class,'movieEdit'])->name('movie.edit');
         Route::put('movie/update/{id}', [MovieController::class,'movieUpdate'])->name('movie.update');
+        Route::put('movie/updateajax/{id}', [MovieController::class,'updateAjax'])->name('movie.updateajax');
         Route::delete('movie/delete/{id}', [MovieController::class,'movieDestroy'])->name('movie.destroy');
         //specialday
         Route::get('specialday', [SpecialDayController::class,'specialdayIndex'])->name('specialday.index');
@@ -123,6 +125,15 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::get('movieshowtime/edit/{id}', [MovieShowTimeController::class,'movieshowtimeEdit'])->name('movieshowtime.edit');
         Route::put('movieshowtime/update/{id}', [MovieShowTimeController::class,'movieshowtimeUpdate'])->name('movieshowtime.update');
         Route::delete('movieshowtime/delete/{id}', [MovieShowTimeController::class,'movieshowtimeDestroy'])->name('movieshowtime.destroy');
+        //promotion
+        Route::get('promotion', [PromotionController::class,'promotionIndex'])->name('promotion.index');
+        Route::get('promotion/create', [PromotionController::class,'promotionCreate'])->name('promotion.create');
+        Route::post('promotion/store', [PromotionController::class,'promotionStore'])->name('promotion.store');
+        Route::get('promotion/edit/{id}', [PromotionController::class,'promotionEdit'])->name('promotion.edit');
+        Route::put('promotion/update/{id}', [PromotionController::class,'promotionUpdate'])->name('promotion.update');
+        Route::put('promotion/updateajax/{id}', [PromotionController::class,'updateAjax'])->name('promotion.updateajax');
+        Route::delete('promotion/delete/{id}', [PromotionController::class,'promotionDestroy'])->name('promotion.destroy');
+
     });
     Route::get('/logout', [AuthAdminController::class, 'logout'])-> name('auth.logout');
 
