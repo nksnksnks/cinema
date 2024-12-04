@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\admin\RoomController;
 use App\Http\Controllers\Api\admin\SeatTypeController;
 use App\Http\Controllers\Api\admin\MovieShowTimeController;
 use App\Http\Controllers\Api\admin\PromotionController;
+use App\Http\Controllers\Api\admin\FoodController;
 
 
 Route::get('/', [DashboardController::class, 'homepage']);
@@ -133,7 +134,14 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::put('promotion/update/{id}', [PromotionController::class,'promotionUpdate'])->name('promotion.update');
         Route::put('promotion/updateajax/{id}', [PromotionController::class,'updateAjax'])->name('promotion.updateajax');
         Route::delete('promotion/delete/{id}', [PromotionController::class,'promotionDestroy'])->name('promotion.destroy');
-
+        //food
+        Route::get('food', [FoodController::class,'foodIndex'])->name('food.index');
+        Route::get('food/create', [FoodController::class,'foodCreate'])->name('food.create');
+        Route::post('food/store', [FoodController::class,'foodStore'])->name('food.store');
+        Route::get('food/edit/{id}', [FoodController::class,'foodEdit'])->name('food.edit');
+        Route::put('food/update/{id}', [FoodController::class,'foodUpdate'])->name('food.update');
+        Route::put('food/updateajax/{id}', [FoodController::class,'updateAjax'])->name('food.updateajax');
+        Route::delete('food/delete/{id}', [FoodController::class,'foodDestroy'])->name('food.destroy');
     });
     Route::get('/logout', [AuthAdminController::class, 'logout'])-> name('auth.logout');
 

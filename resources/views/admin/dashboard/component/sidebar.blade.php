@@ -35,7 +35,7 @@
                 
             </li>
             
-            <li class="{{ request()->routeIs('cinema.*','room.*','seattype.*','movieshowtime.*') ? 'active' : '' }}">
+            <li class="{{ request()->routeIs('cinema.*','room.*','seattype.*','movieshowtime.*','food.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-house"></i> <span class="nav-label">Quản lý rạp chiếu</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('cinema.store') ? 'active' : '' }}">
@@ -67,6 +67,14 @@
                     </li>
                     <li class="{{ request()->routeIs('movieshowtime.index') ? 'active' : '' }}">
                         <a href="{{ route('movieshowtime.index') }}">Quản lý xuất chiếu</a>
+                    </li>
+                </ul>
+                <ul class="nav nav-second-level">
+                    <li class="{{ request()->routeIs('food.create') ? 'active' : '' }}">
+                        <a href="{{ route('food.create') }}">Thêm món ăn</a>
+                    </li>
+                    <li class="{{ request()->routeIs('food.index') ? 'active' : '' }}">
+                        <a href="{{ route('food.index') }}">Quản lý món ăn</a>
                     </li>
                 </ul>
             </li>

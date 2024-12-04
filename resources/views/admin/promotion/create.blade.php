@@ -4,12 +4,12 @@
 @php
     if ($config['method'] == 'create') {
         $url = route('promotion.store');
-        $title = 'Thêm mới thể loại';
+        $title = 'Thêm mới khuyến mãi';
         $promotion = null; // Đảm bảo biến $promotion không được sử dụng trong chế độ tạo mới
         $method = 'POST';
     } else {
         $url = route('promotion.update', $promotion->id);
-        $title = 'Cập nhật thể loại';
+        $title = 'Cập nhật khuyến mãi';
         $method = 'PUT';
     }
 @endphp
@@ -42,7 +42,7 @@
                                         id="promo_name"
                                         value="{{ old('promo_name', $promotion->promo_name ?? '') }}"
                                         class="form-control"
-                                        placeholder="Nhập tên thể loại"
+                                        placeholder="Nhập tên khuyến mãi"
                                         autocomplete="off"
                                         autofocus
                                     >
@@ -61,7 +61,7 @@
                                         name="description"
                                         id="description"
                                         class="form-control"
-                                        placeholder="Nhập mô tả thể loại"
+                                        placeholder="Nhập mô tả khuyến mãi"
                                         autocomplete="off"
                                         stlye = "resize: none;"
                                         rows = "6"
@@ -72,7 +72,7 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="special_day" class="control-label text-left">Start_date <span class="text-danger">(*)</span></label>
+                                    <label for="start_date" class="control-label text-left">Start_date <span class="text-danger">(*)</span></label>
                                     <input 
                                         type="date"
                                         name="start_date"
@@ -91,7 +91,7 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="special_day" class="control-label text-left">End_date <span class="text-danger">(*)</span></label>
+                                    <label for="end_date" class="control-label text-left">End_date <span class="text-danger">(*)</span></label>
                                     <input 
                                         type="date"
                                         name="end_date"
@@ -110,7 +110,7 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="special_day" class="control-label text-left">Discount <span class="text-danger">(*)</span></label>
+                                    <label for="Discount" class="control-label text-left">Discount <span class="text-danger">(*)</span></label>
                                     <input 
                                         type="integer"
                                         name="discount"
@@ -129,7 +129,7 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="special_day" class="control-label text-left">Quantity <span class="text-danger">(*)</span></label>
+                                    <label for="quantity" class="control-label text-left">Quantity <span class="text-danger">(*)</span></label>
                                     <input 
                                         type="integer"
                                         name="quantity"
