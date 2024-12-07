@@ -68,7 +68,7 @@ class TicketRepository{
         list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
         if ($data['seat_list']) {
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
-            $currentTime = Carbon::now()->format('YmdHis');  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
+            $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
             $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
 
             // Tạo Bill
