@@ -41,6 +41,8 @@ class Movie extends Model
         'director',
         'description',
         'status',
+        'voting',
+        'vote_total'
     ];
     public $timestamps = true;
 

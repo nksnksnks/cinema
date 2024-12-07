@@ -9,6 +9,7 @@ use App\Models\MovieShowtime;
 use App\Models\Genre;
 use App\Models\Country;
 use App\Models\Rated;
+use App\Repositories\user\Movie\MovieRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
@@ -41,6 +42,13 @@ use Cloudinary\Cloudinary;
 
 class MovieController extends Controller
 {
+    public $movieRepository;
+    public function __construct(
+        MovieRepository $movieRepository
+    )
+    {
+        $this->movieRepository = $movieRepository;
+    }
     public function movieIndex(){
         $movies = Movie::all();
         return view('admin.movie.index',compact('movies'));
@@ -124,7 +132,7 @@ class MovieController extends Controller
         $config['method'] = 'edit';
         return view('admin.movie.create', compact('config','movie','genre','rated','country'));
     }
-  
+
     public function movieUpdate($id, MovieRequest $request){
         try {
             DB::beginTransaction();
@@ -209,19 +217,19 @@ class MovieController extends Controller
             ->route('movie.index')
             ->with('error', $th->getMessage());
         }
-        
+
     }
     public function updateAjax(Request $request, $id)
     {
         if ($request->ajax()) {
             $movie = Movie::find($id);
-    
+
             // Cập nhật trạng thái
             if ($request->has('status')) {
                 $movie->status = $request->status;
-            } 
+            }
             $movie->save();
-    
+
             return response()->json(['success' => 'Thông tin đã được cập nhật']);
         }
     }
@@ -294,7 +302,7 @@ class MovieController extends Controller
      * )
      */
     public function index()
-    {      
+    {
         try {
             $movies = Movie::with('movie_genre')->get();
             return response()->json([
@@ -749,13 +757,13 @@ class MovieController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 
     /**
      * @author quynhndmq
      * @OA\Get(
      *     path="/api/app/movies",
-     *     tags={"User Movies"},
+     *     tags={"App Movies"},
      *     summary="Get movies by genre and status",
      *     operationId="getMoviesByGenreAndStatus",
      *     @OA\Parameter(
@@ -829,6 +837,57 @@ class MovieController extends Controller
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Movies retrieved successfully',
             'data' => $movies
+        ]);
+    }
+
+    // user
+    /**
+     * @author son.nk
+     * @OA\Get(
+     *     path="/api/app/movies/show/{id}",
+     *     tags={"App Movies"},
+     *     summary="Lấy phim theo id",
+     *     operationId="/api/app/movies",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of movie",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(ref="#/components/schemas/Movie")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Movie not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Movie not found.")
+     *         )
+     *     )
+     * )
+     */
+    public function getMovieDetail($id)
+    {
+        if($this->getCurrentLoggedIn())
+            $movie = $this->movieRepository->getMovieDetail($id, $this->getCurrentLoggedIn()->id);
+        else
+            $movie = $this->movieRepository->getMovieDetail($id);
+        if (!$movie) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Movie not found.',
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Movie retrieved successfully',
+            'data' => $movie
         ]);
     }
 

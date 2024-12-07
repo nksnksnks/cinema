@@ -296,7 +296,7 @@ class TicketController extends Controller
                 $promotionId = intval($extraData);
                 $this->applyPromotionAfterPayment($promotionId);
             }
-            
+
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
@@ -321,5 +321,103 @@ class TicketController extends Controller
         ], Constant::SUCCESS_CODE);
     }
 }
+
+    /**
+     * @OA\Get (
+     *     path="/api/app/ticket/get/{type}",
+     *     tags={"App Đặt vé"},
+     *     summary="Vé đã đặt",
+     *     operationId="app/ticket/get",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *          name="type",
+     *          in="path",
+     *          description="type (0: lấy vé đã chiếu, 1: lấy phim chưa chiếu)",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success."),
+     *         )
+     *     ),
+     * )
+     */
+    public function getTicket($type){
+        try {
+            $memberId = $this->getCurrentLoggedIn()->id;
+            if($memberId){
+                $data = $this->ticketRepository->getBill($memberId, $type);
+                return response()->json([
+                    'status' => Constant::SUCCESS_CODE,
+                    'message' => trans('messages.success.success'),
+                    'data' => $data
+                ], Constant::SUCCESS_CODE);
+            }else{
+                return response()->json([
+                    'status' => Constant::SUCCESS_CODE,
+                    'message' => trans('messages.success.required_login'),
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @OA\Get (
+     *     path="/api/app/ticket/detail/{id}",
+     *     tags={"App Đặt vé"},
+     *     summary="Chi tiết vé",
+     *     operationId="app/ticket/detail",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="id bill cần xem chi tiết",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success."),
+     *         )
+     *     ),
+     * )
+     */
+    public function detailTicket($id){
+        try {
+            $memberId = $this->getCurrentLoggedIn()->id;
+            if($memberId){
+                $data = $this->ticketRepository->getBillDetail($id);
+                return response()->json([
+                    'status' => Constant::SUCCESS_CODE,
+                    'message' => trans('messages.success.success'),
+                    'data' => $data
+                ], Constant::SUCCESS_CODE);
+            }else{
+                return response()->json([
+                    'status' => Constant::SUCCESS_CODE,
+                    'message' => trans('messages.success.required_login'),
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }

@@ -3,6 +3,7 @@
 return [
     'success' => [
         'success' => 'Thành công.',
+        'required_login' => 'Chưa đăng nhập',
         'cinema' => [
             'create' => 'Tạo rạp chiếu thành công!',
             'edit' => 'Sửa rạp chiếu thành công!',
