@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\admin\SeatTypeController;
 use App\Http\Controllers\Api\admin\MovieShowTimeController;
 use App\Http\Controllers\Api\admin\PromotionController;
 use App\Http\Controllers\Api\admin\FoodController;
+use App\Http\Controllers\Api\admin\ThongkeController;
 
 
 Route::get('/', [DashboardController::class, 'homepage']);
@@ -39,7 +40,7 @@ Route::post('/reset-password/{token}', [ForgotPasswordController::class, 'resetP
 
 Route::group(['middleware' => 'authenticate'], function(){
     Route::group(['middleware' => ['checkrole:1']], function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+        Route::get('/dashboard', [ThongkeController::class, 'index'])->name('dashboard.index');
         //cinema
         Route::get('cinema', [CinemaController::class,'index'])->name('cinema.index');
         Route::get('cinema/store', [CinemaController::class,'create'])->name('cinema.store');
@@ -142,6 +143,8 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::put('food/update/{id}', [FoodController::class,'foodUpdate'])->name('food.update');
         Route::put('food/updateajax/{id}', [FoodController::class,'updateAjax'])->name('food.updateajax');
         Route::delete('food/delete/{id}', [FoodController::class,'foodDestroy'])->name('food.destroy');
+        //thongke
+        Route::get('thongke', [ThongkeController::class,'index'])->name('thongke.index');
     });
     Route::get('/logout', [AuthAdminController::class, 'logout'])-> name('auth.logout');
 

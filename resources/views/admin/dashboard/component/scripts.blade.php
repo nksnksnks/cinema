@@ -19,6 +19,22 @@
     <script src="backend/js/plugins/sparkline/jquery.sparkline.min.js"></script>
     <script src="backend/js/demo/sparkline-demo.js"></script>
     
+    <script src="backend/js/plugins/flot/jquery.flot.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.tooltip.min.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.spline.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.resize.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.pie.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.symbol.js"></script>
+    <script src="backend/js/plugins/flot/jquery.flot.time.js"></script>
+
+     <!-- Peity -->
+     <script src="backend/js/plugins/peity/jquery.peity.min.js"></script>
+     <script src="backend/js/demo/peity-demo.js"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="backend/js/inspinia.js"></script>
+    <script src="backend/js/plugins/pace/pace.min.js"></script>
+
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.6/js/dataTables.min.js"></script>
