@@ -25,6 +25,7 @@ class Bill extends Model
      */
     protected $fillable = [
         'id',
+        'ticket_code',
         'account_id',
         'cinema_id',
         'total',

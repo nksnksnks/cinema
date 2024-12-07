@@ -456,56 +456,56 @@ class PromotionController extends Controller
 
 
 
-    public function applyPromotion($id)
-    {
-        $promotion = Promotion::find($id);
+    // public function applyPromotion($id)
+    // {
+    //     $promotion = Promotion::find($id);
 
-        if (!$promotion || $promotion->status != 1) {
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => 'Khuyến mãi không tồn tại hoặc không hợp lệ.',
-                'data' => []
-            ], Response::HTTP_BAD_REQUEST);
-        }
+    //     if (!$promotion || $promotion->status != 1) {
+    //         return response()->json([
+    //             'status' => Constant::FALSE_CODE,
+    //             'message' => 'Khuyến mãi không tồn tại hoặc không hợp lệ.',
+    //             'data' => []
+    //         ], Response::HTTP_BAD_REQUEST);
+    //     }
 
-        // Kiểm tra ngày áp dụng khuyến mãi
-        if ($promotion->end_date < now() || $promotion->start_date > now()) {
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => 'Khuyến mãi không có hiệu lực hoặc đã hết hạn.',
-                'data' => []
-            ], Response::HTTP_BAD_REQUEST);
-        }
+    //     // Kiểm tra ngày áp dụng khuyến mãi
+    //     if ($promotion->end_date < now() || $promotion->start_date > now()) {
+    //         return response()->json([
+    //             'status' => Constant::FALSE_CODE,
+    //             'message' => 'Khuyến mãi không có hiệu lực hoặc đã hết hạn.',
+    //             'data' => []
+    //         ], Response::HTTP_BAD_REQUEST);
+    //     }
 
-        // Kiểm tra số lượng khuyến mãi còn lại
-        if ($promotion->quantity <= 0) {
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => 'Khuyến mãi đã hết số lượng sử dụng.',
-                'data' => []
-            ], Response::HTTP_BAD_REQUEST);
-        }
+    //     // Kiểm tra số lượng khuyến mãi còn lại
+    //     if ($promotion->quantity <= 0) {
+    //         return response()->json([
+    //             'status' => Constant::FALSE_CODE,
+    //             'message' => 'Khuyến mãi đã hết số lượng sử dụng.',
+    //             'data' => []
+    //         ], Response::HTTP_BAD_REQUEST);
+    //     }
 
-        $userId = Auth::id();
+    //     $userId = Auth::id();
 
-        // Kiểm tra người dùng đã sử dụng mã khuyến mãi này chưa
-        if ($promotion->users()->where('account_id', $userId)->exists()) {
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => 'Bạn đã sử dụng chương trình khuyến mãi này.',
-                'data' => []
-            ], Response::HTTP_BAD_REQUEST);
-        }
+    //     // Kiểm tra người dùng đã sử dụng mã khuyến mãi này chưa
+    //     if ($promotion->users()->where('account_id', $userId)->exists()) {
+    //         return response()->json([
+    //             'status' => Constant::FALSE_CODE,
+    //             'message' => 'Bạn đã sử dụng chương trình khuyến mãi này.',
+    //             'data' => []
+    //         ], Response::HTTP_BAD_REQUEST);
+    //     }
 
-        // Ghi nhận người dùng đã sử dụng mã và giảm số lượng còn lại
-        $promotion->users()->attach($userId);
-        $promotion->decrement('quantity');
+    //     // Ghi nhận người dùng đã sử dụng mã và giảm số lượng còn lại
+    //     $promotion->users()->attach($userId);
+    //     $promotion->decrement('quantity');
 
-        return response()->json([
-            'status' => Constant::SUCCESS_CODE,
-            'message' => 'Khuyến mãi đã được áp dụng thành công.',
-            'data' => []
-        ]);
-    }
+    //     return response()->json([
+    //         'status' => Constant::SUCCESS_CODE,
+    //         'message' => 'Khuyến mãi đã được áp dụng thành công.',
+    //         'data' => []
+    //     ]);
+    // }
 
 }
