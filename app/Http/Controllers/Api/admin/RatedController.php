@@ -87,7 +87,20 @@ class RatedController extends Controller
              MovieShowTime::where('movie_id', $movie->id)->delete();
              // Xóa các liên kết trong bảng movie_genre
              Movie_Genre::where('movie_id', $movie->id)->delete();
- 
+             $oldAvatar = $movie->avatar;
+             $oldPoster = $movie->poster;
+             if ($oldAvatar) {
+                 $path = parse_url($oldAvatar, PHP_URL_PATH);
+                 $parts = explode('/movie/', $path);
+                 $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                 cloudinary()->destroy($avatarPart);
+             }
+             if ($oldPoster) {
+                 $path = parse_url($oldPoster, PHP_URL_PATH);
+                 $parts = explode('/movie/', $path);
+                 $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                 cloudinary()->destroy($posterPart);
+             }
              // Xóa phim
              $movie->delete();
          }
@@ -369,7 +382,20 @@ class RatedController extends Controller
              MovieShowTime::where('movie_id', $movie->id)->delete();
              // Xóa các liên kết trong bảng movie_genre
              Movie_Genre::where('movie_id', $movie->id)->delete();
- 
+             $oldAvatar = $movie->avatar;
+                $oldPoster = $movie->poster;
+                if ($oldAvatar) {
+                    $path = parse_url($oldAvatar, PHP_URL_PATH);
+                    $parts = explode('/movie/', $path);
+                    $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                    cloudinary()->destroy($avatarPart);
+                }
+                if ($oldPoster) {
+                    $path = parse_url($oldPoster, PHP_URL_PATH);
+                    $parts = explode('/movie/', $path);
+                    $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+                    cloudinary()->destroy($posterPart);
+                }
              // Xóa phim
              $movie->delete();
          }
