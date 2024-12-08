@@ -70,7 +70,7 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="seat_map" class="control-label text-left">Bản đồ ghế (Seat Map) <span class="text-danger">(*)</span></label>
+                                    <label for="seat_map" class="control-label text-left">Bản đồ ghế (VD: [[1,1,0],[1,1,1],[1,1,1]]  ) <span class="text-danger">(*)</span></label>
                                     <textarea 
                                         name="seat_map"
                                         id="seat_map"
@@ -88,12 +88,44 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="seat_list" class="control-label text-left">Danh sách ghế (Seat List) <span class="text-danger">(*)</span></label>
+                                    <label for="seat_list" class="control-label text-left">Danh sách ghế (VD:  [
+                                        {
+                                          "seat_type_id": 1,
+                                          "seat_code": "A1"
+                                        },
+                                        {
+                                          "seat_type_id": 2,
+                                          "seat_code": "A2"
+                                        },
+                                        {
+                                          "seat_type_id": 1,
+                                          "seat_code": "B1"
+                                        },
+                                        {
+                                          "seat_type_id": 2,
+                                          "seat_code": "B2"
+                                        },
+                                        {
+                                          "seat_type_id": 3,
+                                          "seat_code": "B3"
+                                        },
+                                        {
+                                          "seat_type_id": 2,
+                                          "seat_code": "C1"
+                                        },
+                                        {
+                                          "seat_type_id": 2,
+                                          "seat_code": "C2"
+                                        },
+                                        {
+                                          "seat_type_id": 2,
+                                          "seat_code": "C3"
+                                        }
+                                      ]  ) <span class="text-danger">(*)</span></label>
                                     <textarea 
                                         name="seat_list"
                                         id="seat_list"
                                         class="form-control"
-                                        placeholder= 'Nhập danh sách ghế (VD: [{"seat_type_id":1,"seat_code":"A1"},{"seat_type_id":2,"seat_code":"A2"}]) '
                                         rows="6"
                                     >
                                         @if(isset($data))

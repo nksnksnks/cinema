@@ -194,6 +194,7 @@ class RoomController extends Controller
          // Xóa tất cả các ghế của phòng
          $room->seat()->delete(); // Xóa tất cả các ghế liên quan đến phòng
  
+         $room->movieShowTime()->delete(); // Xóa tất cả các lịch chiếu của phòng
          // Xóa phòng
          $room->delete();
         return redirect()->back()->with('success', 'Xóa room thành công.');

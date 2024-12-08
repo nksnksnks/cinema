@@ -14,7 +14,7 @@ class AddTicketCodeToCiBillTable extends Migration
     public function up()
     {
         Schema::table('ci_bill', function (Blueprint $table) {
-            $table->string('ticket_code')->after('id')->unique()->comment('Unique ticket code for each bill');
+            $table->string('ticket_code')->after('id')->comment('Unique ticket code for each bill');
         });
     }
 
