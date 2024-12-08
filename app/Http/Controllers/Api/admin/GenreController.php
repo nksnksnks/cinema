@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
 use App\Enums\Constant;
 use App\Http\Requests\admin\GenreRequest;
+use App\Models\Movie_Genre;
+use App\Models\Movie;
+use App\Models\MovieShowTime;
 
 /**
  * @OA\Schema(
@@ -77,6 +80,18 @@ class GenreController extends Controller
         }
     }
     public function genreDestroy(string $id){
+        
+        $movies = Movie::where('genre_id', $id)->get();
+
+            foreach ($movies as $movie) {
+               // Xóa các bản ghi trong bảng ci_movie_show_time liên kết với movie_id
+                MovieShowTime::where('movie_id', $movie->id)->delete();
+                // Xóa các liên kết trong bảng movie_genre
+                Movie_Genre::where('movie_id', $movie->id)->delete();
+    
+                // Xóa phim
+                $movie->delete();
+            }
         Genre::find($id)->delete();
         return redirect()->back()->with('success', 'Xóa genre thành công.');
     }
@@ -348,6 +363,17 @@ class GenreController extends Controller
     {
         try {
             DB::beginTransaction();
+            $movies = Movie::where('genre_id', $id)->get();
+
+            foreach ($movies as $movie) {
+               // Xóa các bản ghi trong bảng ci_movie_show_time liên kết với movie_id
+                MovieShowTime::where('movie_id', $movie->id)->delete();
+                // Xóa các liên kết trong bảng movie_genre
+                Movie_Genre::where('movie_id', $movie->id)->delete();
+    
+                // Xóa phim
+                $movie->delete();
+            }
             $genre = Genre::findOrFail($id);
             $genre->delete();
 

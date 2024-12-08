@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\Movie;
+use App\Models\MovieShowTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
 use App\Enums\Constant;
 use App\Http\Requests\admin\CountryRequest;
+use App\Models\Movie_Genre;
 
 /**
  * @OA\Schema(
@@ -75,10 +78,28 @@ class CountryController extends Controller
             ->with('error', $th->getMessage());
         }
     }
-    public function countryDestroy(string $id){
+    public function countryDestroy($id)
+    {
+        // Lấy danh sách phim liên quan đến quốc gia
+        $movies = Movie::where('country_id', $id)->get();
+
+        foreach ($movies as $movie) {
+            // Xóa các bản ghi trong bảng ci_movie_show_time liên kết với movie_id
+            MovieShowTime::where('movie_id', $movie->id)->delete();
+
+            // Xóa các liên kết trong bảng movie_genre
+            Movie_Genre::where('movie_id', $movie->id)->delete();
+
+            // Xóa phim
+            $movie->delete();
+        }
+
+        // Xóa quốc gia
         Country::find($id)->delete();
+
         return redirect()->back()->with('success', 'Xóa country thành công.');
     }
+
 
     /**
      * @author quynhndmq
@@ -346,6 +367,17 @@ class CountryController extends Controller
     {
         try {
             DB::beginTransaction();
+            $movies = Movie::where('country_id', $id)->get();
+
+         foreach ($movies as $movie) {
+            // Xóa các bản ghi trong bảng ci_movie_show_time liên kết với movie_id
+             MovieShowTime::where('movie_id', $movie->id)->delete();
+             // Xóa các liên kết trong bảng movie_genre
+             Movie_Genre::where('movie_id', $movie->id)->delete();
+ 
+             // Xóa phim
+             $movie->delete();
+         }
             $country = Country::findOrFail($id);
             $country->delete();
 
