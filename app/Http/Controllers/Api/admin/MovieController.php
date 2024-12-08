@@ -762,7 +762,7 @@ class MovieController extends Controller
     /**
      * @author quynhndmq
      * @OA\Get(
-     *     path="/api/app/movies",
+     *     path="/api/app/movies/get-list",
      *     tags={"App Movies"},
      *     summary="Get movies by genre and status",
      *     operationId="getMoviesByGenreAndStatus",
