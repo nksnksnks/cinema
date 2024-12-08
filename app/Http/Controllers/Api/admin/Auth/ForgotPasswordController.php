@@ -98,7 +98,8 @@ class ForgotPasswordController extends Controller
             PasswordReset::where('email', $request->email)->delete();
             $cookie = Cookie::forget('user_token');
 
-            return redirect()->route("auth.login")->with('success', 'Bạn có thể đăng nhập ngay.')->withCookie($cookie);
+            // return redirect()->route("auth.login")->with('success', 'Bạn có thể đăng nhập ngay.')->withCookie($cookie);
+            return "Bạn đã đổi mật khẩu thành công";
         }
         return redirect()->back()->with('error', 'Lỗi! Vui lòng thử lại.');
     }
