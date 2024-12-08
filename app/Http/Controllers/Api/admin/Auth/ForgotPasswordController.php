@@ -25,7 +25,7 @@ class ForgotPasswordController extends Controller
         //     }
         return view('admin.auth.forgot-password');
     }
-
+    
     public function checkForgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email|exists:ci_account,email']);

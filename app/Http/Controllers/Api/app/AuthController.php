@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use App\Models\PasswordReset;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ForgotPassword;
+use Illuminate\Http\Request;
+
 
 class AuthController extends Controller
 {
@@ -172,6 +179,103 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * @author quynhndmq
+     * @OA\Post(
+     *     path="/api/app/forgot-password",
+     *     tags={"App Tài khoản"},
+     *     summary="Request a password reset email",
+     *     operationId="checkForgotPassword",
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", description="The email of the user requesting password reset"),
+     *             @OA\Examples(
+     *                 example="ForgotPasswordExample",
+     *                 summary="Sample forgot password data",
+     *                 value={
+     *                     "email": "user@example.com"
+     *                 }
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reset password email sent successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="We have sent an email, please check your inbox to reset your password.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation or token not expired",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Please check your email inbox first.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred. Please try again later.")
+     *         )
+     *     )
+     * )
+     */
+
+    public function checkForgotPassword(Request $request)
+{
+    // Validate input email
+    $request->validate([
+        'email' => 'required|email|exists:ci_account,email'
+    ]);
+
+    // Tìm tài khoản người dùng dựa trên email
+    $user = Account::where('email', $request->email)->firstOrFail();
+
+    // Tạo mã OTP ngẫu nhiên
+    $rand = Str::random(40);
+    $token = $rand . "email=" . $request->email;
+
+    // Kiểm tra xem có token nào đã tồn tại chưa và xem token đó có hết hạn không
+    $checkToken = PasswordReset::where('email', $request->email)->first();
+
+    // Nếu có token và chưa hết hạn (thời gian hết hạn là 5 phút)
+    $expirationTime = now()->subMinutes(5); // Thời gian hết hạn là 5 phút trước
+    if ($checkToken && $checkToken->created_at > $expirationTime) {
+        // Trả về lỗi nếu token chưa hết hạn
+        return response()->json([
+            'message' => 'Vui lòng check email trước.'
+        ], 400);
+    } else {
+        // Xóa token cũ nếu có
+        PasswordReset::where('email', $request->email)->delete();
+    }
+
+    // Tạo dữ liệu token mới để lưu vào bảng password_resets
+    $tokenData = [
+        'email' => $request->email,
+        'token' => Hash::make($token) // Mã hóa token trước khi lưu
+    ];
+
+    // Tạo bản ghi mới trong bảng password_resets
+    if (PasswordReset::create($tokenData)) {
+        // Gửi email với token đến người dùng
+        Mail::to($request->email)->send(new ForgotPassword($user, $token));
+
+        // Trả về thông báo thành công
+        return response()->json([
+            'message' => 'Chúng tôi đã gửi email, hãy xác nhận để đổi mật khẩu.'
+        ], 200);
+    }
+
+    // Nếu gặp lỗi khi tạo token
+    return response()->json([
+        'message' => 'Lỗi! Vui lòng thử lại.'
+    ], 500);
+}
 }
 
 ///**
