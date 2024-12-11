@@ -804,8 +804,8 @@ class MovieController extends Controller
 
         $today = now()->toDateString(); // Ngày hiện tại
 
-        // Tạo query cơ bản
-        $query = Movie::with('movie_genre')->where('status', 1);
+        // Tạo query cơ bản, eager load các mối quan hệ với genre, country và rated
+        $query = Movie::with(['movie_genre', 'country', 'rated'])->where('status', 1);
 
         // Lọc theo genre_id nếu có
         if (!empty($genre_id)) {
@@ -832,11 +832,43 @@ class MovieController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        // Transform data to include names instead of IDs
+        $transformedMovies = $movies->map(function ($movie) {
+            return [
+                "id" => $movie->id,
+                "name" => $movie->name,
+                "slug" => $movie->slug,
+                "genre" => $movie->movie_genre->map(function ($genre) {
+                    return [
+                        "id" => $genre->id,
+                        "name" => $genre->name,
+                    // other fields
+                    ];
+                }),
+                "country" => $movie->country ? $movie->country->name : null,
+                "rated" => $movie->rated ? $movie->rated->name : null,
+                "avatar" => $movie->avatar,
+                "poster" => $movie->poster,
+                "trailer_url" => $movie->trailer_url,
+                "duration" => $movie->duration,
+                "date" => $movie->date,
+                "performer" => $movie->performer,
+                "director" => $movie->director,
+                "description" => $movie->description,
+                "vote_total" => $movie->vote_total,
+                "voting" => $movie->voting,
+                "created_at" => $movie->created_at,
+                "updated_at" => $movie->updated_at,
+                "status" => $movie->status,
+                "deleted_at" => $movie->deleted_at,
+            ];
+        });
+
         // Trả về kết quả
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Movies retrieved successfully',
-            'data' => $movies
+            'data' => $transformedMovies
         ]);
     }
 
