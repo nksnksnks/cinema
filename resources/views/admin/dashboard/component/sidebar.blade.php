@@ -3,7 +3,9 @@
         <ul class="nav metismenu" id="side-menu">
             <li class="nav-header">
                 <div class="dropdown profile-element"> <span>
-                        <img alt="image" class="img-circle" src="{{$profile->avatar}} " width="50" height="50"/>
+                    @if ($profile->avatar)
+                    <img alt="image" class="img-circle" src="{{ $profile->avatar }}" width="50" height="50"/>
+                @endif
                          </span>
                     <a data-toggle="dropdown" class="dropdown-toggle" href="">
                         <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">{{$profile->name}}</strong>
@@ -172,7 +174,11 @@
                 <a href="#"><i class="fa-solid fa-dollar-sign"></i> <span class="nav-label">QL thống kê</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('thongke.index') ? 'active' : '' }}">
-                        <a href="{{ route('thongke.index') }}">Quản lý thống kê</a>
+                        <a href="{{ route('thongke.index') }}">Thống kê theo doanh thu</a>
+                    </li>
+                    <li class="{{ request()->routeIs('thongke.movie.index') ? 'active' : '' }}">
+                        <a href="{{ route('thongke.movie.index') }}">Thống kê theo phim</a>
+                        
                     </li>
                 </ul>
                 

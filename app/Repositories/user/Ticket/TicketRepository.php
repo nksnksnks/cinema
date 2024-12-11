@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Redis;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TicketConfirmationMail;
+use Illuminate\Support\Facades\Auth;
 
 class TicketRepository{
 
@@ -82,6 +83,11 @@ class TicketRepository{
                 'status' => '1'
             ])->id;
 
+            $user = Auth::user()->id;
+            $account = Account::find($user);
+            if ($account) {
+                $account->update(['cinema_id' => $data['cinema_id']]);
+            }
             $seatIds = json_decode($data['seat_list']);
             $seatCodes = []; // Mảng để lưu mã ghế
 

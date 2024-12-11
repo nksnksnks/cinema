@@ -149,6 +149,7 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::delete('food/delete/{id}', [FoodController::class,'foodDestroy'])->name('food.destroy');
         //thongke
         Route::get('thongke', [ThongkeController::class,'index'])->name('thongke.index');
+        Route::get('thongke-movie', [ThongkeController::class,'tkmovie'])->name('thongke.movie.index');
 
         //profile
         Route::get('/profile', [ProfileController::class, 'getProfile'])->name('auth.profile');

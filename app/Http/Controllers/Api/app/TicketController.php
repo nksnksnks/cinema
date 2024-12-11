@@ -290,7 +290,9 @@ class TicketController extends Controller
         if ($responseData['resultCode'] == '0') {
             // Thanh toán thành công
             $this->ticketRepository->createBill($orderId, $amount);
+            // Lấy user hiện tại
 
+       
             // Kiểm tra và áp dụng mã giảm giá
             if (!empty($extraData)) {
                 $promotionId = intval($extraData);

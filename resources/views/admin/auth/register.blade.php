@@ -40,6 +40,18 @@
                     @endif
                 </div>
                 <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Name" name="name" value="{{ old('name') }}">
+                    @if($errors->has('name'))
+                        <p class="error-message">* {{ $errors->first('name') }}</p>
+                    @endif
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Số điện thoại" name="phone_number" value="{{ old('phone_number') }}">
+                    @if($errors->has('phone_number'))
+                        <p class="error-message">* {{ $errors->first('phone_number') }}</p>
+                    @endif
+                </div>
+                <div class="form-group">
                     <input type="text" class="form-control" placeholder="Email" name="email" value="{{ old('email') }}">
                     @if($errors->has('email'))
                         <p class="error-message">* {{ $errors->first('email') }}</p>

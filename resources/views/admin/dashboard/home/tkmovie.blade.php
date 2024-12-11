@@ -10,8 +10,8 @@
                     <h5>Tổng doanh thu</h5>
                 </div>
                 <div class="ibox-content">
-                    <h1 class="no-margins">{{ number_format($monthlyRevenue, 0, ',', '.') }} VNĐ</h1>
-                    <div class="stat-percent font-bold text-success">98% <i class="fa fa-bolt"></i></div>
+                    <h1 class="no-margins">{{ number_format($monthlyRevenue) }} VNĐ</h1>
+                    <div class="stat-percent font-bold text-success"> <i class="fa fa-bolt"></i></div>
                     <small>Total Revenue</small>
                 </div>
             </div>
@@ -23,8 +23,8 @@
                     <h5>Tổng số vé</h5>
                 </div>
                 <div class="ibox-content">
-                    <h1 class="no-margins">{{$monthlyTickets}}</h1>
-                    <div class="stat-percent font-bold text-info">20% <i class="fa fa-level-up"></i></div>
+                    <h1 class="no-margins">{{ $monthlyTickets }}</h1>
+                    <div class="stat-percent font-bold text-info"> <i class="fa fa-level-up"></i></div>
                     <small>New ticket</small>
                 </div>
             </div>
@@ -36,8 +36,8 @@
                     <h5>Phim được xem nhiều</h5>
                 </div>
                 <div class="ibox-content">
-                    <h1 class="no-margins">{{$mostWatchedMovieInMonth}}</h1>
-                    <div class="stat-percent font-bold text-navy">44% <i class="fa fa-level-up"></i></div>
+                    <h1 class="no-margins">{{ $mostWatchedMovieInMonth }}</h1>
+                    <div class="stat-percent font-bold text-navy"> <i class="fa fa-level-up"></i></div>
                     <small>New movie</small>
                 </div>
             </div>
@@ -49,8 +49,10 @@
                     <h5>Account New</h5>
                 </div>
                 <div class="ibox-content">
-                    <h1 class="no-margins">{{$NewUsersThisMonth}}</h1>
-                    <div class="stat-percent font-bold text-danger">38% <i class="fa fa-level-down"></i></div>
+                    
+                    <h1 class="no-margins">{{ $NewUsersThisMonth }}</h1>
+                  
+                    <div class="stat-percent font-bold text-danger"> <i class="fa fa-level-down"></i></div>
                     <small>In first month</small>
                 </div>
             </div>
@@ -64,7 +66,7 @@
                     <h5>Thống kê doanh thu</h5>
                     <div class="pull-right">
                         <div class="btn-group" id="ajax">
-                            <form action="{{route('thongke.index')}}" method="GET">
+                            <form action="{{route('thongke.movie.index')}}" method="GET">
                                 <div class="row">
                                     @php
                                        if(Auth::user()->role_id == 1){
@@ -101,7 +103,9 @@
                                                 $endDate = now()->toDateString();
                                             }
                                         @endphp
+                                        
                                         <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate ?? '') }}">
+                                       
                                     </div>
                                     <div class="col-md-{{$s}}">
                                         <button class="btn btn-primary">Lọc</button>
@@ -117,37 +121,35 @@
                         <table class="table table-striped table-bordered" id="table-movie">
                             <thead>
                             <tr>
-                                <th>
-                                    <input type="checkbox" value="" id="checkAll" class="input-checkbox">
-                                </th>
-                                <th class="text-center">Ngày</th>
-                                <th class="text-center">Tổng doanh thu</th>
+                                
+                                <th class="text-center">STT</th>
+                                <th class="text-center">Tên phim</th>
                                 <th class="text-center">Tổng vé bán được</th>
-                                <th class="text-center">Phim được xem nhiều nhất</th>
+                                <th class="text-center">Tổng số tiền</th>
                               
                             </tr>
                             </thead>
                             <tbody>
-                                @if(isset($statistics) && $statistics->isNotEmpty())
-                                @foreach ($statistics as $stat)
+                                @if(isset($movieRevenues) && !empty($movieRevenues))
+                                    @foreach($movieRevenues as $index => $revenue)
                                     <tr>
-                                        <td>
-                                            <input type="checkbox" value="" class="input-checkbox checkBoxItem">
+                                        
+                                        <td class="text-center">
+                                            {{ $index + 1 }}
                                         </td>
                                         <td class="text-center">
-                                            {{ $stat['date'] }}
+                                            {{ $revenue['movie_name'] }}
                                         </td>
                                         <td class="text-center">
-                                            {{ number_format($stat['total_revenue'], 0, ',', '.') }} VNĐ
+                                            {{ $revenue['total_tickets'] }}
                                         </td>
                                         <td class="text-center">
-                                            {{ $stat['total_tickets'] }}
+                                            {{ number_format($revenue['total_revenue'], 0, ',', '.') }} VNĐ
                                         </td>
-                                        <td class="text-center">
-                                            {{ $stat['most_watched_movie'] }}
-                                        </td>
+                                        
                                     </tr>
                                 @endforeach
+                               
                                 @endif
                                 </tbody>
                                 
