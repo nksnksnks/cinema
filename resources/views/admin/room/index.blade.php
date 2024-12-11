@@ -13,7 +13,7 @@
     </tr>
     </thead>
     <tbody>
-    @if(isset($rooms) && $rooms->isNotEmpty())
+        @if(isset($rooms) && !empty($rooms))
         @foreach($rooms as $room)
     <tr>
         <td>

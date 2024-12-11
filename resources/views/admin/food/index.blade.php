@@ -12,7 +12,9 @@
         <th class="text-center">Price</th>
         <th class="text-center">Image</th>
         <th class="text-center">Status</th>
+        @if(Auth::user()->role_id == 1)
         <th class="text-center">Manager</th>
+        @endif
     </tr>
     </thead>
     <tbody>
@@ -40,7 +42,7 @@
                 <option value="0" {{ $foo->status == 0 ? 'selected' : '' }}>Không hiển thị</option>
             </select>
         </td>
-        
+        @if(Auth::user()->role_id == 1)
         <td class="text-center">
             <a href="{{ route('food.edit', $foo->id) }}" class="btn btn-success" ><i class="fa fa-edit"></i></a>
             <form action="{{ route('food.destroy', $foo->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?')">
@@ -52,6 +54,7 @@
             </form>
             
         </td>
+        @endif
     </tr>
         @endforeach
     @endif

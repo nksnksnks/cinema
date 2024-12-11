@@ -29,9 +29,9 @@ class AuthAdminController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Get user info
+           
 
-
-            if ($user->role_id == 1) {
+            if ($user->role_id != 4) {
                 return redirect()->route('dashboard.index')->with('success', 'Đăng nhập thành công');
             } else {
                 return redirect()->route('homepage')->with('success', 'Đăng nhập thành công');

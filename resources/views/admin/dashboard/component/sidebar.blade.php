@@ -3,15 +3,13 @@
         <ul class="nav metismenu" id="side-menu">
             <li class="nav-header">
                 <div class="dropdown profile-element"> <span>
-                        {{-- <img alt="image" class="img-circle" src="backend/a7.png" /> --}}
+                        <img alt="image" class="img-circle" src="{{$profile->avatar}} " width="50" height="50"/>
                          </span>
-                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                        <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">David Williams</strong>
-                         </span> <span class="text-muted text-xs block">Art Director <b class="caret"></b></span> </span> </a>
+                    <a data-toggle="dropdown" class="dropdown-toggle" href="">
+                        <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">{{$profile->name}}</strong>
+                         </span> <span class="text-muted text-xs block">{{$user->role->name}} <b class="caret"></b></span> </span> </a>
                     <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                        <li><a href="profile.html">Profile</a></li>
-                        <li><a href="contacts.html">Contacts</a></li>
-                        <li><a href="mailbox.html">Mailbox</a></li>
+                        <li><a href="{{route('auth.profile')}}">Profile</a></li>
                         <li class="divider"></li>
                         <li><a href="{{route('auth.logout')}}">Logout</a></li>
                     </ul>
@@ -32,11 +30,17 @@
                         <a href="{{ route('account.index') }}">Quản lý tài khoản</a>
                     </li>
                 </ul>
+                <ul class="nav nav-second-level">
+                    <li class="{{ request()->routeIs('account.getOnlyTransed') ? 'active' : '' }}">
+                        <a href="{{ route('account.getOnlyTransed') }}">Quản lý tài khoản đã xóa</a>
+                    </li>
+                </ul>
                 
             </li>
             
             <li class="{{ request()->routeIs('cinema.*','room.*','seattype.*','movieshowtime.*','food.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-house"></i> <span class="nav-label">Quản lý rạp chiếu</span> <span class="fa arrow"></span></a>
+                @if(Auth::user()->role_id == 1)
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('cinema.store') ? 'active' : '' }}">
                         <a href="{{ route('cinema.store') }}">Thêm chi nhánh</a>
@@ -45,6 +49,7 @@
                         <a href="{{ route('cinema.index') }}">Quản lý chi nhánh</a>
                     </li>
                 </ul>
+                @endif
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('room.create') ? 'active' : '' }}">
                         <a href="{{ route('room.create') }}">Thêm phòng mới</a>
@@ -53,6 +58,7 @@
                         <a href="{{ route('room.index') }}">Quản lý phòng</a>
                     </li>
                 </ul>
+                @if(Auth::user()->role_id == 1)
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('seattype.create') ? 'active' : '' }}">
                         <a href="{{ route('seattype.create') }}">Thêm loại ghế</a>
@@ -61,6 +67,7 @@
                         <a href="{{ route('seattype.index') }}">Quản lý loại ghế</a>
                     </li>
                 </ul>
+                @endif
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('movieshowtime.create') ? 'active' : '' }}">
                         <a href="{{ route('movieshowtime.create') }}">Thêm xuất chiếu</a>
@@ -70,15 +77,17 @@
                     </li>
                 </ul>
                 <ul class="nav nav-second-level">
+                    @if(Auth::user()->role_id == 1)
                     <li class="{{ request()->routeIs('food.create') ? 'active' : '' }}">
                         <a href="{{ route('food.create') }}">Thêm món ăn</a>
                     </li>
+                    @endif
                     <li class="{{ request()->routeIs('food.index') ? 'active' : '' }}">
                         <a href="{{ route('food.index') }}">Quản lý món ăn</a>
                     </li>
                 </ul>
             </li>
-            
+            @if(Auth::user()->role_id == 1)
             <li class="{{ request()->routeIs('genre.*', 'country.*', 'rated.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-bars"></i> <span class="nav-label">QL thành phần phim</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
@@ -106,7 +115,7 @@
                     </li>
                 </ul>
             </li>
-            
+           
             <li class="{{ request()->routeIs('movie.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa fa-film"></i> <span class="nav-label">Quản lý phim</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
@@ -132,7 +141,7 @@
             
             <li class="{{ request()->routeIs('specialday.*', 'timeslot.*', 'weeklyticketprice.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-dollar-sign"></i> <span class="nav-label">QL phí phụ thu</span> <span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
+                {{-- <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('specialday.create') ? 'active' : '' }}">
                         <a href="{{ route('specialday.create') }}">Thêm SpecialDay</a>
                     </li>
@@ -147,7 +156,7 @@
                     <li class="{{ request()->routeIs('timeslot.index') ? 'active' : '' }}">
                         <a href="{{ route('timeslot.index') }}">Quản lý TimeSlot</a>
                     </li>
-                </ul>
+                </ul> --}}
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('weeklyticketprice.create') ? 'active' : '' }}">
                         <a href="{{ route('weeklyticketprice.create') }}">Thêm weekly_ticket</a>
@@ -158,6 +167,7 @@
                 </ul>
                 
             </li>
+            @endif
             <li class="{{ request()->routeIs('thongke.*') ? 'active' : '' }}">
                 <a href="#"><i class="fa-solid fa-dollar-sign"></i> <span class="nav-label">QL thống kê</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">

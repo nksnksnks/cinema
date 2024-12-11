@@ -6,10 +6,14 @@
         <th>
             <input type="checkbox" value="" id="checkAll" class="input-checkbox">
         </th>
-        <th class="text-center">Username</th>
-        <th class="text-center">Email</th>
+        <th class="text-center">Name</th>
+        <th class="text-center">Age</th>
+        <th class="text-center">PhoneNumber</th>
+        <th class="text-center">Avatar</th>
         <th class="text-center">Role</th>
-        <th class="text-center">Chi nhánh</th>
+        @if (Auth::user()->role_id == 1)
+            <th class="text-center">Chi nhánh</th>
+        @endif
         <th class="text-center">Status</th>
         <th class="text-center">Manager</th>
     </tr>
@@ -22,32 +26,47 @@
             <input type="checkbox" value="{{ $acc->id }}" class="input-checkbox checkBoxItem">
         </td>
         <td>
-            {{ $acc->username }}
+            {{-- Hiển thị username từ account --}}
+            {{ $acc->profile->name ?? 'N/A' }}
         </td>
         <td>
-            {{ $acc->email }}
-        </td>       
+            {{-- Hiển thị age từ profile --}}
+            {{ $acc->profile->age ?? 'N/A' }}
+        </td>
+        <td>
+            {{-- Hiển thị phone number từ profile --}}
+            {{ $acc->profile->phone_number ?? 'N/A' }}
+        </td>
+        <td>
+            {{-- Hiển thị avatar từ profile (giả sử avatar là đường dẫn ảnh) --}}
+            @if($acc->profile && $acc->profile->avatar)
+                <img src="{{ asset($acc->profile->avatar) }}" alt="Avatar" width="50">
+            @else
+                N/A
+            @endif
+        </td>
         <td>
             <select class="form-control select-role" data-account-id="{{ $acc->id }}">
                 @foreach($roles as $role)
-                    <option value="{{ $role->id }}" 
+                    <option value="{{ $role->id }}"
                         {{ $acc->role_id == $role->id ? 'selected' : '' }}>
                         {{ $role->name }}
                     </option>
                 @endforeach
             </select>
         </td>
+        @if (Auth::user()->role_id == 1)
         <td>
             <select class="form-control select-cinema" data-account-id="{{ $acc->id }}">
                 @foreach($cinemas as $cinema)
-                    <option value="{{ $cinema->id }}" 
+                    <option value="{{ $cinema->id }}"
                         {{ $acc->cinema_id == $cinema->id ? 'selected' : '' }}>
                         {{ $cinema->name }}
                     </option>
                 @endforeach
             </select>
         </td>
-        
+        @endif
         <td>
             <select class="form-control select-status" data-account-id="{{ $acc->id }}">
                 <option value="1" {{ $acc->status == 1 ? 'selected' : '' }}>Hoạt động</option>
@@ -55,6 +74,7 @@
             </select>
         </td>
         <td class="text-center">
+            <a href="{{ route('account.edit', $acc->id) }}" class="btn btn-success"><i class="fa fa-edit"></i></a>
             <form action="{{ route('account.destroy', $acc->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?')">
                 @csrf
                 @method('DELETE')

@@ -23,7 +23,7 @@ class CinemaController extends Controller
         return view('admin.cinema.create', compact('config'));
     }
 
-    public function edit(string $id)
+    public function edit( $id)
     {
         $cinema = Cinema::find($id);
         $config['method'] = 'edit';

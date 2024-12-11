@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\Profile;
 class ThongkeController extends Controller
 {
     private function getMonthlyRevenue()
@@ -78,6 +79,7 @@ class ThongkeController extends Controller
 
     public function index(Request $request)
     {
+       
         // Lấy giá trị start_date và end_date từ request
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -148,6 +150,8 @@ class ThongkeController extends Controller
                 'most_watched_movie' => $mostWatchedMovie ?? 'Không xác định',
             ];
         });
+
+      
 
         return view('admin.dashboard.home.index', compact('statistics', 'startDate', 'endDate','monthlyRevenue','monthlyTickets','mostWatchedMovieInMonth','NewUsersThisMonth'));
     }

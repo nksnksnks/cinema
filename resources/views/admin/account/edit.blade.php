@@ -2,18 +2,17 @@
 @section('content')
 
 @php
-    if ($config['method'] == 'create')
-        $url = route('account.store');
-        $title = 'Thêm mới danh mục';
-        $account = null; // Đảm bảo biến $account không được sử dụng trong chế độ tạo mới
-        $method = 'POST';
+    if ($config['method'] == 'update')
+        $url = route('account.update', $account->id);
+        $title = 'Sửa tài khoản';
+        $method = 'PUT';
     
 @endphp
 
 @include('admin.dashboard.component.breadcrumb', ['title' => $title])
-    <form action="{{$url}}" method="POST" enctype = "multipart/form-data">
+    <form action="{{$url}}" method="POST" enctype="multipart/form-data">
     @csrf
-    @method($method)
+    @method('PUT')
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row">
             <div class="col-lg-4">
@@ -31,16 +30,16 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="name" class="control-label text-left">UserName <span class="text-danger">(*)</span></label>
-                                    <input 
+                                    <label for="username" class="control-label text-left">UserName <span class="text-danger">(*)</span></label>
+                                    <input
                                         type="text"
                                         name="username"
                                         id="username"
-                                        value=""
+                                        value="{{ old('username', $account->username ?? '') }}"
                                         class="form-control"
                                         placeholder="Nhập tên tài khoản"
                                         autocomplete="off"
-                                       
+
                                     >
                                     @if($errors->has('username'))
                                         <p class="error-message">* {{ $errors->first('username') }}</p>
@@ -51,12 +50,12 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="name" class="control-label text-left">Email <span class="text-danger">(*)</span></label>
-                                    <input 
+                                    <label for="email" class="control-label text-left">Email <span class="text-danger">(*)</span></label>
+                                    <input
                                         type="email"
                                         name="email"
                                         id="email"
-                                        value=""
+                                        value="{{ old('email', $account->email ?? '') }}"
                                         class="form-control"
                                         placeholder="Nhập email"
                                         autocomplete="off"
@@ -67,40 +66,22 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row mb15">
-                            <div class="col-lg-12">
-                                <div class="form-row">
-                                    <label for="name" class="control-label text-left">Password <span class="text-danger">(*)</span></label>
-                                    <input 
-                                        type="password"
-                                        name="password"
-                                        id="password"
-                                        value=""
-                                        class="form-control"
-                                        placeholder="Nhập password"
-                                        autocomplete="off"
-                                    >
-                                    @if($errors->has('password'))
-                                        <p class="error-message">* {{ $errors->first('password') }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+
                         <!-- Cinema ID -->
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
                                     <label for="cinema_id" class="control-label text-left">Chi nhánh (Cinema ID) <span class="text-danger">(*)</span></label>
                                     @if(Auth::user()->role_id == 1)
-                                        <<select name="cinema_id" id="cinema_id" class="form-control">
+                                        <select name="cinema_id" id="cinema_id" class="form-control">
                                             @foreach($cinemas as $key => $value)
-                                                <option value="{{ $key }}" {{ isset($account) && $account->cinema_id == $key ? 'selected' : '' }}>
+                                                <option value="{{ $key }}" {{ old('cinema_id', $account->cinema_id ?? '') == $key ? 'selected' : '' }}>
                                                     {{ $value }}
                                                 </option>
                                             @endforeach
-                                        </select> 
+                                        </select>
                                     @else
-                                        <input 
+                                        <input
                                             type="text"
                                             value="{{ $cinemas->name }}"
                                             class="form-control"
@@ -108,8 +89,8 @@
                                             autocomplete="off"
                                             readonly
                                         >
-                                        <input type="hidden" name="cinema_id" value="{{ $cinemas->id }}"> 
-                                    @endif                              
+                                        <input type="hidden" name="cinema_id" value="{{ $cinemas->id }}">
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -119,11 +100,11 @@
                                     <label for="role_id" class="control-label text-left">Quyền Role <span class="text-danger">(*)</span></label>
                                     <select name="role_id" id="role_id" class="form-control">
                                         @foreach($roles as $key => $value)
-                                            <option value="{{ $key }}" {{ isset($account) && $account->role_id == $key ? 'selected' : '' }}>
+                                            <option value="{{ $key }}" {{ old('role_id', $account->role_id ?? '') == $key ? 'selected' : '' }}>
                                                 {{ $value }}
                                             </option>
                                         @endforeach
-                                    </select>                                  
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -131,11 +112,11 @@
                             <div class="col-lg-12">
                                 <div class="form-row">
                                     <label for="name" class="control-label text-left">Name <span class="text-danger">(*)</span></label>
-                                    <input 
+                                    <input
                                         type="text"
                                         name="name"
                                         id="name"
-                                        value=""
+                                        value="{{ old('name', $account->profile->name ?? '') }}"
                                         class="form-control"
                                         placeholder="Nhập họ và tên"
                                         autocomplete="off"
@@ -149,12 +130,12 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="name" class="control-label text-left">Age<span class="text-danger">(*)</span></label>
-                                    <input 
+                                    <label for="age" class="control-label text-left">Age<span class="text-danger">(*)</span></label>
+                                    <input
                                         type="text"
                                         name="age"
                                         id="age"
-                                        value=""
+                                        value="{{ old('age', $account->profile->age ?? '') }}"
                                         class="form-control"
                                         placeholder="Nhập tuổi"
                                         autocomplete="off"
@@ -168,12 +149,12 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
-                                    <label for="name" class="control-label text-left">PhoneNumber <span class="text-danger">(*)</span></label>
-                                    <input 
+                                    <label for="phone_number" class="control-label text-left">PhoneNumber <span class="text-danger">(*)</span></label>
+                                    <input
                                         type="text"
                                         name="phone_number"
                                         id="phone_number"
-                                        value=""
+                                        value="{{ old('phone_number', $account->profile->phone_number ?? '') }}"
                                         class="form-control"
                                         placeholder="Nhập số điện thoại"
                                         autocomplete="off"
@@ -189,6 +170,9 @@
                                 <div class="form-row mt-3" >
                                     <label for="avatar" class="control-label text-left">Avatar <span class="text-danger">(*)</span></label>
                                     <input type="file" name="avatar" id="avatar" class="form-control">
+                                    @if($account->profile && $account->profile->avatar)
+                                        <img src="{{ asset($account->profile->avatar) }}" alt="Current Avatar" width="100" class="mt-2">
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -197,10 +181,10 @@
                                 <div class="form-row">
                                     <label for="status" class="control-label text-left">Active</label>
                                     <select name="status" class="form-control">
-                                        <option value="1" {{ isset($account) && $account->status == '1' ? 'selected' : '' }}>Hiển thị</option>
-                                        <option value="0" {{ isset($account) && $account->status == '0' ? 'selected' : '' }}>Không</option>
-                                    </select>                                      
-                                                                   
+                                        <option value="1" {{ old('status', $account->status ?? '') == '1' ? 'selected' : '' }}>Hoạt động</option>
+                                        <option value="0" {{ old('status', $account->status ?? '') == '0' ? 'selected' : '' }}>Không hoạt động</option>
+                                    </select>
+
                                 </div>
                             </div>
                         </div>
@@ -213,6 +197,5 @@
         </div>
     </div>
 </form>
-
 
 @endsection

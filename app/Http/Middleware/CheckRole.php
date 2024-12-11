@@ -16,7 +16,7 @@ class CheckRole
     public function handle(Request $request, Closure $next , $role): Response
     {
         // Kiểm tra xem người dùng đã đăng nhập và có vai trò chính xác chưa
-        if (Auth::check() && Auth::user()->role_id == $role) {
+        if (Auth::check() && Auth::user()->role_id != $role) {
             return $next($request);
         }
 

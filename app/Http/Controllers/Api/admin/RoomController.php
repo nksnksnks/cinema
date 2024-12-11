@@ -13,6 +13,7 @@ use App\Repositories\admin\Seat\SeatInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
@@ -29,24 +30,55 @@ class RoomController extends Controller
     }
 
     public function roomIndex(){
-        $rooms = Room::all();
+        if (Auth::user()->role_id == 1) {
+            $check = 1;
+            // Lấy danh sách rạp và eager load danh sách phòng, sắp xếp phòng theo tên
+            $cinemas = Cinema::with(['room' => function ($query) {
+                $query->orderBy('name', 'asc');
+            }])->get();
+        
+            // Tạo một mảng mới để chứa danh sách phòng đã sắp xếp
+            $rooms = [];
+            foreach ($cinemas as $cinema) {
+                // Kiểm tra xem $cinema->room có phải là một Collection hay không
+                    $rooms = array_merge($rooms, $cinema->room->all());
+            }
+        } else if (Auth::user()->role_id == 2) {
+            $check = 0;
+            $cinema_id = Auth::user()->cinema_id;
+            $rooms = Room::where('cinema_id', $cinema_id)->orderBy('name', 'asc')->get();
+        }
+        
         return view('admin.room.index',compact('rooms'));
     }
-    public function getRoomsByCinema($cinema_id)
-    {
-        // Lấy danh sách phòng thuộc rạp
-        $rooms = Room::where('cinema_id', $cinema_id)->get(['id', 'name']);
-        if ($rooms->isEmpty()) {
-            return response()->json([], 200); // Không có phòng
-        }
-        return response()->json($rooms, 200); // Trả về JSON danh sách phòng
+    // public function getRoomsByCinema($cinema_id)
+    // {
+    //     // Lấy danh sách phòng thuộc rạp
+    //     $rooms = Room::where('cinema_id', $cinema_id)->get(['id', 'name']);
+    //     if ($rooms->isEmpty()) {
+    //         return response()->json([], 200); // Không có phòng
+    //     }
+    //     return response()->json($rooms, 200); // Trả về JSON danh sách phòng
+    // }
+
+
+    public function getRooms(Request $request) {
+        $cinemaId = $request->input('cinema_id');
+        $rooms = Room::where('cinema_id', $cinemaId)->pluck('name', 'id');
+        return response()->json($rooms);
     }
-
-
     public function roomCreate(){
         $config['method'] = 'create';
-        $cinema = Cinema::pluck('name','id');
-        return view('admin.room.create',compact('config','cinema'));
+        if(Auth::user()->role_id == 1){
+            $check = 1;
+            $cinema = Cinema::pluck('name','id');
+        }else if(Auth::user()->role_id == 2){
+            $check = 0;
+            $cinema_id = Auth::user()->cinema_id;
+            $cinema = Cinema::find($cinema_id);
+        }
+        
+        return view('admin.room.create',compact('config','cinema','check'));
     }
     public function roomStore(Request $request)
 {
@@ -56,7 +88,7 @@ class RoomController extends Controller
         // Kiểm tra nếu phòng đã tồn tại
         if($this->roomInterface->getRoomCheck($request)){
             return redirect()
-                ->route('room.create')
+                ->back()
                 ->with('error', 'Phòng đã tồn tại.');
         }
 
@@ -92,10 +124,18 @@ class RoomController extends Controller
 }
 
 
-    public function roomEdit(string $id)
+    public function roomEdit($id)
     {
         $config['method'] = 'edit';
-        $cinema = Cinema::pluck('name', 'id');
+        if(Auth::user()->role_id == 1){
+            $check = 1;
+            $cinema = Cinema::pluck('name','id');
+        }else if(Auth::user()->role_id == 2){
+            $check = 0;
+            $cinema_id = Auth::user()->cinema_id;
+            $cinema = Cinema::find($cinema_id);
+        }
+        
         $room = Room::where('id', $id)->first();
         $seats = Seat::with('seatType')
             ->where('room_id', $room->id)
@@ -125,7 +165,7 @@ class RoomController extends Controller
             }
         }
 
-        return view('admin.room.create', compact('config', 'room', 'data', 'cinema'));
+        return view('admin.room.create', compact('config', 'room', 'data', 'cinema', 'check'));
     }
 
   

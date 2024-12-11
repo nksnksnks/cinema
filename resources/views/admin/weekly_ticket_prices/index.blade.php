@@ -6,7 +6,7 @@
        
         <th class="text-center">Name</th>
         <th class="text-center">Description</th>
-        {{-- <th class="text-center">Special_Day</th> --}}
+        <th class="text-center">Start_time</th>
         <th class="text-center">Extra_fee</th>
         <th class="text-center">Manager</th>
     </tr>
@@ -21,6 +21,9 @@
         </td>
         <td>
             {{ $weeklyticket->description }}
+        </td>
+        <td>
+            {{ $weeklyticket->start_time }}
         </td>
         
         <td>

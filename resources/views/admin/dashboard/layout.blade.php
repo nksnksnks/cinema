@@ -5,6 +5,10 @@
 @include('admin.dashboard.component.head')
 </head>
 <body>
+    @php
+        $user = auth()->user();
+        $profile = $user->profile;
+    @endphp
     <div id="wrapper">
         @include('admin.dashboard.component.sidebar')
 

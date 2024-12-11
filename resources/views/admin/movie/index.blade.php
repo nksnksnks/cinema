@@ -23,7 +23,7 @@
         </tr>
         </thead>
         <tbody>
-        @if(isset($movies) && $movies->isNotEmpty())
+        @if(isset($movies) && !empty($movies))
             @foreach($movies as $mov)
         <tr>
             <td>

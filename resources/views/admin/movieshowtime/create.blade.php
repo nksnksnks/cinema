@@ -51,16 +51,25 @@
                             <div class="col-lg-12">
                                 <div class="form-row">
                                     <label for="cinema_id" class="control-label text-left">Cinema <span class="text-danger">(*)</span></label>
-                                    
-                                    <input 
-                                        type="text"
-                                        value="{{$cinema->name}}"
-                                        class="form-control"
-                                        placeholder="..."
-                                        autocomplete="off"
-                                        readonly
-                                    >
-                                   
+                                    @if(Auth::user()->role_id == 1)
+                                        <select name="cinema_id" id="cinema_id" class="form-control">
+                                            @foreach($cinemas as $cinema)
+                                                <option value="{{ $cinema->id }}" {{ $selectedCinema->id == $cinema->id ? 'selected' : '' }}>
+                                                    {{ $cinema->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <input 
+                                            type="text"
+                                            value="{{ $selectedCinema->name }}"
+                                            class="form-control"
+                                            placeholder="..."
+                                            autocomplete="off"
+                                            readonly
+                                        >
+                                        <input type="hidden" name="cinema_id" value="{{ $selectedCinema->id }}"> 
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -69,12 +78,10 @@
                                 <div class="form-row">
                                     <label for="room_id" class="control-label text-left">Room <span class="text-danger">(*)</span></label>
                                     <select name="room_id" id="room_id" class="form-control">
-                                        @foreach($room as $key => $value)
-                                            <option value="{{ $key }}" {{ isset($movieshowtime) && $movieshowtime->room_id == $key ? 'selected' : '' }}>
-                                                {{ $value }}
-                                            </option>
+                                        @foreach($rooms as $key => $value)
+                                            <option value="{{ $key }}" {{ isset($selectedRoom) && $selectedRoom == $key ? 'selected' : '' }}>{{ $value }}</option>
                                         @endforeach
-                                    </select>                                  
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -147,3 +154,26 @@
 
 
 @endsection
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" ></script>
+<script>
+    $(document).ready(function() {
+        $('#cinema_id').change(function() {
+            var cinemaId = $(this).val();
+            if (cinemaId) {
+                $.ajax({
+                    url: '{{ route("room.getrooms") }}', // Tạo route này ở bước tiếp theo
+                    type: 'GET',
+                    data: { cinema_id: cinemaId },
+                    success: function(data) {
+                        $('#room_id').empty();
+                        $.each(data, function(key, value) {
+                            $('#room_id').append('<option value="' + key + '">' + value + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#room_id').empty();
+            }
+        });
+    });
+</script>

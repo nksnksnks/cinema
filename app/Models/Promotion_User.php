@@ -5,15 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class SpecialDay extends Model
+class Promotion_User extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'ci_special_days';
 
-    protected $fillable = [
-        'day_type',
-        'description',
-        'special_day',
-        'extra_fee',
-    ];
+    protected $table = 'ci_promotion_user';
+    protected $fillable = ['promotion_id', 'account_id'];
+    
 }

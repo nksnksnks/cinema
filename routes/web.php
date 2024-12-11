@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\admin\Auth\AuthAdminController;
+use App\Http\Controllers\Api\admin\Auth\ProfileController;
 use App\Http\Controllers\Api\admin\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\admin\MovieController;
 use App\Http\Controllers\Api\admin\DashboardController;
@@ -11,8 +12,8 @@ use App\Http\Controllers\Api\admin\AccountController;
 use App\Http\Controllers\Api\admin\CountryController;
 use App\Http\Controllers\Api\admin\GenreController;
 use App\Http\Controllers\Api\admin\RatedController;
-use App\Http\Controllers\Api\admin\SpecialDayController;
-use App\Http\Controllers\Api\admin\TimeSlotController;
+// use App\Http\Controllers\Api\admin\SpecialDayController;
+// use App\Http\Controllers\Api\admin\TimeSlotController;
 use App\Http\Controllers\Api\admin\WeeklyTicketPriceController;
 use App\Http\Controllers\Api\admin\RoomController;
 use App\Http\Controllers\Api\admin\SeatTypeController;
@@ -39,7 +40,7 @@ Route::post('/reset-password/{token}', [ForgotPasswordController::class, 'resetP
 
 
 Route::group(['middleware' => 'authenticate'], function(){
-    Route::group(['middleware' => ['checkrole:1']], function () {
+    Route::group(['middleware' => ['checkrole:4']], function () {
         Route::get('/dashboard', [ThongkeController::class, 'index'])->name('dashboard.index');
         //cinema
         Route::get('cinema', [CinemaController::class,'index'])->name('cinema.index');
@@ -55,6 +56,9 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::get('account/edit/{id}', [AccountController::class,'edit'])->name('account.edit');
         Route::put('v1/admin/account/update/{id}', [AccountController::class,'update'])->name('account.update');
         Route::delete('account/delete/{id}', [AccountController::class,'destroy'])->name('account.destroy');
+        Route::get('account/da-xoa', [AccountController::class,'getOnlyTransed'])->name('account.getOnlyTransed');
+        Route::get('account/restore/{id}', [AccountController::class,'restore'])->name('account.restore');
+        Route::delete('account/forceDelete/{id}', [AccountController::class,'forceDelete'])->name('account.forceDelete');
         //country
         Route::get('country', [CountryController::class,'countryIndex'])->name('country.index');
         Route::get('country/create', [CountryController::class,'countryCreate'])->name('country.create');
@@ -85,19 +89,19 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::put('movie/updateajax/{id}', [MovieController::class,'updateAjax'])->name('movie.updateajax');
         Route::delete('movie/delete/{id}', [MovieController::class,'movieDestroy'])->name('movie.destroy');
         //specialday
-        Route::get('specialday', [SpecialDayController::class,'specialdayIndex'])->name('specialday.index');
-        Route::get('specialday/create', [SpecialDayController::class,'specialdayCreate'])->name('specialday.create');
-        Route::post('specialday/store', [SpecialDayController::class,'specialdayStore'])->name('specialday.store');
-        Route::get('specialday/edit/{id}', [SpecialDayController::class,'specialdayEdit'])->name('specialday.edit');
-        Route::put('specialday/update/{id}', [SpecialDayController::class,'specialdayUpdate'])->name('specialday.update');
-        Route::delete('specialday/delete/{id}', [SpecialDayController::class,'specialdayDestroy'])->name('specialday.destroy');
+        // Route::get('specialday', [SpecialDayController::class,'specialdayIndex'])->name('specialday.index');
+        // Route::get('specialday/create', [SpecialDayController::class,'specialdayCreate'])->name('specialday.create');
+        // Route::post('specialday/store', [SpecialDayController::class,'specialdayStore'])->name('specialday.store');
+        // Route::get('specialday/edit/{id}', [SpecialDayController::class,'specialdayEdit'])->name('specialday.edit');
+        // Route::put('specialday/update/{id}', [SpecialDayController::class,'specialdayUpdate'])->name('specialday.update');
+        // Route::delete('specialday/delete/{id}', [SpecialDayController::class,'specialdayDestroy'])->name('specialday.destroy');
         //timeslot
-        Route::get('timeslot', [TimeSlotController::class,'timeslotIndex'])->name('timeslot.index');
-        Route::get('timeslot/create', [TimeSlotController::class,'timeslotCreate'])->name('timeslot.create');
-        Route::post('timeslot/store', [TimeSlotController::class,'timeslotStore'])->name('timeslot.store');
-        Route::get('timeslot/edit/{id}', [TimeSlotController::class,'timeslotEdit'])->name('timeslot.edit');
-        Route::put('timeslot/update/{id}', [TimeSlotController::class,'timeslotUpdate'])->name('timeslot.update');
-        Route::delete('timeslot/delete/{id}', [TimeSlotController::class,'timeslotDestroy'])->name('timeslot.destroy');
+        // Route::get('timeslot', [TimeSlotController::class,'timeslotIndex'])->name('timeslot.index');
+        // Route::get('timeslot/create', [TimeSlotController::class,'timeslotCreate'])->name('timeslot.create');
+        // Route::post('timeslot/store', [TimeSlotController::class,'timeslotStore'])->name('timeslot.store');
+        // Route::get('timeslot/edit/{id}', [TimeSlotController::class,'timeslotEdit'])->name('timeslot.edit');
+        // Route::put('timeslot/update/{id}', [TimeSlotController::class,'timeslotUpdate'])->name('timeslot.update');
+        // Route::delete('timeslot/delete/{id}', [TimeSlotController::class,'timeslotDestroy'])->name('timeslot.destroy');
         //weeklyticketprice
         Route::get('weeklyticketprice', [WeeklyTicketPriceController::class,'weeklyticketpriceIndex'])->name('weeklyticketprice.index');
         Route::get('weeklyticketprice/create', [WeeklyTicketPriceController::class,'weeklyticketpriceCreate'])->name('weeklyticketprice.create');
@@ -107,7 +111,7 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::delete('weeklyticketprice/delete/{id}', [WeeklyTicketPriceController::class,'weeklyticketpriceDestroy'])->name('weeklyticketprice.destroy');
         //room
         Route::get('room', [RoomController::class,'roomIndex'])->name('room.index');
-        Route::get('/cinemas/{cinema_id}/rooms', [RoomController::class,'getRoomsByCinema'])->name('room.getrooms');
+        Route::get('/get-rooms', [RoomController::class,'getRooms'])->name('room.getrooms');
         Route::get('room/create', [RoomController::class,'roomCreate'])->name('room.create');
         Route::post('room/store', [RoomController::class,'roomStore'])->name('room.store');
         Route::get('room/edit/{id}', [RoomController::class,'roomEdit'])->name('room.edit');
@@ -145,6 +149,10 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::delete('food/delete/{id}', [FoodController::class,'foodDestroy'])->name('food.destroy');
         //thongke
         Route::get('thongke', [ThongkeController::class,'index'])->name('thongke.index');
+
+        //profile
+        Route::get('/profile', [ProfileController::class, 'getProfile'])->name('auth.profile');
+        Route::post('/profile', [ProfileController::class, 'updateOrCreate'])->name('auth.profile.update');
     });
     Route::get('/logout', [AuthAdminController::class, 'logout'])-> name('auth.logout');
 

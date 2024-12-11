@@ -720,20 +720,20 @@ class MovieController extends Controller
             DB::beginTransaction();
 
             $movie = Movie::findOrFail($id);
-            $oldAvatar = $movie->avatar;
-            $oldPoster = $movie->poster;
-            if ($oldAvatar) {
-                $path = parse_url($oldAvatar, PHP_URL_PATH);
-                $parts = explode('/movie/', $path);
-                $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-                cloudinary()->destroy($avatarPart);
-            }
-            if ($oldPoster) {
-                $path = parse_url($oldPoster, PHP_URL_PATH);
-                $parts = explode('/movie/', $path);
-                $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
-                cloudinary()->destroy($posterPart);
-            }
+            // $oldAvatar = $movie->avatar;
+            // $oldPoster = $movie->poster;
+            // if ($oldAvatar) {
+            //     $path = parse_url($oldAvatar, PHP_URL_PATH);
+            //     $parts = explode('/movie/', $path);
+            //     $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            //     cloudinary()->destroy($avatarPart);
+            // }
+            // if ($oldPoster) {
+            //     $path = parse_url($oldPoster, PHP_URL_PATH);
+            //     $parts = explode('/movie/', $path);
+            //     $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            //     cloudinary()->destroy($posterPart);
+            // }
 
             // Xóa các genre liên quan
             Movie_Genre::where('movie_id', $movie->id)->delete();

@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Promotion;
+use App\Models\Evaluate;
+use App\Models\Promotion_User;
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Account extends Authenticatable
 {
-    use HasFactory, HasApiTokens;
+    use HasFactory, HasApiTokens, SoftDeletes;
 
     protected $connection = 'mysql';
 
@@ -62,5 +65,13 @@ class Account extends Authenticatable
         return $this->belongsTo('App\Models\Role', 'role_id', 'id');
     }
    
+    public function promotions()
+    {
+        return $this->hasMany(Promotion_User::class, 'account_id');
+    }
 
+    public function evaluates()
+    {
+        return $this->hasMany(Evaluate::class, 'account_id');
+    }
 }

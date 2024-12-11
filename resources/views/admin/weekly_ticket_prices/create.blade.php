@@ -72,6 +72,25 @@
                         <div class="row mb15">
                             <div class="col-lg-12">
                                 <div class="form-row">
+                                    <label for="start_time" class="control-label text-left">Start_time <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="time"
+                                        name="start_time"
+                                        id="start_time"
+                                        value="{{ old('start_time', $weeklyticketprice->start_time ?? '') }}"
+                                        class="form-control"
+                                        placeholder="..."
+                                        autocomplete="off"
+                                    >
+                                    @if($errors->has('start_time'))
+                                        <p class="error-message">* {{ $errors->first('start_time') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
                                     <label for="extra_fee" class="control-label text-left">Extra_fee <span class="text-danger">(*)</span></label>
                                     <input 
                                         type="text"

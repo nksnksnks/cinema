@@ -26,20 +26,55 @@ class MovieShowTimeController extends Controller
     {
         $this->movieShowTimeRepository = $movieShowTimeRepository;
     }
-    public function movieshowtimeIndex(){
-        $movieshowtimes = MovieShowtime::all();
-        $movie = Movie::pluck('name','id');
-        $room = Room::pluck('name','id');
-        return view('admin.movieshowtime.index',compact('movieshowtimes','movie','room'));
+    public function movieshowtimeIndex()
+    {
+        if (Auth::user()->role_id == 1) {
+            // Admin: Lấy tất cả suất chiếu, sắp xếp theo chi nhánh, phòng và thời gian
+            $movieshowtimes = MovieShowtime::with(['movie', 'room.cinema']) // Eager load movie, room và cinema
+                ->join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id') // Join với bảng room
+                ->join('ci_cinema', 'ci_room.cinema_id', '=', 'ci_cinema.id') // Join với bảng cinema
+                ->orderBy('ci_cinema.name', 'asc') // Sắp xếp theo tên chi nhánh
+                ->orderBy('ci_room.name', 'asc') // Sắp xếp theo tên phòng
+                ->orderBy('ci_movie_show_time.start_date', 'asc')
+                ->orderBy('ci_movie_show_time.start_time', 'asc') // Sắp xếp theo ngày và thời gian bắt đầu
+                ->select('ci_movie_show_time.*') // Chỉ select các cột của bảng movie_show_time
+                ->get();
+        } else {
+            // Nhân viên: Chỉ lấy suất chiếu của chi nhánh đó, sắp xếp theo phòng và thời gian
+            $cinema_id = Auth::user()->cinema_id;
+            $movieshowtimes = MovieShowtime::with(['movie', 'room']) // Eager load movie và room
+                ->whereHas('room', function ($query) use ($cinema_id) {
+                    $query->where('cinema_id', $cinema_id);
+                })
+                ->orderBy('room_id', 'asc') // Sắp xếp theo phòng
+                ->orderBy('start_date', 'asc')
+                ->orderBy('start_time', 'asc') // Sắp xếp theo ngày và thời gian bắt đầu
+                ->get();
+        }
+
+        $movie = Movie::pluck('name', 'id'); // Cái này có thể không cần thiết trong view index
+        $room = Room::pluck('name', 'id'); // Cái này có thể không cần thiết trong view index
+
+        return view('admin.movieshowtime.index', compact('movieshowtimes', 'movie', 'room'));
     }
     public function movieshowtimeCreate(){
         $config['method'] = 'create';
         $movie = Movie::pluck('name','id');
-        // Lấy cinema_id của người dùng đang đăng nhập
-        $cinema_id = Auth::user()->cinema_id;
-        $cinema = Cinema::find($cinema_id);
-        $room = Room::where('cinema_id',$cinema_id)->pluck('name','id');
-        return view('admin.movieshowtime.create',compact('config','room','movie','cinema'));
+    
+        if(Auth::user()->role_id == 1) {
+            // Admin: Lấy tất cả chi nhánh và phòng chiếu của chi nhánh đầu tiên (để hiển thị mặc định)
+            $cinemas = Cinema::all(); // Lấy tất cả để chọn
+            $selectedCinema = $cinemas->first(); // Lấy chi nhánh đầu tiên
+            $rooms = Room::where('cinema_id', $selectedCinema->id)->pluck('name','id'); 
+        } else {
+            // Nhân viên: Chỉ lấy chi nhánh và phòng của nhân viên đó
+            $cinema_id = Auth::user()->cinema_id;
+            $selectedCinema = Cinema::find($cinema_id); //selectedCinema
+            $cinemas = collect([$selectedCinema]); // $cinemas để truyền vào view.
+            $rooms = Room::where('cinema_id', $cinema_id)->pluck('name','id');
+        }
+    
+        return view('admin.movieshowtime.create', compact('config', 'rooms', 'movie', 'cinemas', 'selectedCinema'));
     }
     public function movieshowtimeStore(MovieShowtimeRequest $request)
     {
@@ -87,16 +122,29 @@ class MovieShowTimeController extends Controller
     }
     
 
-    public function movieshowtimeEdit(string $id){
-        $movieshowtime = MovieShowtime::find($id);
-        $movie = Movie::pluck('name','id');
-        // Lấy cinema_id của người dùng đang đăng nhập
-        $cinema_id = Auth::user()->cinema_id;
-        $cinema = Cinema::find($cinema_id);
-        $room = Room::where('cinema_id',$cinema_id)->pluck('name','id');
-
+    public function movieshowtimeEdit(string $id)
+    {
         $config['method'] = 'edit';
-        return view('admin.movieshowtime.create', compact('config','movieshowtime','movie','room','cinema'));
+        $movieshowtime = MovieShowtime::findOrFail($id); // Tìm MovieShowtime, ném ngoại lệ nếu không tìm thấy
+        $movie = Movie::pluck('name', 'id');
+
+        if (Auth::user()->role_id == 1) {
+            // Admin: Lấy tất cả chi nhánh và phòng chiếu của chi nhánh hiện tại của suất chiếu
+            $cinemas = Cinema::all();
+            $selectedCinema = $movieshowtime->room->cinema; // Lấy chi nhánh của phòng chiếu
+            $rooms = Room::where('cinema_id', $selectedCinema->id)->pluck('name', 'id');
+        } else {
+            // Nhân viên: Chỉ lấy chi nhánh và phòng của nhân viên đó
+            $cinema_id = Auth::user()->cinema_id;
+            $selectedCinema = Cinema::find($cinema_id);
+            $cinemas = collect([$selectedCinema]); // Để truyền vào view, giống như create
+            $rooms = Room::where('cinema_id', $cinema_id)->pluck('name', 'id');
+        }
+
+        // Lấy room_id hiện tại của suất chiếu
+        $selectedRoom = $movieshowtime->room_id;
+
+        return view('admin.movieshowtime.create', compact('config', 'movieshowtime', 'movie', 'rooms', 'cinemas', 'selectedCinema', 'selectedRoom'));
     }
   
     public function movieshowtimeUpdate($id, MovieShowtimeRequest $request)

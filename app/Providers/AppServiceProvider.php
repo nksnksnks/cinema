@@ -14,11 +14,12 @@ use App\Repositories\user\Account\AccountInterface;
 use App\Repositories\user\Account\AccountRepository;
 use App\Repositories\user\Bill\BillInterface;
 use App\Repositories\user\Bill\BillRepository;
+use App\Repositories\user\Room\RoomRepository as RoomRepositoryUser;
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
-
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -47,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
             return new SeatRepository(new Container(), new Request(), new Seat());
         });
         $this->app->bind(\App\Repositories\user\Room\RoomInterface::class, function() {
-            return new \App\Repositories\user\Room\RoomRepository(new Container(), new Request(), new Seat());
+            return new RoomRepository(new Container(), new Request(), new Seat());
         });
     }
 
@@ -58,6 +59,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        
     }
 }

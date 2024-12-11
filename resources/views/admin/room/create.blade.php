@@ -56,13 +56,30 @@
                             <div class="col-lg-12">
                                 <div class="form-row">
                                     <label for="cinema_id" class="control-label text-left">Chi nhánh (Cinema ID)  <span class="text-danger">(*)</span></label>
+                                    @if ($check == 1)
                                     <select name="cinema_id" id="cinema_id" class="form-control">
                                         @foreach($cinema as $key => $value)
                                             <option value="{{ $key }}" {{ isset($room) && $room->cinema_id == $key ? 'selected' : '' }}>
                                                 {{ $value }}
                                             </option>
                                         @endforeach
-                                    </select>                                  
+                                    </select>
+                                    @else
+                                        <input 
+                                        type="text"
+                                        name="cinema_id"
+                                        value="{{ $cinema->id }}"
+                                        hidden
+                                        >
+                                        <input 
+                                            type="text"
+                                            value="{{ $cinema->name }}"
+                                            class="form-control"
+                                            placeholder="..."
+                                            autocomplete="off"
+                                            readonly
+                                        >
+                                    @endif
                                 </div>
                             </div>
                         </div>
