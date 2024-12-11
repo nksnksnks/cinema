@@ -805,24 +805,38 @@ class MovieController extends Controller
         $today = now()->toDateString(); // Ngày hiện tại
 
         // Tạo query cơ bản
-        $query = Movie::with('movie_genre')->where('status', 1);
+        $query = Movie::select([
+            'ci_movie.*',
+            'c.name as country_name',
+            DB::raw('(SELECT JSON_ARRAYAGG(JSON_OBJECT("id", g.id, "name", g.name))
+                  FROM ci_movie_genre mg
+                  JOIN ci_genre g ON mg.genre_id = g.id
+                  WHERE mg.movie_id = ci_movie.id) as genres')
+        ])->join('ci_movie_show_time as st', 'st.movie_id', '=', 'ci_movie.id')
+        ->join('ci_country as c', 'c.id', '=', 'ci_movie.country_id');
 
         // Lọc theo genre_id nếu có
         if (!empty($genre_id)) {
-            $query->whereHas('movie_genre', function ($subQuery) use ($genre_id) {
-                $subQuery->where('genre_id', $genre_id);
-            });
+            $query->join('ci_movie_genre mg', 'mg.movie_id', '=', 'ci_movie.id');
         }
 
         // Lọc theo statusShow
         if ($statusShow == 1) { // Phim đang chiếu
-            $query->where('date', '<=', $today);
+            $query->where('st.start_date', '<=', $today);
         } elseif ($statusShow == 2) { // Phim sắp chiếu
-            $query->where('date', '>', $today);
+            $query->where('st.start_date', '>', $today)
+                ->whereNotExists(function ($subquery) use ($today) {
+                    $subquery->select(DB::raw(1))
+                        ->from('ci_movie_show_time')
+                        ->whereColumn('ci_movie_show_time.movie_id', 'ci_movie.id')
+                        ->where('ci_movie_show_time.start_date', '<=', $today);
+                });
         }
 
-        $movies = $query->get();
-
+        $movies = $query->groupBy('ci_movie.id')->get();
+        foreach ($movies as &$movie) {
+            $movie['genres'] = json_decode($movie['genres'], true);
+        }
         // Nếu không tìm thấy phim nào
         if ($movies->isEmpty()) {
             return response()->json([
