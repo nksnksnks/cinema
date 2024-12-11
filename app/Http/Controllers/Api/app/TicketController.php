@@ -128,7 +128,9 @@ class TicketController extends Controller
      *                  "amount": "10000",
      *                  "cinema_id": "1",
      *                  "show_time_id": "7",
-     *                  "extraData": "1"
+     *                  "extraData": "1",
+     *                  "food_id": "4",
+     *                  "food_quantity": 4,
      *                  },
      *              ),
      *          )
