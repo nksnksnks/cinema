@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 // API APP
-Route::group(['prefix' => 'app', 'middleware' => ['role:user', 'auth:sanctum']], function () {
+Route::group(['prefix' => 'app', 'middleware' => ['auth:sanctum']], function () {
 
     \App\Helpers\RouteHelper::includeRouteFiles(__DIR__ . '/app');
 });

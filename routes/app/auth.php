@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\app\AuthController;
 use App\Http\Controllers\Api\app\ChangePasswordController;
 use App\Http\Controllers\Api\app\ProfileController;
+use App\Http\Controllers\Api\app\TicketController;
 // auth app
 Route::group(['prefix' => '/auth'], function () {
     Route::post('/register', [AuthController::class, 'register'])->withoutMiddleware(['role:user', 'auth:sanctum']);

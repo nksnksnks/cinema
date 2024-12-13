@@ -11,5 +11,8 @@ Route::group(['prefix' => '/ticket'], function () {
     Route::get('/handle-momo-payment', [TicketController::class, 'handleMomoPayment']);
     Route::get('/get/{type}', [TicketController::class, 'getTicket']);
     Route::get('/get-detail/{id}', [TicketController::class, 'detailTicket']);
+    
 });
 
+Route::middleware('auth:sanctum')->get('/get-ticket', [TicketController::class, 'getBillDetail']);
+Route::middleware('auth:sanctum')->post('/check-bill', [TicketController::class, 'checkBill']);

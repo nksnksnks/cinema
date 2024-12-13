@@ -40,7 +40,7 @@ Route::post('/reset-password/{token}', [ForgotPasswordController::class, 'resetP
 
 
 Route::group(['middleware' => 'authenticate'], function(){
-    Route::group(['middleware' => ['checkrole:4']], function () {
+    Route::group(['middleware' => ['checkrole:4','checkrole:3']], function () {
         Route::get('/dashboard', [ThongkeController::class, 'index'])->name('dashboard.index');
         //cinema
         Route::get('cinema', [CinemaController::class,'index'])->name('cinema.index');

@@ -25,4 +25,17 @@ class Ticket extends Model
         'price',
     ];
     public $timestamps = true;
+
+    public function bill(){
+        return $this->belongsTo('App\Models\Bill', 'bill_id', 'id');
+    }
+
+    public function seat(){
+        return $this->belongsTo('App\Models\Seat', 'seat_id', 'id');
+    }
+
+    public function movieShowtime()
+    {
+        return $this->belongsTo('App\Models\MovieShowtime', 'movie_showtime_id', 'id');
+    }
 }

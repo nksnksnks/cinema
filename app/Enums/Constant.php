@@ -6,7 +6,7 @@ class Constant
 {
 //    STATUS CODE
     const SUCCESS_CODE              = 200;
-    const FALSE_CODE                = false;
+    const FALSE_CODE                = -1;
     const CREATED_CODE              = 201;
     const ACCEPTED_CODE             = 202;
     const NO_CONTENT_CODE           = 204;

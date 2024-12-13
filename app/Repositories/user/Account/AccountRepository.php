@@ -29,7 +29,9 @@ class AccountRepository implements AccountInterface{
 
     public function login($request)
     {
-        $account = Account::where('username', $request->username)->where('role_id', Account::USER)->first();
+        $account = Account::where('username', $request->username)
+        ->whereIn('role_id', [Account::USER, Account::STAFF])
+        ->first();
         return $account;
     }
     public function logout()

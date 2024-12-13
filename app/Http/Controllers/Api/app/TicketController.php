@@ -6,8 +6,14 @@ use App\Enums\Constant;
 use App\Helpers\CommonHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\admin\CinemaRequest;
+use App\Models\Account;
 use App\Models\Cinema;
 use App\Models\Ticket;
+use App\Models\Bill;
+use App\Models\Movie;
+use App\Models\Room;
+use App\Models\Seat;
+use App\Models\Profile;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Repositories\user\Ticket\TicketRepository;
 use App\Models\Promotion;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class TicketController extends Controller
 {
@@ -423,5 +432,268 @@ class TicketController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
+     /**
+     * @OA\Get(
+     *     path="/api/app/get-ticket",
+     *     tags={"Staff Check"},
+     *     summary="Get bill detail by ticket_code",
+     *     description="Retrieve detailed information about a bill using its ticket_code.",
+     *     operationId="getBillDetail",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="ticket_code",
+     *         in="query",
+     *         description="The unique code of the bill.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string",
+     *             example="HD123456"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Bill detail retrieved successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lấy thông tin hóa đơn thành công."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="ticket_code", type="string", example="HD123456"),
+     *                 @OA\Property(property="email", type="string", example="customer@example.com"),
+     *                 @OA\Property(property="movie", type="string", example="Movie Name"),
+     *                 @OA\Property(property="start_time", type="string", format="time", example="08:00"),
+     *                 @OA\Property(property="end_time", type="string", format="time", example="10:00"),
+     *                 @OA\Property(property="start_date", type="string", format="date", example="2024-12-10"),
+     *                 @OA\Property(property="room", type="string", example="Room 01"),
+     *                 @OA\Property(property="cinema", type="string", example="Cinema Name"),
+     *                 @OA\Property(property="seats", type="array", @OA\Items(type="string"), example={"A1", "A2"}),
+     *                 @OA\Property(property="status", type="integer", example=0),
+     *                 @OA\Property(property="staff_check", type="integer", nullable=true, example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Bill not found.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Hóa đơn không tồn tại."),
+     *             @OA\Property(property="data", type="array", @OA\Items())
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="ticket_code",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Ticket_code là bắt buộc.")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getBillDetail(Request $request)
+    {
+        $request->validate([
+            'ticket_code' => 'required' 
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'ticket_code' => 'required'
+        ],[
+            'ticket_code.required' => 'Ticket_code là bắt buộc.',
+           
+        ]);
+
+        if ($validator->fails()) {
+            $errors = (new ValidationException($validator))->errors();
+            throw new HttpResponseException(response()->json([
+                'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $errors,
+                'data' => []
+            ], Constant::SUCCESS_CODE)); // Giả sử SUCCESS_CODE = 200
+        }
+    
+
+        $bill = Bill::with([
+            'movieShowTime:id,start_time,end_time,start_date,room_id,movie_id',
+            'account:id,email',
+            'cinema:id,name'
+        ])
+        ->where('ticket_code', $request->ticket_code)->first();
+        
+        if (!$bill) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Hóa đơn không tồn tại.',
+                'data' => []
+            ], 200);
+        }
+        
+        if($bill->status==1 && $bill->staff_check!=0 ){
+            $name_nv = Profile::find($bill->staff_check)->name;
+            $message = 'Vé đã được duyệt bởi nhân viên '.$name_nv;
+        }else{
+            $message = 'Vé chưa được duyệt';
+        }
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => $message,
+            'data' => [
+                'ticket_code' => $bill->ticket_code,
+                'email' => $bill->account->email,
+                'movie' => Movie::find($bill->movieShowTime->movie_id)->name,
+                'start_time' => $bill->movieShowTime->start_time,
+                'end_time' => $bill->movieShowTime->end_time,
+                'start_date' => $bill->movieShowTime->start_date,
+                'room' => Room::find($bill->movieShowTime->room_id)->name,
+                'cinema' => $bill->cinema->name,
+                'seats' => Seat::whereIn('id', function ($query) use ($bill) {
+                    $query->select('seat_id')
+                          ->from('ci_ticket')
+                          ->where('bill_id', $bill->id);
+                })->pluck('seat_code')->toArray(),
+                'status' => $bill->status,
+                'staff_check' => $bill->staff_check == 0 ? null : $name_nv,
+                
+            ]
+        ], Response::HTTP_OK);
+    }
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/app/check-bill",
+     *     tags={"Staff Check"},
+     *     summary="Check and approve a bill",
+     *     description="Check and approve a bill by ticket_code for a customer.",
+     *     operationId="checkBill",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="ticket_code",
+     *         in="query",
+     *         description="The unique code of the bill to be checked.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string",
+     *             example="HD123456"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Bill checked successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Duyệt hóa đơn thành công."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="ticket_code", type="string", example="HD123456"),
+     *                 @OA\Property(property="status", type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Bill not found.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Hóa đơn không tồn tại."),
+     *             @OA\Property(property="data", type="array", @OA\Items())
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="ticket_code",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Ticket_code là bắt buộc.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bill already checked or invalid.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Hóa đơn đã được duyệt hoặc không hợp lệ."),
+     *             @OA\Property(property="data", type="array", @OA\Items())
+     *         )
+     *     )
+     * )
+     */
+    public function checkBill(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ticket_code' => 'required|exists:ci_bill,ticket_code'
+        ], [
+            'ticket_code.required' => 'Ticket_code là bắt buộc.',
+            'ticket_code.exists' => 'Hóa đơn không tồn tại.'
+            
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Lỗi validation',
+                'errors' => $validator->errors()
+            ], 200);
+        }
+        
+        $bill = Bill::where('ticket_code', $request->ticket_code)->first();
+
+        if (!$bill) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Hóa đơn không tồn tại.',
+                'data' => []
+            ], 200);
+        }
+
+        if ($bill->status == 1 || $bill->staff_check != 0) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Hóa đơn đã được duyệt hoặc không hợp lệ.',
+                'data' => []
+            ], 200);
+        }
+
+        // Lấy thông tin nhân viên đang đăng nhập
+        $staff = Auth::user();
+        if($staff->role_id == 4){
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Bạn không có quyền duyệt vé',
+                'data' => []
+            ], 200);
+        }
+        // Cập nhật trạng thái và id nhân viên duyệt
+        $bill->status = 1;
+        $bill->staff_check = $staff->id;
+        $bill->save();
+
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Duyệt hóa đơn thành công.',
+            'data' => [
+                'ticket_code' => $bill->ticket_code,
+                'status' => $bill->status,
+                'staff_check' => $bill->staff_check
+            ]
+        ], 200);
+    }
+
 
 }

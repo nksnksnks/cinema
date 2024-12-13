@@ -28,6 +28,8 @@ class Bill extends Model
         'ticket_code',
         'account_id',
         'cinema_id',
+        'movie_show_time_id',
+        'staff_check',
         'total',
         'status',
     ];
@@ -44,5 +46,10 @@ class Bill extends Model
     public function cinema()
     {
         return $this->belongsTo('App\Models\Cinema', 'cinema_id', 'id');
+    }
+
+    public function movieShowTime()
+    {
+        return $this->belongsTo('App\Models\MovieShowTime', 'movie_show_time_id', 'id');
     }
 }

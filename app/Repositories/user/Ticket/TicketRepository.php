@@ -73,15 +73,29 @@ class TicketRepository{
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
             $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
-
-            // Tạo Bill
+            if(Auth::user()->role_id == 3){
+                // Tạo Bill
             $billId = Bill::create([
                 'ticket_code' => $ticketCode,
                 'account_id' => (int)$data['user_id'],
                 'cinema_id' => $data['cinema_id'],
+                'movie_show_time_id' => $showTimeId,
                 'total' => $amount,
+                'staff_check' => Auth::user()->id,
                 'status' => '1'
             ])->id;
+            }else{
+                // Tạo Bill
+                $billId = Bill::create([
+                    'ticket_code' => $ticketCode,
+                    'account_id' => (int)$data['user_id'],
+                    'cinema_id' => $data['cinema_id'],
+                    'movie_show_time_id' => $showTimeId,
+                    'total' => $amount,
+                    'status' => '0'
+                ])->id;
+            }
+        
 
             $user = Auth::user()->id;
             $account = Account::find($user);
