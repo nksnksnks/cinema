@@ -82,7 +82,7 @@ class AuthController extends Controller
                 'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], Constant::FALSE_CODE);
         }
     }
 
@@ -125,19 +125,19 @@ class AuthController extends Controller
             $user = $this->accountInterface->login($request);
             if (!$user) {
                 return response()->json([
-                    'status' => Response::HTTP_BAD_REQUEST,
+                    'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_1',
                     'message' => trans('messages.errors.users.email_not_found'),
                     'data' => []
-                ], Response::HTTP_BAD_REQUEST);
+                ], Constant::FALSE_CODE);
             }
             if ($user->status == Account::NOT_ACTIVE) {
                 return response()->json([
-                    'status' => Response::HTTP_BAD_REQUEST,
+                    'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_2',
                     'message' => trans('messages.errors.users.account_not_active'),
                     'data' => []
-                ], Response::HTTP_BAD_REQUEST);
+                ], Constant::FALSE_CODE);
             }
 
             $credentials = [
@@ -146,11 +146,11 @@ class AuthController extends Controller
             ];
             if (!Auth::attempt($credentials)) {
                 return response()->json([
-                    'status' => Response::HTTP_BAD_REQUEST,
+                    'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_3',
                     'message' => trans('messages.errors.users.password_not_correct'),
                     'data' => []
-                ], Response::HTTP_BAD_REQUEST);
+                ], Constant::FALSE_CODE);
             }
 
 
