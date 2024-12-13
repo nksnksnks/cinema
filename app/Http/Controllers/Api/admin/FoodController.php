@@ -173,6 +173,13 @@ class FoodController extends Controller
     {
         try {
             $foods = Food::all();
+            if (isset($foods) && $foods->count() === 0) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Foods not found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Foods retrieved successfully',
@@ -258,7 +265,7 @@ class FoodController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Food created successfully',
                 'data' => $food
-            ], Response::HTTP_CREATED);
+            ], Constant::SUCCESS_CODE);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -302,6 +309,13 @@ class FoodController extends Controller
     public function show($id)
     {
         $food = Food::findOrFail($id);
+        if (!$food) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Food not found',
+                'data' => []
+            ], Constant::SUCCESS_CODE);
+        }
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Food retrieved successfully',
@@ -359,6 +373,13 @@ class FoodController extends Controller
             DB::beginTransaction();
 
             $food = Food::findOrFail($id);
+            if (!$food) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Food not found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
 
             // Lưu đường dẫn ảnh cũ
             $oldImage = $food->image;
@@ -450,6 +471,13 @@ class FoodController extends Controller
         try {
             DB::beginTransaction();
             $food = Food::findOrFail($id);
+            if (!$food) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Food not found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
             $food->delete();
             DB::commit();
 

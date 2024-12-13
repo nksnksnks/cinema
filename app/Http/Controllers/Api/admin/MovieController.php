@@ -305,6 +305,13 @@ class MovieController extends Controller
     {
         try {
             $movies = Movie::with('movie_genre')->get();
+            if ($movies->isEmpty()) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Movies not found',
+                    'data' => []
+                ], 200);
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
@@ -455,7 +462,7 @@ class MovieController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Movie created successfully',
                 'data' => $movie
-            ], Response::HTTP_CREATED);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -504,16 +511,16 @@ class MovieController extends Controller
         if (!$movie) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
-                'message' => 'Movie not found.',
+                'message' => 'Movie not found',
                 'data' => []
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], 200);
         }
 
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Movie retrieved successfully',
             'data' => $movie
-        ]);
+        ],200);
     }
 
     /**
@@ -600,7 +607,13 @@ class MovieController extends Controller
             DB::beginTransaction();
 
             $movie = Movie::findOrFail($id);
-
+            if (!$movie) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Movie not found',
+                    'data' => []
+                ], 200);
+            }
             // Lưu đường dẫn ảnh cũ
             $oldAvatar = $movie->avatar;
             $oldPoster = $movie->poster;
@@ -673,7 +686,7 @@ class MovieController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Movie updated successfully',
                 'data' => $movie
-            ]);
+            ],200);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -720,6 +733,13 @@ class MovieController extends Controller
             DB::beginTransaction();
 
             $movie = Movie::findOrFail($id);
+            if (!$movie) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Movie not found',
+                    'data' => []
+                ], 200);
+            }
             // $oldAvatar = $movie->avatar;
             // $oldPoster = $movie->poster;
             // if ($oldAvatar) {
@@ -829,7 +849,7 @@ class MovieController extends Controller
                 'status' => Constant::FALSE_CODE,
                 'message' => 'movies not found',
                 'data' => []
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], 200);
         }
 
         // Transform data to include names instead of IDs
@@ -869,7 +889,7 @@ class MovieController extends Controller
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Movies retrieved successfully',
             'data' => $transformedMovies
-        ]);
+        ],200);
     }
 
     // user
@@ -913,14 +933,14 @@ class MovieController extends Controller
                 'status' => Constant::FALSE_CODE,
                 'message' => 'Movie not found.',
                 'data' => []
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], 200);
         }
 
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Movie retrieved successfully',
             'data' => $movie
-        ]);
+        ],200);
     }
 
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\app;
 
 use App\Enums\Constant;
 use App\Http\Controllers\Controller;
+use App\Models\Movie;
+use App\Models\MovieShowtime;
 use App\Repositories\user\Room\RoomRepository;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,13 +25,13 @@ class RoomController extends Controller
      * @OA\Get (
      *     path="/api/app/room/get/{id}",
      *     tags={"App Phòng chiếu"},
-     *     summary="Lấy thông tin suất chiếu",
+     *     summary="Lấy thông tin xuất chiếu",
      *     operationId="app/room/get",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *          name="id",
      *          in="path",
-     *          description="id suất chiếu",
+     *          description="id xuất chiếu",
      *          required=true,
      *          @OA\Schema(type="integer")
      *     ),
@@ -51,7 +53,16 @@ class RoomController extends Controller
      */
     public function getShowTime($id){
         try {
+            $movieshowtime = MovieShowtime::find($id);
+            if (!$movieshowtime) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                     'message' => 'Không tìm thấy dữ liệu',
+                    'data' => []
+                ],200);
+            }
             $data = $this->roomRepository->getRoom($id);
+            
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),

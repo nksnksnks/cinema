@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Account;
 use App\Http\Requests\app\ChangePasswordRequest;
 use Illuminate\Support\Facades\DB;
+use app\Enums\Constant;
 
 class ChangePasswordController extends Controller
 {
@@ -70,15 +71,27 @@ public function changePassword(ChangePasswordRequest $request)
     try {
         // Lấy thông tin người dùng đã đăng nhập
         $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Người dùng chưa đăng nhập'
+            ], 200);
+        }
 
         // Kiểm tra mật khẩu hiện tại có đúng không
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['error' => 'Mật khẩu hiện tại không chính xác'], 400);
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'error' => 'Mật khẩu hiện tại không chính xác'
+            ], 200);
         }
 
         // Kiểm tra mật khẩu mới và mật khẩu xác nhận có khớp không
         if ($request->new_password !== $request->new_password_confirmation) {
-            return response()->json(['error' => 'Mật khẩu mới và mật khẩu xác nhận không khớp'], 400);
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'error' => 'Mật khẩu mới và mật khẩu xác nhận không khớp'
+            ], 200);
         }
 
         // Cập nhật mật khẩu
@@ -88,7 +101,9 @@ public function changePassword(ChangePasswordRequest $request)
         // Commit transaction nếu không có lỗi
         DB::commit();
 
-        return response()->json(['message' => 'Mật khẩu đã được thay đổi thành công'], 200);
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Mật khẩu đã được thay đổi thành công'], 200);
     } catch (\Exception $e) {
         // Rollback transaction nếu có lỗi
         DB::rollBack();

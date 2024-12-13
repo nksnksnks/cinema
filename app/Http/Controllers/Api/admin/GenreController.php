@@ -244,6 +244,13 @@ class GenreController extends Controller
     public function show($id)
     {
         $genre = Genre::find($id);
+        if(!$genre){
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Genre not found',
+                'data' => []
+            ], Response::HTTP_OK);
+        }
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
@@ -311,6 +318,13 @@ class GenreController extends Controller
         try {
             DB::beginTransaction();
             $genre = Genre::findOrFail($id);
+            if(!$genre){
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Genre not found',
+                    'data' => []
+                ], 200);
+            }
             $genre->update($request->all());
 
             DB::commit();
@@ -319,7 +333,7 @@ class GenreController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Genre updated successfully',
                 'data' => $genre
-            ]);
+            ],200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -375,6 +389,13 @@ class GenreController extends Controller
                 $movie->delete();
             }
             $genre = Genre::findOrFail($id);
+            if(!$genre){
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Genre not found',
+                    'data' => []
+                ], 200);
+            }
             $genre->delete();
 
             DB::commit();

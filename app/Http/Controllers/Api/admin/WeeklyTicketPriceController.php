@@ -110,7 +110,18 @@ class WeeklyTicketPriceController extends Controller
     public function index()
     {
         $weeklyTicketPrices = WeeklyTicketPrice::all();
-        return response()->json($weeklyTicketPrices);
+        if ($weeklyTicketPrices->isEmpty()) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Weekly ticket prices not found',
+                'data' => []
+            ],200);
+        }
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Weekly ticket prices retrieved successfully',
+            'data' =>$weeklyTicketPrices
+        ],200);
     }
 
     /**
@@ -174,7 +185,7 @@ class WeeklyTicketPriceController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Weekly ticket price created successfully',
                 'data' => $weeklyTicketPrice
-            ], Response::HTTP_CREATED);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -216,6 +227,13 @@ class WeeklyTicketPriceController extends Controller
     public function show($id)
     {
         $weekly_ticket_price = WeeklyTicketPrice::find($id);
+        if (!$weekly_ticket_price) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Weekly ticket price not found',
+                'data' => []
+            ], 200);
+        }
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Weekly ticket price retrieved successfully',
@@ -267,6 +285,13 @@ class WeeklyTicketPriceController extends Controller
         try {
             DB::beginTransaction();
             $weekly_ticket_price = WeeklyTicketPrice::find($id);
+            if (!$weekly_ticket_price) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Weekly ticket price not found',
+                    'data' => []
+                ], 200);
+            }
             $weekly_ticket_price->update($request->all());
 
             DB::commit();
@@ -318,6 +343,13 @@ class WeeklyTicketPriceController extends Controller
         try {
             DB::beginTransaction();
             $weekly_ticket_price = WeeklyTicketPrice::find($id);
+            if (!$weekly_ticket_price) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Weekly ticket price not found',
+                    'data' => []
+                ], 200);
+            }
             $weekly_ticket_price->delete();
 
             DB::commit();

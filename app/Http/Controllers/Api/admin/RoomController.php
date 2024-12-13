@@ -314,7 +314,7 @@ class RoomController extends Controller
                     'status' => Constant::FALSE_CODE,
                     'message' => trans('messages.errors.room.exist'),
                     'data' => []
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                ], 200);
             }
             $roomId = $this->roomInterface->createRoom($request);
             $seat = $request->all();
@@ -467,7 +467,15 @@ class RoomController extends Controller
      */
     public function getRoom($id){
         try {
+            $room = Room::find($id);
+            if(!$room){
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Không tồn tại phòng chiếu',
+                ],200);
+            }
             $data = $this->roomInterface->getRoom($id);
+            
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'success.success',

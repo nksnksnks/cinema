@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use app\Enums\Constant;
 
 class ChangePasswordRequest extends FormRequest
 {
@@ -58,6 +59,6 @@ class ChangePasswordRequest extends FormRequest
         throw new HttpResponseException(response()->json([
             'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
             'message' => $errors,
-        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+        ], Constant::SUCCESS_CODE));
     }
 }

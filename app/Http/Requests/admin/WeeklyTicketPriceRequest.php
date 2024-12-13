@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-
+use app\Enums\Constant;
 class WeeklyTicketPriceRequest extends FormRequest
 {
     /**
@@ -79,7 +79,7 @@ class WeeklyTicketPriceRequest extends FormRequest
             throw new HttpResponseException(response()->json([
                 'statusCode' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => $errors,
-            ], Response::HTTP_UNPROCESSABLE_ENTITY));
+            ], Constant::SUCCESS_CODE));
         }
 
         // Trả về redirect nếu request là từ form web

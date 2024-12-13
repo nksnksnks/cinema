@@ -129,6 +129,13 @@ class CountryController extends Controller
     {
         try {
             $countries = Country::all();
+            if(isset($countries) && count($countries) == 0) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'No country found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
@@ -204,7 +211,7 @@ class CountryController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'country created successfully',
                 'data' => $country
-            ], Response::HTTP_CREATED);
+            ], Constant::SUCCESS_CODE);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -248,6 +255,13 @@ class CountryController extends Controller
     public function show($id)
     {
         $country = Country::find($id);
+        if (!$country) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'country not found',
+                'data' => []
+            ], Constant::SUCCESS_CODE);
+        }
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
@@ -315,6 +329,13 @@ class CountryController extends Controller
         try {
             DB::beginTransaction();
             $country = Country::find($id);
+            if (!$country) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'country not found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
             $data = $request->all();
             $country->update($data);
             DB::commit();
@@ -379,6 +400,13 @@ class CountryController extends Controller
              $movie->delete();
          }
             $country = Country::findOrFail($id);
+            if (!$country) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'country not found',
+                    'data' => []
+                ], Constant::SUCCESS_CODE);
+            }
             $country->delete();
 
             DB::commit();
@@ -387,7 +415,7 @@ class CountryController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'country deleted successfully',
                 'data' => []
-            ], Response::HTTP_OK); // Sử dụng 200 OK hoặc 202 Accepted
+            ], Constant::SUCCESS_CODE); // Sử dụng 200 OK hoặc 202 Accepted
         } catch (\Throwable $th) {
             DB::rollBack();
 

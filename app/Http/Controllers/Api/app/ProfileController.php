@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-
+use app\Enums\Constant;
+use Symfony\Component\HttpFoundation\Response;
 class ProfileController extends Controller
 {
     /**
@@ -42,9 +43,16 @@ class ProfileController extends Controller
     {
         // Lấy profile của người dùng đã đăng nhập
         $profile = Profile::where('account_id', Auth::user()->id)->first();
-
+        if (!$profile) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Profile not found',
+                'data' => [],
+            ], Constant::SUCCESS_CODE);
+        }
         return response()->json([
-            'status' => 'success',
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Profile retrieved successfully',
             'data' => $profile,
         ]);
     }
@@ -93,6 +101,14 @@ class ProfileController extends Controller
 
             // Lấy thông tin profile của người dùng
             $profile = Profile::where('account_id', Auth::user()->id)->first();
+            
+            if (!$profile) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Profile not found',
+                    'data' => [],
+                ], Constant::SUCCESS_CODE);
+            }
 
             // Lưu đường dẫn ảnh cũ nếu có
             $oldAvatar = $profile ? $profile->avatar : null;
@@ -127,17 +143,18 @@ class ProfileController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => Constant::SUCCESS_CODE,
                 'message' => 'Profile updated successfully',
+                'data' => $profile,
             ]);
 
         } catch (\Throwable $th) {
             DB::rollBack();
 
             return response()->json([
-                'status' => 'error',
+                'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
-            ], 500);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

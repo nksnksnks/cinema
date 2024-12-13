@@ -16,6 +16,10 @@ use App\Models\PasswordReset;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ForgotPassword;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Exceptions\HttpResponseException;
+
 
 
 class AuthController extends Controller
@@ -82,7 +86,7 @@ class AuthController extends Controller
                 'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
-            ], Constant::FALSE_CODE);
+            ], Constant::INTERNAL_SV_ERROR_CODE);
         }
     }
 
@@ -129,7 +133,7 @@ class AuthController extends Controller
                     'errorCode' => 'E_UC2_1',
                     'message' => trans('messages.errors.users.email_not_found'),
                     'data' => []
-                ], Constant::FALSE_CODE);
+                ], Response::HTTP_OK);
             }
             if ($user->status == Account::NOT_ACTIVE) {
                 return response()->json([
@@ -137,7 +141,7 @@ class AuthController extends Controller
                     'errorCode' => 'E_UC2_2',
                     'message' => trans('messages.errors.users.account_not_active'),
                     'data' => []
-                ], Constant::FALSE_CODE);
+                ], Response::HTTP_OK);
             }
 
             $credentials = [
@@ -150,7 +154,7 @@ class AuthController extends Controller
                     'errorCode' => 'E_UC2_3',
                     'message' => trans('messages.errors.users.password_not_correct'),
                     'data' => []
-                ], Constant::FALSE_CODE);
+                ], Response::HTTP_OK);
             }
 
 
@@ -227,10 +231,22 @@ class AuthController extends Controller
 
     public function checkForgotPassword(Request $request)
 {
-    // Validate input email
-    $request->validate([
+    $validator = Validator::make($request->all(), [
         'email' => 'required|email|exists:ci_account,email'
+    ],[
+        'email.required' => 'Email là bắt buộc.',
+        'email.email' => 'Email không đúng định dạng.',
+        'email.exists' => 'Email không tồn tại.'
     ]);
+
+    if ($validator->fails()) {
+        $errors = (new ValidationException($validator))->errors();
+        throw new HttpResponseException(response()->json([
+            'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+            'message' => $errors,
+            'data' => []
+        ], Constant::SUCCESS_CODE)); // Giả sử SUCCESS_CODE = 200
+    }
 
     // Tìm tài khoản người dùng dựa trên email
     $user = Account::where('email', $request->email)->firstOrFail();
@@ -247,8 +263,9 @@ class AuthController extends Controller
     if ($checkToken && $checkToken->created_at > $expirationTime) {
         // Trả về lỗi nếu token chưa hết hạn
         return response()->json([
+            'status' => Constant::FALSE_CODE,
             'message' => 'Vui lòng check email trước.'
-        ], 400);
+        ], Constant::SUCCESS_CODE);
     } else {
         // Xóa token cũ nếu có
         PasswordReset::where('email', $request->email)->delete();
@@ -267,14 +284,16 @@ class AuthController extends Controller
 
         // Trả về thông báo thành công
         return response()->json([
+            'status' => Constant::SUCCESS_CODE,
             'message' => 'Chúng tôi đã gửi email, hãy xác nhận để đổi mật khẩu.'
         ], 200);
     }
 
     // Nếu gặp lỗi khi tạo token
     return response()->json([
+        'status' => Constant::FALSE_CODE,
         'message' => 'Lỗi! Vui lòng thử lại.'
-    ], 500);
+    ], Constant::INTERNAL_SV_ERROR_CODE);
 }
 }
 

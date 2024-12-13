@@ -129,6 +129,13 @@ class PromotionController extends Controller
     {
         try {
             $promotions = Promotion::all();
+            if ($promotions->isEmpty()) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Không có khuyến mãi nào.',
+                    'data' => []
+                ], 200);
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
@@ -205,7 +212,7 @@ class PromotionController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Promotion created successfully',
                 'data' => $promotion
-            ], Response::HTTP_CREATED);
+            ], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -247,11 +254,18 @@ class PromotionController extends Controller
     public function show($id)
     {
         $promotion = Promotion::find($id);
+        if (!$promotion) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Promotion not found',
+                'data' => []
+            ], 200);
+        }
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'Promotion retrieved successfully',
             'data' => $promotion
-        ]);
+        ],200);
     }
 /**
  * @OA\Put(
@@ -312,6 +326,13 @@ class PromotionController extends Controller
         try {
             DB::beginTransaction();
             $promotion = Promotion::findOrFail($id);
+            if (!$promotion) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Promotion not found',
+                    'data' => []
+                ], 200);
+            }
             $promotion->update($request->all());
 
             DB::commit();
@@ -366,6 +387,13 @@ class PromotionController extends Controller
         try {
             DB::beginTransaction();
             $promotion = Promotion::findOrFail($id);
+            if (!$promotion) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Promotion not found',
+                    'data' => []
+                ], 200);
+            }
             $promotion->delete();
 
             DB::commit();
@@ -440,11 +468,19 @@ class PromotionController extends Controller
                 return $promotion;
             });
 
+            if ($promotions->isEmpty()) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'No promotions available.',
+                    'data' => []
+                ], 200);
+            }
+
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'Promotion list retrieved successfully.',
                 'data' => $promotions
-            ]);
+            ],200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,

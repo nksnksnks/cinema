@@ -3,6 +3,10 @@
 namespace App\Http\Requests\app;
 
 use Illuminate\Foundation\Http\FormRequest;
+use app\Enums\Constant;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfileRequest extends FormRequest
 {
@@ -51,5 +55,15 @@ class ProfileRequest extends FormRequest
             'avatar.mimes' => 'Ảnh đại diện phải có định dạng: jpeg, png, jpg, gif, svg.',
             'avatar.max' => 'Ảnh đại diện không được vượt quá 10MB.',
         ];
+    }
+
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $errors = (new ValidationException($validator))->errors();
+        throw new HttpResponseException(response()->json([
+            'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+            'message' => $errors,
+            'data' => []
+        ], Constant::SUCCESS_CODE));
     }
 }

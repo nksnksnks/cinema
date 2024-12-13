@@ -123,6 +123,13 @@ class RatedController extends Controller
     {
         try {
             $rateds = Rated::all();
+            if($rateds->isEmpty()){
+                return response()->json([
+                    'status' => Constant::SUCCESS_CODE,
+                    'message' => 'No rateds found',
+                    'data' => []
+                ], Response::HTTP_OK);
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
@@ -198,7 +205,7 @@ class RatedController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'rated created successfully',
                 'data' => $rated
-            ], Response::HTTP_CREATED);
+            ], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -242,12 +249,19 @@ class RatedController extends Controller
     public function show($id)
     {
         $rated = Rated::find($id);
+        if (!$rated) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'rated not found',
+                'data' => []
+            ], 200);
+        }
         // Route Model Binding nên không cần find('id') mà truyền thẳng object vào hàm
         return response()->json([
             'status' => Constant::SUCCESS_CODE,
             'message' => 'rated retrieved successfully',
             'data' => $rated
-        ]);
+        ],200);
     }
 
     /**
@@ -310,6 +324,13 @@ class RatedController extends Controller
             DB::beginTransaction();
 
             $rated = Rated::findOrFail($id);
+            if (!$rated) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'rated not found',
+                    'data' => []
+                ], 200);
+            }
             $rated->update($request->all());
 
             DB::commit();
@@ -318,7 +339,7 @@ class RatedController extends Controller
                 'status' => Constant::SUCCESS_CODE,
                 'message' => 'rated updated successfully',
                 'data' => $rated
-            ]);
+            ],200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -374,6 +395,13 @@ class RatedController extends Controller
              $movie->delete();
          }
             $rated = Rated::findOrFail($id);
+            if (!$rated) {
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'rated not found',
+                    'data' => []
+                ], 200);
+            }
             $rated->delete();
 
             DB::commit();

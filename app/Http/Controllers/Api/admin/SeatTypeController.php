@@ -207,6 +207,13 @@ class SeatTypeController extends Controller
     public function getListSeatType(){
         try {
             $data = SeatType::all();
+            if($data->isEmpty()){
+                return response()->json([
+                    'status' => Constant::FALSE_CODE,
+                    'message' => 'Không có dữ liệu',
+                ],200);
+
+            }
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
