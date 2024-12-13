@@ -19,4 +19,4 @@ Route::post('/forgot-password', [AuthController::class, 'checkForgotPassword'])-
 Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'getProfile']);
 Route::middleware('auth:sanctum')->post('/profile', [ProfileController::class, 'updateOrCreate']);
 
-Route::get('/getTokenUser', [AuthController::class, 'getTokenUser'])->withoutMiddleware(['role:user', 'auth:sanctum']);;
+Route::middleware('auth:sanctum')->get('/getTokenUser', [AuthController::class, 'getTokenUser']);

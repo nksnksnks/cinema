@@ -299,61 +299,19 @@ class AuthController extends Controller
 
     public function getTokenUser(Request $request)
     {
-        // Lấy token từ request (query parameter hoặc request body)
-        $token = $request->input('token'); // Dùng input() thay cho all()
-
-        if ($token) {
-            // Tách token dựa trên dấu "|"
-            $parts = explode("|", $token);
-
-            if (count($parts) === 2) {
-                // Hash phần token sau dấu "|"
-                $hashedToken = hash('sha256', $parts[1]);
-
-                // Tìm PersonalAccessToken theo hashed token
-                $accessToken = PersonalAccessToken::where('token', $hashedToken)->first();
-
-                if ($accessToken) {
-                    // Lấy user từ tokenable
-                    $user = Account::find($accessToken->tokenable_id);
-
-                    // Kiểm tra xem user có phải là instance của Account không
-                    if ($user instanceof Account) {
-                        return response()->json([
-                            'status' => Constant::SUCCESS_CODE,
-                            'message' => 'Success',
-                            'data' => $user
-                        ], Constant::SUCCESS_CODE);
-
-                    }else{
-                        return response()->json([
-                            'status' => -1,
-                            'message' => 'User not found or incorrect model type',
-                            'data' => null
-                        ], 200);
-                    }
-
-                } else {
-                    return response()->json([
-                        'status' => -1,
-                        'message' => 'Invalid token',
-                        'data' => null
-                    ], 200);
-                }
-            } else {
-                return response()->json([
-                    'status' => -1, // Bad Request
-                    'message' => 'Invalid token format',
-                    'data' => null
-                ], status: 200);
-            }
-        } else {
+        $user = Auth::user();
+        if(!$user){
             return response()->json([
-                'status' => -1,
-                'message' => 'Token not provided',
-                'data' => null
-            ], 200);
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Token không hợp lệ',
+                'data' => []
+            ], Constant::SUCCESS_CODE);
         }
+        return response()->json([
+            'status' => Constant::SUCCESS_CODE,
+            'message' => 'Success',
+            'data' => $user
+        ], Constant::SUCCESS_CODE);
     }
 }
 
