@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Http\Requests\app\ChangePasswordRequest;
 use Illuminate\Support\Facades\DB;
 use app\Enums\Constant;
+use Illuminate\Support\Facades\Auth;
 
 class ChangePasswordController extends Controller
 {
@@ -63,7 +64,7 @@ class ChangePasswordController extends Controller
      */
    
 
-public function changePassword(ChangePasswordRequest $request)
+public function changePassword(Request $request)
 {
     // Sử dụng DB Transaction để đảm bảo toàn vẹn dữ liệu
     DB::beginTransaction();
@@ -71,6 +72,7 @@ public function changePassword(ChangePasswordRequest $request)
     try {
         // Lấy thông tin người dùng đã đăng nhập
         $user = $request->user();
+        $check = Auth::user();
         if (!$user) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
