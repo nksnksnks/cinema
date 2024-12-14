@@ -24,7 +24,7 @@ class MovieShowTimeRepository{
                 ->orderBy('ci_movie_show_time.start_time', 'ASC')
                 ->get();
             if($movie && $showTime)
-                $data = self::mapData($movie, $showTime);
+                $data[] = self::mapData($movie, $showTime);
         }else{
             $movie = Movie::select('ci_movie.*')->join('ci_movie_show_time', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
                 ->join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
