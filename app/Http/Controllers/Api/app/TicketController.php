@@ -112,7 +112,6 @@ class TicketController extends Controller
      *     summary="Thanh toán Momo",
      *     security={{"bearerAuth":{}}},
      *     operationId="ticket/momo-payment",
-     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *          in="header",
      *          name="X-localication",
@@ -130,6 +129,8 @@ class TicketController extends Controller
      *              @OA\Property(property="cinema_id", type="string"),
      *              @OA\Property(property="show_time_id", type="string"),
      *              @OA\Property(property="extraData", type="string"),
+     *              @OA\Property(property="food_id", type="string"),
+     *              @OA\Property(property="food_quantity", type="string"),
      *          @OA\Examples(
      *              summary="Examples",
      *              example = "Examples",
@@ -139,7 +140,7 @@ class TicketController extends Controller
      *                  "show_time_id": "7",
      *                  "extraData": "1",
      *                  "food_id": "4",
-     *                  "food_quantity": 4,
+     *                  "food_quantity": 4
      *                  },
      *              ),
      *          )
@@ -171,10 +172,16 @@ class TicketController extends Controller
             ], Constant::SUCCESS_CODE);
         }
         $orderId = $key . '_' . time();
+        $food = [
+            'food_id' => $data['food_id'],
+            'food_quantity' => $data['food_quantity']
+        ];
         Redis::expire($orderId, 300);
+        Redis::setex('extraData_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'] , 300, $data['extraData']);
+        Redis::setex('food_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'], 300, json_encode($food));
         $redirectUrl = $this->redirectUrl;
         $ipnUrl = $this->ipnUrl;
-        $extraData = $data['extraData'] ?? "";
+        $extraData = "";
         $requestId = time() . "";
         $requestType = $this->requestType;
         $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&ipnUrl=" . $ipnUrl . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&partnerCode=" . $partnerCode . "&redirectUrl=" . $redirectUrl . "&requestId=" . $requestId . "&requestType=" . $requestType;
@@ -203,137 +210,135 @@ class TicketController extends Controller
         ], Constant::SUCCESS_CODE);
     }
 
-    public function applyPromotionAfterPayment($id)
-    {
-        $promotion = Promotion::find($id);
-
-        if (!$promotion || $promotion->status != 1) {
-            return;
-        }
-
-        // Kiểm tra ngày áp dụng khuyến mãi
-        if ($promotion->end_date < now() || $promotion->start_date > now()) {
-            return;
-        }
-
-        // Kiểm tra số lượng khuyến mãi còn lại
-        if ($promotion->quantity <= 0) {
-            return;
-        }
-
-        $userId = Auth::id();
-
-        // Kiểm tra người dùng đã sử dụng mã khuyến mãi này chưa
-        if ($promotion->users()->where('account_id', $userId)->exists()) {
-            return;
-        }
-
-        // Ghi nhận người dùng đã sử dụng mã và giảm số lượng còn lại
-        $promotion->users()->attach($userId);
-        $promotion->decrement('quantity');
-    }
-
-
-    // public function handleMomoPayment(Request $request){
-    //     $responseData = $request->all();
-    //     $partnerCode = $this->partnerCode;
-    //     $accessKey = $this->accessKey;
-    //     $secretKey = $this->secretKey;
-    //     $orderInfo = $this->orderInfo;
-    //     $amount = $responseData["amount"];
-    //     $orderId = $responseData['orderId'];
-    //     $extraData =  ""; // Chứa ID của mã giảm giá (nếu có)
-    //     $requestId = $responseData['requestId'];
-    //     $signature = $responseData['signature'];
-    //     $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData .
-    //         "&message=" . $responseData["message"] . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo .
-    //         "&orderType=" . $responseData["orderType"] . "&partnerCode=" . $partnerCode . "&payType=" . $responseData["payType"] . "&requestId=" . $requestId .
-    //         "&responseTime=" . $responseData["responseTime"] . "&resultCode=" . $responseData["resultCode"] . "&transId=" . $responseData["transId"];
-    //     $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
-    //     if ($generatedSignature == $signature) {
-    //         if($responseData['resultCode'] == '0') {
-
-    //             $this->ticketRepository->createBill($orderId, $amount);
-    //             return response()->json([
-    //                 'status' => Constant::SUCCESS_CODE,
-    //                 'message' => trans('messages.success.success'),
-    //                 'data' => [0]
-    //             ], Constant::SUCCESS_CODE);
-    //         }
-    //         else{
-    //             $this->ticketRepository->cancelReservation($orderId);
-    //             return response()->json([
-    //                 'status' => Constant::BAD_REQUEST_CODE,
-    //                 'message' => trans('messages.errors.errors'),
-    //                 'data' => [1]
-    //             ], Constant::SUCCESS_CODE);
-    //         }
-    //     } else {
-    //         $this->ticketRepository->cancelReservation($orderId);
-    //         return response()->json([
-    //             'status' => Constant::BAD_REQUEST_CODE,
-    //             'message' => trans('messages.errors.errors'),
-    //             'data' => [1]
-    //         ], Constant::SUCCESS_CODE);
-    //     }
-    // }
+//    public function applyPromotionAfterPayment($id)
+//    {
+//        $promotion = Promotion::find($id);
+//
+//        if (!$promotion || $promotion->status != 1) {
+//            return;
+//        }
+//
+//        // Kiểm tra ngày áp dụng khuyến mãi
+//        if ($promotion->end_date < now() || $promotion->start_date > now()) {
+//            return;
+//        }
+//
+//        // Kiểm tra số lượng khuyến mãi còn lại
+//        if ($promotion->quantity <= 0) {
+//            return;
+//        }
+//
+//        $userId = Auth::id();
+//
+//        // Kiểm tra người dùng đã sử dụng mã khuyến mãi này chưa
+//        if ($promotion->users()->where('account_id', $userId)->exists()) {
+//            return;
+//        }
+//
+//        // Ghi nhận người dùng đã sử dụng mã và giảm số lượng còn lại
+//        $promotion->users()->attach($userId);
+//        $promotion->decrement('quantity');
+//    }
 
 
-    public function handleMomoPayment(Request $request)
-{
-    $responseData = $request->all();
-    $partnerCode = $this->partnerCode;
-    $accessKey = $this->accessKey;
-    $secretKey = $this->secretKey;
-    $orderInfo = $this->orderInfo;
-    $amount = $responseData["amount"];
-    $orderId = $responseData['orderId'];
-    $extraData = $responseData['extraData'] ?? ""; // Chứa ID của mã giảm giá (nếu có)
-    $requestId = $responseData['requestId'];
-    $signature = $responseData['signature'];
-    $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData .
-        "&message=" . $responseData["message"] . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo .
-        "&orderType=" . $responseData["orderType"] . "&partnerCode=" . $partnerCode . "&payType=" . $responseData["payType"] . "&requestId=" . $requestId .
-        "&responseTime=" . $responseData["responseTime"] . "&resultCode=" . $responseData["resultCode"] . "&transId=" . $responseData["transId"];
-    $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
+     public function handleMomoPayment(Request $request){
+         $responseData = $request->all();
+         $partnerCode = $this->partnerCode;
+         $accessKey = $this->accessKey;
+         $secretKey = $this->secretKey;
+         $orderInfo = $this->orderInfo;
+         $amount = $responseData["amount"];
+         $orderId = $responseData['orderId'];
+         $extraData =  "";
+         $requestId = $responseData['requestId'];
+         $signature = $responseData['signature'];
+         $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData .
+             "&message=" . $responseData["message"] . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo .
+             "&orderType=" . $responseData["orderType"] . "&partnerCode=" . $partnerCode . "&payType=" . $responseData["payType"] . "&requestId=" . $requestId .
+             "&responseTime=" . $responseData["responseTime"] . "&resultCode=" . $responseData["resultCode"] . "&transId=" . $responseData["transId"];
+         $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
+         if ($generatedSignature == $signature) {
+             if($responseData['resultCode'] == '0') {
 
-    if ($generatedSignature == $signature) {
-        if ($responseData['resultCode'] == '0') {
-            // Thanh toán thành công
-            $this->ticketRepository->createBill($orderId, $amount);
-            // Lấy user hiện tại
+                 $data = $this->ticketRepository->createBill($orderId, $amount);
+                 return response()->json([
+                     'status' => Constant::SUCCESS_CODE,
+                     'message' => trans('messages.success.success'),
+                     'data' => $data
+                 ], Constant::SUCCESS_CODE);
+             }
+             else{
+                 $data = $this->ticketRepository->cancelReservation($orderId);
+                 return response()->json([
+                     'status' => Constant::BAD_REQUEST_CODE,
+                     'message' => trans('messages.errors.errors'),
+                     'data' => [1]
+                 ], Constant::SUCCESS_CODE);
+             }
+         } else {
+             $data = $this->ticketRepository->cancelReservation($orderId);
+             return response()->json([
+                 'status' => Constant::BAD_REQUEST_CODE,
+                 'message' => trans('messages.errors.errors'),
+                 'data' => [1]
+             ], Constant::SUCCESS_CODE);
+         }
+     }
 
-       
-            // Kiểm tra và áp dụng mã giảm giá
-            if (!empty($extraData)) {
-                $promotionId = intval($extraData);
-                $this->applyPromotionAfterPayment($promotionId);
-            }
 
-            return response()->json([
-                'status' => Constant::SUCCESS_CODE,
-                'message' => trans('messages.success.success'),
-                'data' => [0]
-            ], Constant::SUCCESS_CODE);
-        } else {
-            // Hủy vé khi thanh toán thất bại
-            $this->ticketRepository->cancelReservation($orderId);
-            return response()->json([
-                'status' => Constant::BAD_REQUEST_CODE,
-                'message' => trans('messages.errors.errors'),
-                'data' => [1]
-            ], Constant::SUCCESS_CODE);
-        }
-    } else {
-        // Hủy vé khi xác thực không thành công
-        $this->ticketRepository->cancelReservation($orderId);
-        return response()->json([
-            'status' => Constant::BAD_REQUEST_CODE,
-            'message' => trans('messages.errors.errors'),
-            'data' => [1]
-        ], Constant::SUCCESS_CODE);
-    }
-}
+//    public function handleMomoPayment(Request $request)
+//    {
+//        dd('check');
+//        $responseData = $request->all();
+//        $partnerCode = $this->partnerCode;
+//        $accessKey = $this->accessKey;
+//        $secretKey = $this->secretKey;
+//        $orderInfo = $this->orderInfo;
+//        $amount = $responseData["amount"];
+//        $orderId = $responseData['orderId'];
+//        $extraData = "";
+//        $requestId = $responseData['requestId'];
+//        $signature = $responseData['signature'];
+//        $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData .
+//            "&message=" . $responseData["message"] . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo .
+//            "&orderType=" . $responseData["orderType"] . "&partnerCode=" . $partnerCode . "&payType=" . $responseData["payType"] . "&requestId=" . $requestId .
+//            "&responseTime=" . $responseData["responseTime"] . "&resultCode=" . $responseData["resultCode"] . "&transId=" . $responseData["transId"];
+//        $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
+//        if ($generatedSignature == $signature) {
+//            if ($responseData['resultCode'] == '0') {
+//
+//                $this->ticketRepository->createBill($orderId, $amount);
+//
+//
+//    //            if (!empty($extraData)) {
+//    //                $promotionId = intval($extraData);
+//    //                $this->applyPromotionAfterPayment($promotionId);
+//    //            }
+//
+//                return response()->json([
+//                    'status' => Constant::SUCCESS_CODE,
+//                    'message' => trans('messages.success.success'),
+//                    'data' => [0]
+//                ], Constant::SUCCESS_CODE);
+//            } else {
+//                // Hủy vé khi thanh toán thất bại
+//                $this->ticketRepository->cancelReservation($orderId);
+//                return response()->json([
+//                    'status' => Constant::BAD_REQUEST_CODE,
+//                    'message' => trans('messages.errors.errors'),
+//                    'data' => [1]
+//                ], Constant::SUCCESS_CODE);
+//            }
+//        } else {
+//            // Hủy vé khi xác thực không thành công
+//            $this->ticketRepository->cancelReservation($orderId);
+//            return response()->json([
+//                'status' => Constant::BAD_REQUEST_CODE,
+//                'message' => trans('messages.errors.errors'),
+//                'data' => [1]
+//            ], Constant::SUCCESS_CODE);
+//        }
+//    }
 
     /**
      * @OA\Get (
@@ -432,7 +437,7 @@ class TicketController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
      /**
      * @OA\Get(
      *     path="/api/app/get-ticket",
@@ -502,14 +507,14 @@ class TicketController extends Controller
     public function getBillDetail(Request $request)
     {
         $request->validate([
-            'ticket_code' => 'required' 
+            'ticket_code' => 'required'
         ]);
 
         $validator = Validator::make($request->all(), [
             'ticket_code' => 'required'
         ],[
             'ticket_code.required' => 'Ticket_code là bắt buộc.',
-           
+
         ]);
 
         if ($validator->fails()) {
@@ -520,7 +525,7 @@ class TicketController extends Controller
                 'data' => []
             ], Constant::SUCCESS_CODE)); // Giả sử SUCCESS_CODE = 200
         }
-    
+
 
         $bill = Bill::with([
             'movieShowTime:id,start_time,end_time,start_date,room_id,movie_id',
@@ -528,7 +533,7 @@ class TicketController extends Controller
             'cinema:id,name'
         ])
         ->where('ticket_code', $request->ticket_code)->first();
-        
+
         if (!$bill) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
@@ -536,7 +541,7 @@ class TicketController extends Controller
                 'data' => []
             ], 200);
         }
-        
+
         if($bill->status==1 && $bill->staff_check!=0 ){
             $name_nv = Profile::find($bill->staff_check)->name;
             $message = 'Vé đã được duyệt bởi nhân viên '.$name_nv;
@@ -562,7 +567,7 @@ class TicketController extends Controller
                 })->pluck('seat_code')->toArray(),
                 'status' => $bill->status,
                 'staff_check' => $bill->staff_check == 0 ? null : $name_nv,
-                
+
             ]
         ], Response::HTTP_OK);
     }
@@ -641,7 +646,7 @@ class TicketController extends Controller
         ], [
             'ticket_code.required' => 'Ticket_code là bắt buộc.',
             'ticket_code.exists' => 'Hóa đơn không tồn tại.'
-            
+
         ]);
 
         if ($validator->fails()) {
@@ -651,7 +656,7 @@ class TicketController extends Controller
                 'errors' => $validator->errors()
             ], 200);
         }
-        
+
         $bill = Bill::where('ticket_code', $request->ticket_code)->first();
 
         if (!$bill) {

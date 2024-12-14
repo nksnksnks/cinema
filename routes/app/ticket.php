@@ -10,8 +10,8 @@ Route::group(['prefix' => '/ticket'], function () {
     Route::post('/momo-payment', [TicketController::class, 'momoPayment']);
     Route::get('/handle-momo-payment', [TicketController::class, 'handleMomoPayment']);
     Route::get('/get/{type}', [TicketController::class, 'getTicket']);
-    Route::get('/get-detail/{id}', [TicketController::class, 'detailTicket']);
-    
+    Route::get('/detail/{id}', [TicketController::class, 'detailTicket']);
+
 });
 
 Route::middleware('auth:sanctum')->get('/get-ticket', [TicketController::class, 'getBillDetail']);

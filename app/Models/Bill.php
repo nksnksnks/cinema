@@ -32,6 +32,7 @@ class Bill extends Model
         'staff_check',
         'total',
         'status',
+        'extra_id'
     ];
     public $timestamps = true;
 
