@@ -43,7 +43,7 @@ class ChangePasswordRequest extends FormRequest
         return [
             'current_password.required' => 'Mật khẩu hiện tại là bắt buộc.',
             'new_password.required' => 'Mật khẩu mới là bắt buộc.',
-            'new_password.min' => 'Mật khẩu mới phải có ít nhất 8 ký tự.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
             'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
         ];
     }
