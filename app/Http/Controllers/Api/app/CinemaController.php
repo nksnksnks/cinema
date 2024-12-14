@@ -100,13 +100,12 @@ class CinemaController extends Controller{
             $data['movie_id'] = $data['movie_id'] ?? null;
             $response = $this->movieShowTimeRepository->getShowTime($data['cinema_id'], $data['movie_id'], $data['date']);
 
-            // Kiểm tra xem có dữ liệu phim và lịch chiếu hay không
-            if (!count($response['movie']['movie']['show_time'])) {
+            if (!$response) {
                 return response()->json([
-                    'status' => Constant::FALSE_CODE, // Hoặc false, tùy bạn định nghĩa
+                    'status' => Constant::FALSE_CODE,
                     'message' => 'Không tìm thấy lịch chiếu',
                     'data' => []
-                ], 200); // Nên sử dụng 404 Not Found
+                ], 200);
             }
 
             return response()->json([

@@ -23,6 +23,7 @@ class MovieShowTimeRepository{
         }else{
             $movie = Movie::select('ci_movie.*')->join('ci_movie_show_time', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
                 ->orderBy('ci_movie.date', 'DESC')
+                ->where('ci_movie_show_time.start_date', $date)
                 ->groupBy('ci_movie.id')
                 ->get();
             foreach ($movie as $key){
