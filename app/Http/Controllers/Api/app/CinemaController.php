@@ -194,7 +194,7 @@ class CinemaController extends Controller{
             ->orderByRaw(sprintf("FIELD(id, %s)", implode(',', array_keys($distances))))
             ->get()
             ->map(function ($cinema) use ($distances) {
-                $cinema->distance = round($distances[$cinema->id], 2); // Thêm trường distance, làm tròn đến 2 chữ số thập phân
+                $cinema->distance = round($distances[$cinema->id], 2) . ' km'; // Thêm trường distance, làm tròn đến 2 chữ số thập phân
                 return $cinema;
             });
 
