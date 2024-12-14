@@ -11,17 +11,24 @@ class MovieShowTimeRepository{
         $data = [];
         if($movieId != null) {
             $movie = Movie::select('ci_movie.*')->join('ci_movie_show_time', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
+                ->join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
+                ->where('ci_movie.id', '=', $movieId)
+                ->where('ci_room.cinema_id', '=', $cinemaId)
+                ->where('ci_movie_show_time.start_date', $date)
                 ->groupBy('ci_movie.id')
-                ->where('ci_movie.id', '=', $movieId)->first();
+                ->first();
             $showTime = MovieShowtime::join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
                 ->where('ci_room.cinema_id', '=', $cinemaId)
                 ->where('ci_movie_show_time.movie_id', '=', $movieId)
                 ->where('ci_movie_show_time.start_date', '=', $date)
                 ->orderBy('ci_movie_show_time.start_time', 'ASC')
                 ->get();
-            $data['movie'] = self::mapData($movie, $showTime);
+            if($movie && $showTime)
+                $data['movie'] = self::mapData($movie, $showTime);
         }else{
             $movie = Movie::select('ci_movie.*')->join('ci_movie_show_time', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
+                ->join('ci_room', 'ci_movie_show_time.room_id', '=', 'ci_room.id')
+                ->where('ci_room.cinema_id', '=', $cinemaId)
                 ->orderBy('ci_movie.date', 'DESC')
                 ->where('ci_movie_show_time.start_date', $date)
                 ->groupBy('ci_movie.id')
