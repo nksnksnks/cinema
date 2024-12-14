@@ -82,7 +82,7 @@ public function changePassword(ChangePasswordRequest $request)
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
-                'error' => 'Mật khẩu hiện tại không chính xác'
+                'message' => 'Mật khẩu hiện tại không chính xác'
             ], 200);
         }
 
@@ -90,7 +90,7 @@ public function changePassword(ChangePasswordRequest $request)
         if ($request->new_password !== $request->new_password_confirmation) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
-                'error' => 'Mật khẩu mới và mật khẩu xác nhận không khớp'
+                'message' => 'Mật khẩu mới và mật khẩu xác nhận không khớp'
             ], 200);
         }
 
