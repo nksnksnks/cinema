@@ -47,8 +47,8 @@ class MovieShowTimeRepository{
     }
     public function mapData($movie, $showTime)
     {
-        $data['movie'] = $movie;
-        $data['movie']['show_time'] = $showTime;
+        $data = $movie;
+        $data['show_time'] = $showTime;
         return $data;
     }
 }
