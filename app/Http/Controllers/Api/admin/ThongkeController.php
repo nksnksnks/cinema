@@ -12,23 +12,71 @@ use App\Models\Account;
 use App\Models\Movie;
 use App\Models\MovieShowTime;
 use App\Models\Ticket;
+use App\Models\Food;
+
+use App\Models\FoodBillJoin;
 
 class ThongkeController extends Controller
 {
 
     private function getMonthlyRevenue($cinema_id,$startOfMonth,$endOfMonth)
-{
-   
+    {
+        // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
+        $monthlyRevenue = DB::table('ci_bill')
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('total');
+
+        return $monthlyRevenue;
+    }
+    private function getMonthlyRevenueFood($cinema_id,$startOfMonth,$endOfMonth)
+    {
+        // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
+        $monthlyRevenue = DB::table('ci_food_bill_join')
+            ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
+            ->sum('ci_food_bill_join.total');
+
+        return $monthlyRevenue;
+    }
+    private function getMonthlyFood($cinema_id,$startOfMonth,$endOfMonth)
+    {
+        // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
+        $monthlyRevenue = DB::table('ci_food_bill_join')
+            ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
+            ->sum('quantity');
+
+        return $monthlyRevenue;
+    }
+    private function getMostMonthlyFood($cinema_id,$startOfMonth,$endOfMonth)
+    {
+        // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
+        $monthlyRevenueId = DB::table('ci_food_bill_join')
+            ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
+            ->select('ci_food_bill_join.food_id', DB::raw('COUNT(*) as food_count'))
+            ->groupBy('ci_food_bill_join.food_id')
+            ->orderByDesc('food_count')
+            ->orderBy('ci_food_bill_join.food_id') // Lấy xuất chiếu đầu tiên nếu có số vé bằng nhau
+            ->limit(1)
+            ->pluck('ci_food_bill_join.food_id')
+            ->first();
+            if ($monthlyRevenueId) {
+                // Lấy thông tin phim từ bảng ci_movie
+                $monthlyRevenue = DB::table('ci_foods')
+                    ->where('id', $monthlyRevenueId)
+                    ->value('name');
+            } else {
+                $monthlyRevenue = 'Không xác định';
+            }
     
+            return $monthlyRevenue;   
 
-    // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
-    $monthlyRevenue = DB::table('ci_bill')
-        ->where('cinema_id', $cinema_id)
-        ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-        ->sum('total');
-
-    return $monthlyRevenue;
-}
+    }
 
     private function getMonthlyRevenueMovie($cinema_id,$startOfMonth,$endOfMonth)
     {
@@ -252,5 +300,54 @@ class ThongkeController extends Controller
         });
 
         return view('admin.dashboard.home.tkmovie', compact('movieRevenues', 'startDate', 'endDate', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
+    }
+    public function tkfood(Request $request)
+    {
+        // Lấy giá trị start_date và end_date từ request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Kiểm tra ngày bắt đầu và ngày kết thúc
+        if (!$startDate || !$endDate) {
+            $startDate = now()->startOfMonth()->toDateString();
+            $endDate = now()->toDateTimeString();
+        } else {
+            // Nếu $endDate được truyền vào, set thời gian là cuối ngày
+            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+        }
+
+        $cinema_id = Auth::user()->cinema_id;
+
+        // Lấy tổng doanh thu và số lượng bán của từng món ăn
+        $foodStats = DB::table('ci_food_bill_join')
+            ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id')
+            ->join('ci_foods', 'ci_food_bill_join.food_id', '=', 'ci_foods.id') // Join với bảng ci_food để lấy thông tin món ăn (nếu cần)
+            ->where('ci_bill.cinema_id', $cinema_id)
+            ->whereBetween('ci_bill.created_at', [$startDate, $endDate]) // Dùng ci_bill.created_at để lọc thời gian
+            ->select(
+                'ci_food_bill_join.food_id',
+                'ci_foods.name as food_name', // Lấy tên món ăn (nếu cần)
+                DB::raw('SUM(ci_food_bill_join.quantity) as total_quantity'),
+                DB::raw('SUM(ci_food_bill_join.total) as total_revenue')
+            )
+            ->groupBy('ci_food_bill_join.food_id', 'food_name')
+            ->get();
+
+        // Tính tổng doanh thu từ tất cả các món ăn
+        $totalRevenue = $foodStats->sum('total_revenue');
+
+        // Lấy tổng số lượng bán của tất cả các món ăn (nếu cần)
+        $totalQuantity = $foodStats->sum('total_quantity');
+        
+        // Lấy món ăn bán chạy nhất (nếu cần)
+        $bestSellingFood = $foodStats->sortByDesc('total_quantity')->first();
+
+        // Các hàm khác (nếu bạn vẫn cần dùng)
+        $monthlyRevenue = $this->getMonthlyRevenueFood($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
+        $monthlyTickets = $this->getMonthlyFood($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
+        $mostWatchedMovieInMonth = $this->getMostMonthlyFood($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
+        $NewUsersThisMonth = $this->getNewUsersThisMonth($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
+
+        return view('admin.dashboard.home.tkfood', compact('startDate', 'endDate', 'foodStats', 'totalRevenue', 'totalQuantity', 'bestSellingFood', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
     }
 }

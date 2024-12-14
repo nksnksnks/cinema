@@ -42,7 +42,8 @@ class ProfileController extends Controller
     public function getProfile()
     {
         // Lấy profile của người dùng đã đăng nhập
-        $profile = Profile::where('account_id', Auth::user()->id)->first();
+        $profile = Profile::with('account')->where('account_id', Auth::user()->id)->first();
+        
         if (!$profile) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,

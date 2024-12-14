@@ -84,7 +84,7 @@ class TicketRepository{
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
             $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
-            if(Auth::user()->role_id == 3){
+            if(Auth::user()->role_id != 4){
                 $billId = Bill::create([
                     'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,

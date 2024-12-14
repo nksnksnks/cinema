@@ -180,6 +180,10 @@
                         <a href="{{ route('thongke.movie.index') }}">Thống kê theo phim</a>
                         
                     </li>
+                    <li class="{{ request()->routeIs('thongke.food.index') ? 'active' : '' }}">
+                        <a href="{{ route('thongke.food.index') }}">Thống kê theo food</a>
+                        
+                    </li>
                 </ul>
                 
                 
