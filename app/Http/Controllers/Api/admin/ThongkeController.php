@@ -154,9 +154,6 @@ class ThongkeController extends Controller
             $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
             $endDate = now()->toDateTimeString(); // Ngày hiện tại
             
-        } else { 
-            // Nếu $endDate được truyền vào, set thời gian là cuối ngày
-            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
         }
         $cinema_id = Auth::user()->cinema_id;
             // Tính tổng doanh thu trong tháng
@@ -235,10 +232,7 @@ class ThongkeController extends Controller
             $startDate = now()->startOfMonth()->toDateString();
             $endDate = now()->toDateTimeString();
             
-        } else {
-            // Nếu $endDate được truyền vào, set thời gian là cuối ngày
-            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
-        }
+        } 
 
         $cinema_id = Auth::user()->cinema_id;
             // Tính tổng doanh thu trong tháng
@@ -311,10 +305,11 @@ class ThongkeController extends Controller
         if (!$startDate || !$endDate) {
             $startDate = now()->startOfMonth()->toDateString();
             $endDate = now()->toDateTimeString();
-        } else {
-            // Nếu $endDate được truyền vào, set thời gian là cuối ngày
-            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
-        }
+        } 
+        // else {
+        //     // Nếu $endDate được truyền vào, set thời gian là cuối ngày
+        //     $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+        // }
 
         $cinema_id = Auth::user()->cinema_id;
 

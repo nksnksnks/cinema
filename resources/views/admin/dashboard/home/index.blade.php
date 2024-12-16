@@ -95,13 +95,7 @@
                                         <input type="date" class="form-control" name="start_date" value="{{ old('start_date', $startDate ?? '') }}">
                                     </div>
                                     <div class="col-md-{{$s}}">
-                                        @php
-                                            if(isset($endDate)){
-                                                $endDate = date('Y-m-d');
-                                            }else{
-                                                $endDate = now()->toDateString();
-                                            }
-                                        @endphp
+                                        
                                         <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate ?? '') }}">
                                     </div>
                                     <div class="col-md-{{$s}}">
