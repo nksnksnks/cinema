@@ -80,6 +80,11 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'password' => 'required|confirmed',
             'password_confirmation' => 'required|same:password'
+        ],[
+            'password.required' => 'Vui lòng nhập mật khẩu',
+            'password.confirmed' => 'Mật khẩu không khớp',
+            'password_confirmation.required' => 'Vui lòng nhập lại mật khẩu',
+            'password_confirmation.same' => 'Mật khẩu không khớp'
         ]);
         // Lấy token từ cơ sở dữ liệu
         $tokenData = PasswordReset::where('email', $request->email)->firstOrFail();
@@ -98,7 +103,7 @@ class ForgotPasswordController extends Controller
             PasswordReset::where('email', $request->email)->delete();
             $cookie = Cookie::forget('user_token');
 
-            // return redirect()->route("auth.login")->with('success', 'Bạn có thể đăng nhập ngay.')->withCookie($cookie);
+            // return redirect()->route("auth.login")->with('success', 'Bạn có thể đăng nhập ngay.');
             return "Bạn đã đổi mật khẩu thành công";
         }
         return redirect()->back()->with('error', 'Lỗi! Vui lòng thử lại.');

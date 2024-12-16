@@ -10,7 +10,7 @@
     </div>
         <ul class="nav navbar-top-links navbar-right">
             <li>
-                <span class="m-r-sm text-muted welcome-message">Welcome to INSPINIA+ Admin Theme.</span>
+                <span class="m-r-sm text-muted welcome-message">Welcome to CINEMA EASY+ Admin.</span>
             </li>
             <li class="dropdown">
                 <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
@@ -115,7 +115,7 @@
                 </a>
             </li>
             <li>
-                <a class="right-sidebar-toggle" href=''>
+                <a class="right-sidebar-toggle">
                     <i class="fa fa-tasks"></i>
                 </a>
             </li>
