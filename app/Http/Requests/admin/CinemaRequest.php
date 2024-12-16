@@ -33,12 +33,15 @@ class CinemaRequest extends FormRequest
                 $rule = [
                     'name' => 'required|unique:ci_cinema,name',
                     'address' => 'required',
+                    'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+
                 ];
                 break;
             case ($action == 'update'):
                 $rule = [
                     'name' => 'required|unique:ci_cinema,name,'.$this->id.'',
                     'address' => 'required',
+                    'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
                 ];
                 break;
             case ($action == 'delete' || $action == 'get'):
@@ -63,7 +66,11 @@ class CinemaRequest extends FormRequest
             'address.required' => 'Địa chỉ rạp không được bỏ trống',
             'name.required' => 'Tên rạp không được bỏ trống',
             'id.required' => 'Id không được bỏ trống',
-            'id.exists' => 'Id không tồn tại'
+            'id.exists' => 'Id không tồn tại',
+            'avatar.required' => 'Ảnh đại diện không được bỏ trống',
+            'avatar.image' => 'Ảnh đại diện phải là ảnh',
+            'avatar.mimes' => 'Ảnh đại diện phải có định dạng jpeg,png,jpg,gif,svg',
+            'avatar.max' => 'Ảnh đại diện không được vượt quá 10MB',
         ];
     }
 

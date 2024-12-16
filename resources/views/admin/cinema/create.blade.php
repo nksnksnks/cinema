@@ -15,7 +15,7 @@
 @endphp
 
 @include('admin.dashboard.component.breadcrumb', ['title' => $title])
-<form action="{{$url}}" method="POST" id="cinema-form">
+<form action="{{$url}}" method="POST" id="cinema-form" enctype = "multipart/form-data">
     @csrf
     @method($method)
     <div class="wrapper wrapper-content animated fadeInRight">
@@ -69,6 +69,63 @@
                                     @if($errors->has('address'))
                                         <p class="error-message">* {{ $errors->first('address') }}</p>
                                     @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
+                                    <label for="latitude" class="control-label text-left">Latitude <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="text"
+                                        name="latitude"
+                                        id="latitude"
+                                        class="form-control"
+                                        value="{{ old('address', $cinema->latitude ?? '')}}"
+                                        placeholder="Nhập Latitude"
+                                        autocomplete="off"
+                                        style="resize: none;"
+                                       
+                                    ></input>
+                                    @if($errors->has('latitude'))
+                                        <p class="error-message">* {{ $errors->first('latitude') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row">
+                                    <label for="longitude" class="control-label text-left">Longitude <span class="text-danger">(*)</span></label>
+                                    <input 
+                                        type="text"
+                                        name="longitude"
+                                        id="longitude"
+                                        class="form-control"
+                                        value="{{ old('address', $cinema->longitude ?? '')}}"
+                                        placeholder="Nhập longitude"
+                                        autocomplete="off"
+                                        style="resize: none;"
+                                       
+                                    ></input>
+                                    @if($errors->has('longitude'))
+                                        <p class="error-message">* {{ $errors->first('longitude') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row mt-3" >
+                                    <label for="avatar" class="control-label text-left">Avatar <span class="text-danger">(*)</span></label>
+                                    <input type="file" name="avatar" id="avatar" class="form-control">
+                                    @if($errors->has('avatar'))
+                                        <p class="error-message">* {{ $errors->first('avatar') }}</p>
+                                    @endif
+                                    @if(isset($cinema))                                   
+                                            <img src="{{ $cinema->avatar }}" alt="{{ $cinema->name }}" width="100" />
+                                    @endif
+                                    
                                 </div>
                             </div>
                         </div>

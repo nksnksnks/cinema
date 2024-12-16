@@ -21,6 +21,9 @@ class Cinema extends Model
         'id',
         'name',
         'address',
+        'avatar',
+        'latitute',
+        'longitute',
     ];
     public $timestamps = true;
 

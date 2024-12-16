@@ -23,7 +23,7 @@ class ProfileController extends Controller
         $profile = Profile::where('account_id', Auth::user()->id)->first();
 
         // Giả sử bạn có một view để hiển thị profile
-        return view('admin.auth.show', compact('profile'));
+        return view('admin.auth.profile', compact('profile'));
 
     }
 

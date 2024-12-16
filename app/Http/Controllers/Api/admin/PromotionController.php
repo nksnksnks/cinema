@@ -43,7 +43,26 @@ class PromotionController extends Controller
         try {
             DB::beginTransaction();
             $data = $request->all();
-            Promotion::create($data);
+            // Upload ảnh avatar lên Cloudinary
+            $avatarUrl = null;
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarResult = cloudinary()->upload($avatar->getRealPath(), [
+                    'folder' => 'promotion',
+                    'upload_preset' => 'promotion-upload',
+                ]);
+                $avatarUrl = $avatarResult->getSecurePath(); // Lấy URL an toàn
+            }
+            $promotion = Promotion::create([
+                'promo_name' => $request->input('promo_name'),
+                'avatar' => $avatarUrl,
+                'description' => $request->input('description'),
+                'discount' => $request->input('discount'),
+                'quantity' => $request->input('quantity'),
+                'start_date' => $request->input('start_date'),
+                'end_date' => $request->input('end_date'),
+                'status' => $request->input('status'),
+            ]);
             DB::commit();
             return redirect()
                 ->route('promotion.create')
@@ -67,9 +86,44 @@ class PromotionController extends Controller
         
         try {
             DB::beginTransaction();
-            $data = $request->all();
-            $query = Promotion::find($id);
-            $query->update($data);
+            $promotion = Promotion::find($id);
+            // Lưu đường dẫn ảnh cũ
+            $oldAvatar = $promotion->avatar;
+            if ($oldAvatar) {
+                $path = parse_url($oldAvatar, PHP_URL_PATH);
+                $parts = explode('/promotion/', $path);
+                $avatarPart = 'promotion/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            }
+           
+            // Cập nhật thông tin phim
+            $promotion->update($request->only([
+                'promo_name',
+                'description',
+                'discount',
+                'quantity',
+                'start_date',
+                'end_date',
+                'status',
+            ]));
+
+            // Xử lý upload avatar nếu có
+            if ($request->hasFile('avatar')) {
+                $avatarResult = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'promotion',
+                    'upload_preset' => 'promotion-upload',
+                ]);
+                $promotion->avatar = $avatarResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldAvatar) {
+                    cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
+                }
+            } else {
+                $promotion->avatar = $oldAvatar;
+            }
+
+            // Lưu thông tin phim
+            $promotion->save();
             DB::commit();
             return redirect()
             ->route('promotion.index')
@@ -161,6 +215,7 @@ class PromotionController extends Controller
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(property="promo_name", type="string"),
+ *             @OA\Property(property="avatar", type="string"),
  *             @OA\Property(property="description", type="string"),
  *             @OA\Property(property="quantity", type="integer"),
  *             @OA\Property(property="start_date", type="string", format="date"),
@@ -169,6 +224,7 @@ class PromotionController extends Controller
  *             @OA\Property(property="discount", type="integer"),
  *             example={
  *                 "promo_name": "Holiday Discount",
+ *                 "avatar": ".jpg",
  *                 "description": "Up to 50% off for the holiday season",
  *                 "quantity": 500,
  *                 "start_date": "2024-12-01",
@@ -285,6 +341,7 @@ class PromotionController extends Controller
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(property="promo_name", type="string"),
+ *             @OA\Property(property="avatar", type="string"),
  *             @OA\Property(property="description", type="string"),
  *             @OA\Property(property="quantity", type="integer"),
  *             @OA\Property(property="start_date", type="string", format="date"),
@@ -297,6 +354,7 @@ class PromotionController extends Controller
  *             summary="Sample promotion update data",
  *             value={
  *                 "promo_name": "Holiday Discount",
+ *                 "avatar": ".jpg,..",
  *                 "description": "Up to 50% off for the holiday season",
  *                 "quantity": 500,
  *                 "start_date": "2024-12-01",

@@ -7,7 +7,7 @@
             <input type="checkbox" value="" id="checkAll" class="input-checkbox">
         </th>
         <th class="text-center">Name</th>
-       
+        <th class="text-center">Avatar</th>
         <th class="text-center">Description</th>
         <th class="text-center">Start_date</th>
         <th class="text-center">End_date</th>
@@ -26,6 +26,9 @@
         </td>
         <td>
             {{ $promo->promo_name }}
+        </td>
+        <td>
+            <img src="{{ $promo->avatar }}" alt="{{ $promo->name }}" width="50" height="50" />
         </td>
         <td>
             {{ $promo->description }}

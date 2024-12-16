@@ -49,12 +49,18 @@ class CinemaController extends Controller
      *              type="object",
      *              @OA\Property(property="name", type="string"),
      *              @OA\Property(property="address", type="string"),
+     *              @OA\Property(property="avatar", type="string"),
+     *              @OA\Property(property="latitude", type="string"),
+     *              @OA\Property(property="longitude", type="string"),
      *          @OA\Examples(
      *              summary="Examples",
      *              example = "Examples",
      *              value = {
-     *                  "name": "CinemaEase Hà Đông",
-     *                  "address": "Số 10 - Trần Phú - Hà Đông - Hà Nội",
+     *                     "name": "CinemaEase Hà Đông",
+     *                     "avatar": "string",
+     *                     "address": "Số 10 - Trần Phú - Hà Đông - Hà Nội",
+     *                     "latitude": "20.9831660",
+     *                     "longitude": "105.7909850",
      *                  },
      *              ),
      *          )
@@ -93,8 +99,23 @@ class CinemaController extends Controller
     {
         try {
             DB::beginTransaction();
-            $data = $request->all();
-            Cinema::create($data);
+            // Upload ảnh avatar lên Cloudinary
+            $avatarUrl = null;
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarResult = cloudinary()->upload($avatar->getRealPath(), [
+                    'folder' => 'cinema',
+                    'upload_preset' => 'cinema-upload',
+                ]);
+                $avatarUrl = $avatarResult->getSecurePath(); // Lấy URL an toàn
+            }
+            $cinema = Cinema::create([
+                'name' => $request->input('name'),
+                'avatar' => $avatarUrl,
+                'address' => $request->input('address'),
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+            ]);
             DB::commit();
             return redirect()
                 ->route('cinema.store')
@@ -128,12 +149,18 @@ class CinemaController extends Controller
      *              type="object",
      *              @OA\Property(property="name", type="string"),
      *              @OA\Property(property="address", type="string"),
+     *              @OA\Property(property="avatar", type="string"),
+     *              @OA\Property(property="latitude", type="string"),
+     *              @OA\Property(property="longitude", type="string"),
      *              @OA\Examples(
      *                  summary="Examples",
      *                  example = "Examples",
      *                  value = {
      *                     "name": "CinemaEase Hà Đông",
+     *                     "avatar": "string",
      *                     "address": "Số 10 - Trần Phú - Hà Đông - Hà Nội",
+     *                     "latitude": "20.9831660",
+     *                     "longitude": "105.7909850",
      *                  },
      *              ),
      *           ),
@@ -178,9 +205,42 @@ class CinemaController extends Controller
     public function CinemaUpdate($id, CinemaRequest $request){
         try {
             DB::beginTransaction();
-            $data = $request->all();
-            $query = Cinema::find($id);
-            $query->update($data);
+            $cinema = Cinema::find($id);
+            
+            // Lưu đường dẫn ảnh cũ
+            $oldAvatar = $cinema->avatar;
+            if ($oldAvatar) {
+                $path = parse_url($oldAvatar, PHP_URL_PATH);
+                $parts = explode('/cinema/', $path);
+                $avatarPart = 'cinema/' . pathinfo($parts[1], PATHINFO_FILENAME); // 'avatar/khx9uvzvexda7dniu5sa'
+            }
+           
+            // Cập nhật thông tin phim
+            $cinema->update($request->only([
+                'name',
+                'address',
+                'latitude',
+                'longitude',
+            ]));
+
+            // Xử lý upload avatar nếu có
+            if ($request->hasFile('avatar')) {
+                $avatarResult = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'cinema',
+                    'upload_preset' => 'cinema-upload',
+                ]);
+                $cinema->avatar = $avatarResult->getSecurePath();
+
+                // Xóa ảnh cũ trên Cloudinary
+                if ($oldAvatar) {
+                    cloudinary()->destroy($avatarPart); // Xóa ảnh cũ
+                }
+            } else {
+                $cinema->avatar = $oldAvatar;
+            }
+
+            // Lưu thông tin phim
+            $cinema->save();
             DB::commit();
             return redirect()
             ->route('cinema.index')

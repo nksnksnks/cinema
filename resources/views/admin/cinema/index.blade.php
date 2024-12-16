@@ -10,6 +10,7 @@
                 <input type="checkbox" value="" id="checkAll" class="input-checkbox">
             </th>
             <th class="text-center">Name</th>
+            <th class="text-center">Avatar</th>
             <th class="text-center">Address</th>
             <th class="text-center">Manager</th>
         </tr>
@@ -23,6 +24,9 @@
             </td>
             <td>
                 {{ $cine->name }}
+            </td>
+            <td>
+                <img src="{{ $cine->avatar }}" alt="{{ $cine->name }}" width="50" height="50" />
             </td>
             <td>
                 {{ $cine->address }}

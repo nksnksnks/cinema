@@ -90,6 +90,15 @@ class MovieRequest extends FormRequest
             'date.date' => 'Định dạng ngày không hợp lệ.',
             'genre_ids.required' => 'Phim phải có ít nhất một thể loại.',
             'genre_ids.*.exists' => 'Thể loại với ID :input không tồn tại.',
+            'avatar.required' => 'Ảnh đại diện là bắt buộc.',
+            'avatar.image' => 'Ảnh đại diện phải là một hình ảnh.',
+            'avatar.mimes' => 'Ảnh đại diện phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'avatar.max' => 'Ảnh đại diện không được vượt quá 10MB.',
+            'poster.required' => 'Ảnh bìa là bắt buộc.',
+            'poster.image' => 'Ảnh bìa phải là một hình ảnh.',
+            'poster.mimes' => 'Ảnh bìa phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'poster.max' => 'Ảnh bìa không được vượt quá 10MB.',
+            
 
         ];
     }

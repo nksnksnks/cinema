@@ -38,6 +38,7 @@ class PromotionRequest extends FormRequest
                     'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
                     'discount' => 'required|integer|min:0',
                     'quantity' => 'required|integer|min:0',
+                    'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
                 ];
             case 'PUT': // Xử lý khi cập nhật (update)
                 return [
@@ -47,6 +48,7 @@ class PromotionRequest extends FormRequest
                     'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
                     'discount' => 'required|integer|min:0',
                     'quantity' => 'required|integer|min:0',
+                    'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
                 ];
             default:
                 return []; // Trả về mảng rỗng nếu không xác định được hành động
@@ -77,6 +79,11 @@ class PromotionRequest extends FormRequest
             'quantity.required' => 'Số lượng là bắt buộc.',
             'quantity.integer' => 'Số lượng phải là một số nguyên.',
             'quantity.min' => 'Số lượng phải lớn hơn hoặc bằng 0.',
+            'avatar.image' => 'Ảnh đại diện phải là một hình ảnh.',
+            'avatar.mimes' => 'Ảnh đại diện phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'avatar.max' => 'Ảnh đại diện không được vượt quá 10MB.',
+            
+
         ];
     }
 

@@ -15,7 +15,7 @@
 @endphp
 
 @include('admin.dashboard.component.breadcrumb', ['title' => $title])
-    <form action="{{$url}}" method="POST">
+    <form action="{{$url}}" method="POST" enctype = "multipart/form-data">
     @csrf
     @method($method)
     <div class="wrapper wrapper-content animated fadeInRight">
@@ -142,6 +142,21 @@
                                     @if($errors->has('quantity'))
                                         <p class="error-message">* {{ $errors->first('quantity') }}</p>
                                     @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb15">
+                            <div class="col-lg-12">
+                                <div class="form-row mt-3" >
+                                    <label for="avatar" class="control-label text-left">Avatar <span class="text-danger">(*)</span></label>
+                                    <input type="file" name="avatar" id="avatar" class="form-control">
+                                    @if($errors->has('avatar'))
+                                        <p class="error-message">* {{ $errors->first('avatar') }}</p>
+                                    @endif
+                                    @if(isset($promotion))                                   
+                                            <img src="{{ $promotion->avatar }}" alt="{{ $promotion->name }}" width="100" />
+                                    @endif
+                                    
                                 </div>
                             </div>
                         </div>
