@@ -30,17 +30,24 @@ class AuthAdminController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Get user info
-           
 
-            if ($user->role_id != 4) {
-                return redirect()->route('dashboard.index')->with('success', 'Đăng nhập thành công');
-            } else {
-                return redirect()->route('homepage')->with('success', 'Đăng nhập thành công');
+            // Check if the account is active (status == 1)
+            if ($user->status == 1) {
+                if ($user->role_id != 4) {
+                    return redirect()->route('dashboard.index')->with('success', 'Đăng nhập thành công');
+                } else {
+                    return redirect()->route('homepage')->with('success', 'Đăng nhập thành công');
+                }
             }
+            
+            // Log out user if status is 0
+            Auth::logout();
         }
 
+        // Default error message
         return back()->withErrors(['login' => 'Username hoặc password không chính xác!']);
     }
+
 
     public function viewregister()
     {

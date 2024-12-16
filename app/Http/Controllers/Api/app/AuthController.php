@@ -150,6 +150,7 @@ class AuthController extends Controller
                 'password' => $request->password
             ];
             if (!Auth::attempt($credentials)) {
+                
                 return response()->json([
                     'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_3',
