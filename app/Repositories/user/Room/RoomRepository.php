@@ -39,6 +39,7 @@ class RoomRepository{
         foreach ($keys as $key) {
             $key = str_replace('laravel_database_', '', $key);
             $seatIdsJson = Redis::get($key);
+
             $seatIdsArray = json_decode($seatIdsJson, true);
 
             if (is_array($seatIdsArray)) {
@@ -74,7 +75,7 @@ class RoomRepository{
                     if (in_array($seatItem['seat_id'], $listSeats)) {
                         $seatItem['status'] = 1;
                     }
-                    if(in_array((int)$seatItem['seat_id'], $arrayListSeatSold)){
+                    else if(in_array((int)$seatItem['seat_id'], $arrayListSeatSold)){
                         $seatItem['status'] = 2;
                     }
                     else {
