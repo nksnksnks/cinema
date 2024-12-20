@@ -74,7 +74,7 @@ class TicketRepository{
         list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
         $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
         $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $food = json_decode($food);
+        $foods = json_decode($food); // Đổi tên biến thành $foods
 //        return $food;
         $userId = Auth::id();
         $promotion = Promotion::find($extraId);
@@ -106,14 +106,18 @@ class TicketRepository{
                     'status' => '0'
                 ])->id;
             }
-            if($billId)
-                $foodPrice = Food::find($food->food_id)->first();
-                FoodBillJoin::create([
-                    'bill_id' => $billId,
-                    'food_id' => $food->food_id,
-                    'quantity' => $food->food_quantity,
-                    'total' => $food->food_quantity * $foodPrice['price']
-                ]);
+                if($billId){
+                    // Lặp qua từng món ăn trong mảng $foods
+                    foreach ($foods as $food) {
+                        $foodPrice = Food::find($food->food_id)->price;
+                        FoodBillJoin::create([
+                            'bill_id' => $billId,
+                            'food_id' => $food->food_id,
+                            'quantity' => $food->food_quantity,
+                            'total' => $food->food_quantity * $foodPrice
+                        ]);
+                    }
+                }    
 
             $user = Auth::user()->id;
             $account = Account::find($user);

@@ -49,8 +49,8 @@ class TicketController extends Controller
         $this->secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
         $this->orderInfo = "Thanh toán qua MoMo";
         $this->requestType = "captureWallet";
-        $this->redirectUrl = "http://localhost:3000/cart";
-        $this->ipnUrl = "http://localhost:3000/cart";
+        $this->redirectUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
+        $this->ipnUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
     }
 
     /**
@@ -123,25 +123,22 @@ class TicketController extends Controller
      *          )
      *     ),
      *     @OA\RequestBody(
+     *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              @OA\Property(property="amount", type="string"),
-     *              @OA\Property(property="cinema_id", type="string"),
-     *              @OA\Property(property="show_time_id", type="string"),
-     *              @OA\Property(property="extraData", type="string"),
-     *              @OA\Property(property="food_id", type="string"),
-     *              @OA\Property(property="food_quantity", type="string"),
-     *          @OA\Examples(
-     *              summary="Examples",
-     *              example = "Examples",
-     *              value = {
-     *                  "amount": "10000",
-     *                  "cinema_id": "1",
-     *                  "show_time_id": "7",
-     *                  "extraData": "1",
-     *                  "food_id": "4",
-     *                  "food_quantity": 4
-     *                  },
+     *              @OA\Property(property="amount", type="10000"),
+     *              @OA\Property(property="cinema_id", type="1"),
+     *              @OA\Property(property="show_time_id", type="13"),
+     *              @OA\Property(property="extraData", type="1"),
+     *              @OA\Property(
+     *                  property="food_id",
+     *                  type="array",
+     *                  @OA\Items(type="integer", example="1")
+     *              ),
+     *              @OA\Property(
+     *                  property="food_quantity",
+     *                  type="array",
+     *                  @OA\Items(type="integer", example="2")
      *              ),
      *          )
      *     ),
@@ -149,8 +146,31 @@ class TicketController extends Controller
      *         response=200,
      *         description="Success",
      *             @OA\JsonContent(
+     *              @OA\Property(property="status", type="integer", example=200),
      *              @OA\Property(property="message", type="string", example="Success."),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="partnerCode", type="string", example="MOMODJടതി"),
+     *                  @OA\Property(property="orderId", type="string", example="1_7_15_1701539372"),
+     *                  @OA\Property(property="requestId", type="string", example="1701539372"),
+     *                  @OA\Property(property="amount", type="number", example=10000),
+     *                  @OA\Property(property="responseTime", type="integer", example=1701539373156),
+     *                  @OA\Property(property="message", type="string", example="Thành công."),
+     *                  @OA\Property(property="resultCode", type="integer", example=0),
+     *                  @OA\Property(property="payUrl", type="string", example="https://test-payment.momo.vn/v2/gateway/api/create?eyJhbGciOiJSUzI1NiIsImtpZCI6IjIwMTgxMDA1MTUzNjMzIn0..R8rg5W-4GoeJwt7Agn7nJKJ-m-UP_m7sV-q4k-a_k_Jz4w_9lMv-EIy0E-P0gqh4WzE5w8-yBs6I3fGT77vj3_y-hB9g-q6_0-G-Zq5V99-h-lXl8XwM6kS4V3Y_Nerep-yBf7G5-qjC6Gvj-W240g"),
+     *                  @OA\Property(property="deeplink", type="string", example="momo://app?param=H4sIAAAAAAAAA2WQwQ7CIBBE_2XeUdt7D9t4C24q_LgJ7sN7n8Q41R-k3k60T09374H_4eY8zE29bYjL6a1vjH22_Ue8l_vY"),
+     *                  @OA\Property(property="qrCodeUrl", type="string", example="https://img.mservice.io/momo_qrcode/"),
+     *                  @OA\Property(property="deeplinkMiniApp", type="string", example=null),
+     *                  @OA\Property(property="signature", type="string", example="322b7412df3205802740d56308298c80267237782c6911d4"),
+     *              )
      *          )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
      *     ),
      * )
      */
@@ -172,13 +192,17 @@ class TicketController extends Controller
             ], Constant::SUCCESS_CODE);
         }
         $orderId = $key . '_' . time();
-        $food = [
-            'food_id' => $data['food_id'],
-            'food_quantity' => $data['food_quantity']
-        ];
+        $foods = [];
+        for ($i = 0; $i < count($data['food_id']); $i++) {
+            $foods[] = [
+                'food_id' => $data['food_id'][$i],
+                'food_quantity' => $data['food_quantity'][$i]
+            ];
+        }
+
         Redis::expire($orderId, 300);
         Redis::setex('extraData_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'] , 300, $data['extraData']);
-        Redis::setex('food_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'], 300, json_encode($food));
+        Redis::setex('food_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'], 300, json_encode($foods)); // Lưu mảng foods
         $redirectUrl = $this->redirectUrl;
         $ipnUrl = $this->ipnUrl;
         $extraData = "";
@@ -210,35 +234,6 @@ class TicketController extends Controller
         ], Constant::SUCCESS_CODE);
     }
 
-//    public function applyPromotionAfterPayment($id)
-//    {
-//        $promotion = Promotion::find($id);
-//
-//        if (!$promotion || $promotion->status != 1) {
-//            return;
-//        }
-//
-//        // Kiểm tra ngày áp dụng khuyến mãi
-//        if ($promotion->end_date < now() || $promotion->start_date > now()) {
-//            return;
-//        }
-//
-//        // Kiểm tra số lượng khuyến mãi còn lại
-//        if ($promotion->quantity <= 0) {
-//            return;
-//        }
-//
-//        $userId = Auth::id();
-//
-//        // Kiểm tra người dùng đã sử dụng mã khuyến mãi này chưa
-//        if ($promotion->users()->where('account_id', $userId)->exists()) {
-//            return;
-//        }
-//
-//        // Ghi nhận người dùng đã sử dụng mã và giảm số lượng còn lại
-//        $promotion->users()->attach($userId);
-//        $promotion->decrement('quantity');
-//    }
 
 
      public function handleMomoPayment(Request $request){

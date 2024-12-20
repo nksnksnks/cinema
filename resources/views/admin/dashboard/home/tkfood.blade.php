@@ -27,7 +27,7 @@
                 <div class="ibox-content">
                     <h1 class="no-margins">{{ $monthlyTickets }}</h1>
                     <div class="stat-percent font-bold text-info"> <i class="fa fa-level-up"></i></div>
-                    <small>New food</small>
+                    <small>Total quantity</small>
                 </div>
             </div>
         </div>
@@ -40,7 +40,7 @@
                 <div class="ibox-content">
                     <h1 class="no-margins">{{ $mostWatchedMovieInMonth }}</h1>
                     <div class="stat-percent font-bold text-navy"> <i class="fa fa-level-up"></i></div>
-                    <small>New movie</small>
+                    <small>Food BestSeller</small>
                 </div>
             </div>
         </div>
@@ -100,7 +100,7 @@
                                     <div class="col-md-{{$s}}">
                                         
 
-                                        <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate ?? '') }}">
+                                        <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate1 ?? '') }}">
 
                                     </div>
                                     <div class="col-md-{{$s}}">

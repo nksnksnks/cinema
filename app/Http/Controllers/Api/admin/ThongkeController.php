@@ -13,6 +13,8 @@ use App\Models\Movie;
 use App\Models\MovieShowTime;
 use App\Models\Ticket;
 use App\Models\Food;
+use App\Models\FoodBill;
+use Carbon\Carbon;
 
 use App\Models\FoodBillJoin;
 
@@ -153,7 +155,10 @@ class ThongkeController extends Controller
         if (!$startDate || !$endDate) {
             $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
             $endDate = now()->toDateTimeString(); // Ngày hiện tại
-            
+            $endDate1 = now()->toDateString(); // Ngày hiện tại
+        }else{
+            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+            $endDate1 = date('Y-m-d', strtotime($endDate));
         }
         $cinema_id = Auth::user()->cinema_id;
             // Tính tổng doanh thu trong tháng
@@ -217,7 +222,7 @@ class ThongkeController extends Controller
 
         // $endDate = $originalEndDate;
 
-        return view('admin.dashboard.home.index', compact('statistics', 'startDate', 'endDate','monthlyRevenue','monthlyTickets','mostWatchedMovieInMonth','NewUsersThisMonth'));
+        return view('admin.dashboard.home.index', compact('statistics', 'startDate', 'endDate1','monthlyRevenue','monthlyTickets','mostWatchedMovieInMonth','NewUsersThisMonth'));
     }
 
     public function tkmovie(Request $request)
@@ -229,10 +234,13 @@ class ThongkeController extends Controller
 
         // Kiểm tra ngày bắt đầu và ngày kết thúc
         if (!$startDate || !$endDate) {
-            $startDate = now()->startOfMonth()->toDateString();
-            $endDate = now()->toDateTimeString();
-            
-        } 
+            $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
+            $endDate = now()->toDateTimeString(); // Ngày hiện tại
+            $endDate1 = now()->toDateString(); // Ngày hiện tại
+        }else{
+            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+            $endDate1 = date('Y-m-d', strtotime($endDate));
+        }
 
         $cinema_id = Auth::user()->cinema_id;
             // Tính tổng doanh thu trong tháng
@@ -293,7 +301,7 @@ class ThongkeController extends Controller
             return $b['total_revenue'] - $a['total_revenue'];
         });
 
-        return view('admin.dashboard.home.tkmovie', compact('movieRevenues', 'startDate', 'endDate', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
+        return view('admin.dashboard.home.tkmovie', compact('movieRevenues', 'startDate', 'endDate1', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
     }
     public function tkfood(Request $request)
     {
@@ -303,13 +311,13 @@ class ThongkeController extends Controller
 
         // Kiểm tra ngày bắt đầu và ngày kết thúc
         if (!$startDate || !$endDate) {
-            $startDate = now()->startOfMonth()->toDateString();
-            $endDate = now()->toDateTimeString();
-        } 
-        // else {
-        //     // Nếu $endDate được truyền vào, set thời gian là cuối ngày
-        //     $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
-        // }
+            $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
+            $endDate = now()->toDateTimeString(); // Ngày hiện tại
+            $endDate1 = now()->toDateString(); // Ngày hiện tại
+        }else{
+            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+            $endDate1 = date('Y-m-d', strtotime($endDate));
+        }
 
         $cinema_id = Auth::user()->cinema_id;
 
@@ -343,6 +351,6 @@ class ThongkeController extends Controller
         $mostWatchedMovieInMonth = $this->getMostMonthlyFood($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
         $NewUsersThisMonth = $this->getNewUsersThisMonth($cinema_id,$startDate,$endDate); // Hàm này bạn tự kiểm tra lại, có thể không cần thiết nữa
 
-        return view('admin.dashboard.home.tkfood', compact('startDate', 'endDate', 'foodStats', 'totalRevenue', 'totalQuantity', 'bestSellingFood', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
+        return view('admin.dashboard.home.tkfood', compact('startDate', 'endDate1', 'foodStats', 'totalRevenue', 'totalQuantity', 'bestSellingFood', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
     }
 }

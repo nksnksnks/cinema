@@ -96,7 +96,7 @@
                                     </div>
                                     <div class="col-md-{{$s}}">
                                         
-                                        <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate ?? '') }}">
+                                        <input type="date" class="form-control" name="end_date" value="{{ old('end_date', $endDate1 ?? '') }}">
                                     </div>
                                     <div class="col-md-{{$s}}">
                                         <button class="btn btn-primary">Lọc</button>
