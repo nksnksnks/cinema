@@ -11,6 +11,7 @@ Route::group(['prefix' => '/ticket'], function () {
     Route::get('/handle-momo-payment', [TicketController::class, 'handleMomoPayment']);
     Route::get('/get/{type}', [TicketController::class, 'getTicket']);
     Route::get('/detail/{id}', [TicketController::class, 'detailTicket']);
+    Route::get('/get-info-payment', [TicketController::class, 'getInfoPayment']);
 
 });
 

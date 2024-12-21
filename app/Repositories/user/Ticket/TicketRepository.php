@@ -74,8 +74,7 @@ class TicketRepository{
         list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
         $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
         $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $foods = json_decode($food); // Đổi tên biến thành $foods
-//        return $food;
+        $food = json_decode($food);
         $userId = Auth::id();
         $promotion = Promotion::find($extraId);
         $promotion->users()->attach($userId);
@@ -106,18 +105,17 @@ class TicketRepository{
                     'status' => '0'
                 ])->id;
             }
-                if($billId){
-                    // Lặp qua từng món ăn trong mảng $foods
-                    foreach ($foods as $food) {
-                        $foodPrice = Food::find($food->food_id)->price;
-                        FoodBillJoin::create([
-                            'bill_id' => $billId,
-                            'food_id' => $food->food_id,
-                            'quantity' => $food->food_quantity,
-                            'total' => $food->food_quantity * $foodPrice
-                        ]);
-                    }
-                }    
+            if($billId){
+                foreach ($food as $f){
+                    $foodPrice = Food::find($f->food_id)->first();
+                    FoodBillJoin::create([
+                        'bill_id' => $billId,
+                        'food_id' => $f->food_id,
+                        'quantity' => $f->food_quantity,
+                        'total' => $f->food_quantity * $foodPrice['price']
+                    ]);
+                }
+                }
 
             $user = Auth::user()->id;
             $account = Account::find($user);
@@ -262,35 +260,76 @@ class TicketRepository{
             ->join('ci_cinema', 'ci_bill.cinema_id', '=', 'ci_cinema.id')
             ->where('ci_bill.id', $billId)->orderBy('ci_bill.created_at', 'DESC')->first();
         $response['bill'] = $bill;
-        foreach ($bill as $key){
-            $ticket = Ticket::select(
-                'ci_ticket.price',
-                'ci_seat.seat_code',
-                'ci_seat_type.name',
-                'ci_movie_show_time.start_time',
-                'ci_movie_show_time.end_time',
-                'ci_movie.name as movie_name',
-                'ci_movie.id as movie_id',
-                'ci_movie.avatar as avatar',
-                'ci_room.name as room',
-                'ci_movie_show_time.start_date'
-            )
-                ->join('ci_seat', 'ci_ticket.seat_id', '=', 'ci_seat.id')
-                ->join('ci_seat_type', 'ci_seat_type.id', '=', 'ci_seat.seat_type_id')
-                ->join('ci_movie_show_time', 'ci_movie_show_time.id', '=', 'ci_ticket.movie_showtime_id')
-                ->join('ci_movie', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
-                ->join('ci_room', 'ci_room.id', '=', 'ci_movie_show_time.room_id')
-                ->where('ci_ticket.bill_id', '=', $billId);
-            $total = $ticket->count();
-            $ticket = $ticket->get();
-            $response['movie'] = Movie::find($ticket[0]['movie_id']);
-            $response['ticket'] = $ticket;
-            $response['voucher'] = Promotion::find($bill['extra_id'])->first();
-            $response['foods'] = Food::select('ci_foods.*', 'fbj.quantity', 'fbj.total')
-                ->join('ci_food_bill_join as fbj', 'fbj.food_id', '=', 'ci_foods.id')
-                ->where('fbj.bill_id', '=', $billId)->get();
-        }
+        $ticket = Ticket::select(
+            'ci_ticket.price',
+            'ci_seat.seat_code',
+            'ci_seat_type.name',
+            'ci_movie_show_time.start_time',
+            'ci_movie_show_time.end_time',
+            'ci_movie.name as movie_name',
+            'ci_movie.id as movie_id',
+            'ci_movie.avatar as avatar',
+            'ci_room.name as room',
+            'ci_movie_show_time.start_date'
+        )
+            ->join('ci_seat', 'ci_ticket.seat_id', '=', 'ci_seat.id')
+            ->join('ci_seat_type', 'ci_seat_type.id', '=', 'ci_seat.seat_type_id')
+            ->join('ci_movie_show_time', 'ci_movie_show_time.id', '=', 'ci_ticket.movie_showtime_id')
+            ->join('ci_movie', 'ci_movie_show_time.movie_id', '=', 'ci_movie.id')
+            ->join('ci_room', 'ci_room.id', '=', 'ci_movie_show_time.room_id')
+            ->where('ci_ticket.bill_id', '=', $billId);
+        $total = $ticket->count();
+        $ticket = $ticket->get();
+        $response['movie'] = Movie::find($ticket[0]['movie_id']);
+        $response['ticket'] = $ticket;
+        $response['voucher'] = Promotion::find($bill['extra_id'])->first();
+        $response['foods'] = Food::select('ci_foods.*', 'fbj.quantity', 'fbj.total')
+            ->join('ci_food_bill_join as fbj', 'fbj.food_id', '=', 'ci_foods.id')
+            ->where('fbj.bill_id', '=', $billId)->get();
         return $response;
+    }
+
+    public function getInfoPayment($userId)
+    {
+        $dataPayment = Redis::get('info_payment_' . $userId);
+        if(!$dataPayment){
+            return [];
+        }
+        $dataPayment = json_decode($dataPayment);
+        $orderId = $dataPayment->orderId;
+        list($cinemaId, $showTimeId, $userId , $time) = explode('_', $orderId, 4);
+        $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
+        $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
+        $food = json_decode($food);
+        $extra = Promotion::find($extraId)->first();
+
+        $data = self::getDatareservation($orderId);
+        $dataSeat = [];
+        foreach (json_decode($data['seat_list']) as $d){
+            $showTime = MovieShowtime::find($showTimeId)->first();
+            $ticketPrice = WeeklyTicketPricesRepository::getTicketPrice($showTime->start_date, $showTime->start_time);
+            $seats = Seat::with('seatType')
+                ->where('id', $d)
+                ->first();
+            if($seats->seatType->id == 1){
+                $price = (int)$ticketPrice + 10000;
+            }else{
+                $price = (int)$ticketPrice;
+            }
+            $dataSeat[] = [
+                'seat_id' => $d,
+                'seat_name' => $seats->name,
+                'movie_showtime_id' => (int)$showTimeId,
+                'price' => $price
+            ];
+        }
+        $data['seat_list'] = $dataSeat;
+        return [
+            'data_payment' => $dataPayment,
+            'food' => $food,
+            'extra_data' => $extra,
+            'data_seat' => $data
+            ];
     }
 
 }
