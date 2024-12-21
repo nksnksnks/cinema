@@ -51,7 +51,7 @@
                         <a href="{{ route('cinema.index') }}">Quản lý chi nhánh</a>
                     </li>
                 </ul>
-                @endif
+                
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('room.create') ? 'active' : '' }}">
                         <a href="{{ route('room.create') }}">Thêm phòng mới</a>
@@ -60,7 +60,7 @@
                         <a href="{{ route('room.index') }}">Quản lý phòng</a>
                     </li>
                 </ul>
-                @if(Auth::user()->role_id == 1)
+                
                 <ul class="nav nav-second-level">
                     <li class="{{ request()->routeIs('seattype.create') ? 'active' : '' }}">
                         <a href="{{ route('seattype.create') }}">Thêm loại ghế</a>

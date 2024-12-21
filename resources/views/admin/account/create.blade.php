@@ -92,7 +92,7 @@
                                 <div class="form-row">
                                     <label for="cinema_id" class="control-label text-left">Chi nhánh (Cinema ID) <span class="text-danger">(*)</span></label>
                                     @if(Auth::user()->role_id == 1)
-                                        <<select name="cinema_id" id="cinema_id" class="form-control">
+                                        <select name="cinema_id" id="cinema_id" class="form-control">
                                             @foreach($cinemas as $key => $value)
                                                 <option value="{{ $key }}" {{ isset($account) && $account->cinema_id == $key ? 'selected' : '' }}>
                                                     {{ $value }}
