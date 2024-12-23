@@ -123,74 +123,61 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    $(document).ready(function() {
+     $(document).ready(function() {
         const statisticsData = @json($statistics);
         console.log(statisticsData);
 
-        const labels = statisticsData.map(stat => stat.date);
-        const totalRevenue = statisticsData.map(stat => stat.total_revenue);
-        const totalTickets = statisticsData.map(stat => stat.total_tickets);
+        // Lấy dữ liệu cho biểu đồ
+        const labels = statisticsData.map(stat => stat.date); // Ngày tháng
+        const totalRevenue = statisticsData.map(stat => stat.total_revenue); // Tổng doanh thu
 
+        // Dữ liệu cho biểu đồ đường
         const data = {
             labels: labels,
             datasets: [
                 {
                     label: 'Tổng doanh thu',
                     data: totalRevenue,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                    yAxisID: 'y', // Thêm yAxisID cho doanh thu
-                },
-                {
-                    label: 'Tổng vé bán được',
-                    data: totalTickets,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    yAxisID: 'y1', // Thêm yAxisID cho số vé
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4 // Làm mịn đường biểu đồ
                 }
             ]
         };
 
-        
+        // Cấu hình biểu đồ
         const config = {
-            type: 'bar',
+            type: 'line',
             data: data,
             options: {
                 responsive: true,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Biểu đồ Thống kê Doanh thu theo Cinema',
+                        text: 'Biểu đồ Thống kê Doanh thu theo Thời gian',
                         position: 'bottom'
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        position: 'left',
-                    },
-                    y1: {
-                        beginAtZero: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false,
-                        },
                         ticks: {
-                            precision: 0,
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                            }
                         }
-                    },
+                    }
                 }
             }
         };
 
+        // Vẽ biểu đồ
         const myChart = new Chart(
             document.getElementById('myChart'),
             config
         );
 
-        
 
         // Sử dụng event delegation để lắng nghe sự thay đổi của danh mục
         $('#ajax').on('change', '.select-cinema', function() {

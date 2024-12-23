@@ -151,6 +151,7 @@ Route::group(['middleware' => 'authenticate'], function(){
         Route::get('thongke', [ThongkeController::class,'index'])->name('thongke.index');
         Route::get('thongke-movie', [ThongkeController::class,'tkmovie'])->name('thongke.movie.index');
         Route::get('thongke-food', [ThongkeController::class,'tkfood'])->name('thongke.food.index');
+        Route::get('/thongke/movie/details', [ThongkeController::class, 'getMovieStatistics'])->name('thongke.movie.details');
 
         //profile
         Route::get('/profile', [ProfileController::class, 'getProfile'])->name('auth.profile');

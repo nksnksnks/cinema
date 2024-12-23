@@ -145,47 +145,91 @@ class ThongkeController extends Controller
 
 
     public function index(Request $request)
-    {
-       
-        // Lấy giá trị start_date và end_date từ request
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        // $originalEndDate = $endDate;
-        // Kiểm tra ngày bắt đầu và ngày kết thúc
-        if (!$startDate || !$endDate) {
-            $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
-            $endDate = now()->toDateTimeString(); // Ngày hiện tại
-            $endDate1 = now()->toDateString(); // Ngày hiện tại
-        }else{
-            $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
-            $endDate1 = date('Y-m-d', strtotime($endDate));
-        }
-        $cinema_id = Auth::user()->cinema_id;
-            // Tính tổng doanh thu trong tháng
-            $monthlyRevenue = $this->getMonthlyRevenue($cinema_id,$startDate,$endDate);
-            
-            // Tính tổng số vé trong tháng
-            $monthlyTickets = $this->getMonthlyTickets($cinema_id,$startDate,$endDate);
-            
-            // Tìm phim được xem nhiều nhất trong tháng
-            $mostWatchedMovieInMonth = $this->getMostWatchedMovieInMonth($cinema_id,$startDate,$endDate);
+{
     
-            $NewUsersThisMonth = $this->getNewUsersThisMonth($cinema_id,$startDate,$endDate);
+    // Lấy giá trị start_date và end_date từ request
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+
+    // Kiểm tra ngày bắt đầu và ngày kết thúc
+    if (!$startDate || !$endDate) {
+        $startDate = now()->startOfMonth()->toDateString(); // Ngày đầu tháng
+        $endDate = now()->toDateTimeString(); // Ngày hiện tại
+        $endDate1 = now()->toDateString(); // Ngày hiện tại
+    } else {
+        $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+        $endDate1 = date('Y-m-d', strtotime($endDate));
+    }
+
+    $cinema_id = Auth::user()->cinema_id;
+
+    // Tính tổng doanh thu trong tháng
+    $monthlyRevenue = $this->getMonthlyRevenue($cinema_id, $startDate, $endDate);
+
+    // Tính tổng số vé trong tháng
+    $monthlyTickets = $this->getMonthlyTickets($cinema_id, $startDate, $endDate);
+
+    // Tìm phim được xem nhiều nhất trong tháng
+    $mostWatchedMovieInMonth = $this->getMostWatchedMovieInMonth($cinema_id, $startDate, $endDate);
+
+    $NewUsersThisMonth = $this->getNewUsersThisMonth($cinema_id, $startDate, $endDate);
+
+    // Kiểm tra khoảng cách giữa start_date và end_date
+    $startDateTime = new \DateTime($startDate);
+    $endDateTime = new \DateTime($endDate);
+    $interval = $startDateTime->diff($endDateTime);
+
+    if ($interval->y >= 1) {
+        // Lấy danh sách doanh thu theo từng năm nếu khoảng thời gian > 1 năm
+        $statistics = DB::table('ci_bill')
+            ->selectRaw("YEAR(created_at) as year, SUM(total) as total_revenue")
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get()
+            ->map(function ($data) {
+                return [
+                    'date' => $data->year,
+                    'total_revenue' => $data->total_revenue,
+                    'total_tickets' => null,
+                    'most_watched_movie' => null,
+                ];
+            });
+    } elseif ($interval->days > 30) {
+        // Lấy danh sách doanh thu theo từng tháng nếu khoảng thời gian > 30 ngày
+        $statistics = DB::table('ci_bill')
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total_revenue")
+            ->where('cinema_id', $cinema_id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->map(function ($data) {
+                return [
+                    'date' => $data->month,
+                    'total_revenue' => $data->total_revenue,
+                    'total_tickets' => null,
+                    'most_watched_movie' => null,
+                ];
+            });
+    } else {
         // Lấy danh sách các ngày giữa khoảng thời gian
-        $dates = DB::table('ci_bill')->where('cinema_id',$cinema_id)
+        $dates = DB::table('ci_bill')->where('cinema_id', $cinema_id)
             ->selectRaw("DATE(created_at) as date")
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+
         $statistics = $dates->map(function ($date) {
             $currentDate = $date->date;
-           
+
             // Tổng doanh thu trong ngày
             $totalRevenue = DB::table('ci_bill')
                 ->whereDate('created_at', $currentDate)
                 ->sum('total');
-         
+
             // Tổng số vé bán trong ngày
             $totalTickets = DB::table('ci_ticket')
                 ->whereDate('created_at', $currentDate)
@@ -211,7 +255,7 @@ class ThongkeController extends Controller
                     ->where('ci_movie_show_time.id', $mostWatchedMovieId)
                     ->value('ci_movie.name');
             }
-           
+
             return [
                 'date' => $currentDate,
                 'total_revenue' => $totalRevenue,
@@ -219,14 +263,15 @@ class ThongkeController extends Controller
                 'most_watched_movie' => $mostWatchedMovie ?? 'Không xác định',
             ];
         });
-
-        // $endDate = $originalEndDate;
-
-        return view('admin.dashboard.home.index', compact('statistics', 'startDate', 'endDate1','monthlyRevenue','monthlyTickets','mostWatchedMovieInMonth','NewUsersThisMonth'));
     }
+
+    return view('admin.dashboard.home.index', compact('statistics', 'startDate', 'endDate1', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
+}
+
 
     public function tkmovie(Request $request)
     {
+        $movies = Movie::all();
         // Lấy giá trị start_date và end_date từ request
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -301,8 +346,72 @@ class ThongkeController extends Controller
             return $b['total_revenue'] - $a['total_revenue'];
         });
 
-        return view('admin.dashboard.home.tkmovie', compact('movieRevenues', 'startDate', 'endDate1', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth'));
+        return view('admin.dashboard.home.tkmovie', compact('movieRevenues', 'startDate', 'endDate1', 'monthlyRevenue', 'monthlyTickets', 'mostWatchedMovieInMonth', 'NewUsersThisMonth', 'movies'));
     }
+    
+    public function getMovieStatistics(Request $request)
+{
+    $movieId = $request->input('movie_id');
+    $cinemaId = Auth::user()->cinema_id;
+
+    // Lấy ngày bắt đầu chiếu phim (dựa vào ngày tạo hóa đơn đầu tiên)
+    $startDate = DB::table('ci_bill')
+        ->join('ci_ticket', 'ci_bill.id', '=', 'ci_ticket.bill_id')
+        ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
+        ->where('ci_movie_show_time.movie_id', $movieId)
+        ->where('ci_bill.cinema_id', $cinemaId)
+        ->min('ci_bill.created_at');
+
+    // Nếu không tìm thấy ngày bắt đầu, trả về mảng rỗng
+    if (!$startDate) {
+        return response()->json([
+            'statistics' => [],
+            'totalRevenue' => 0,
+            'totalTickets' => 0
+        ]);
+    }
+
+    $startDate = Carbon::parse($startDate)->toDateString();
+    $endDate = now()->toDateString(); // Ngày hiện tại
+
+    // Truy vấn thống kê doanh thu và số vé bán được theo ngày
+    $dailyStatistics = DB::table('ci_ticket')
+        ->join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id')
+        ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
+        ->where('ci_bill.cinema_id', $cinemaId)
+        ->where('ci_movie_show_time.movie_id', $movieId)
+        ->whereBetween(DB::raw('DATE(ci_bill.created_at)'), [$startDate, $endDate])
+        ->selectRaw(
+            "DATE(ci_bill.created_at) as date, " .
+            "SUM(ci_ticket.price) as daily_revenue, " .
+            "COUNT(ci_ticket.id) as daily_tickets" // Thêm trường đếm số vé
+        )
+        ->groupBy('date')
+        ->orderBy('date')
+        ->get();
+
+    // Tính tổng doanh thu và tổng số vé
+    $totalRevenue = $dailyStatistics->sum('daily_revenue');
+    $totalTickets = $dailyStatistics->sum('daily_tickets');
+
+    // Format dữ liệu cho biểu đồ
+    $statistics = $dailyStatistics->map(function ($data) {
+        return [
+            'date' => $data->date,
+            'daily_revenue' => $data->daily_revenue,
+            'daily_tickets' => $data->daily_tickets // Thêm số vé bán được vào data
+        ];
+    });
+
+    return response()->json([
+        'statistics' => $statistics,
+        'totalRevenue' => $totalRevenue,
+        'totalTickets' => $totalTickets
+    ]);
+}
+
+
+
     public function tkfood(Request $request)
     {
         // Lấy giá trị start_date và end_date từ request
