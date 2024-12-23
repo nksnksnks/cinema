@@ -132,7 +132,7 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_1',
-                    'message' => trans('messages.errors.users.email_not_found'),
+                    'message' => 'Tài khoản không tồn tại',
                     'data' => []
                 ], Response::HTTP_OK);
             }
@@ -140,7 +140,7 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_2',
-                    'message' => trans('messages.errors.users.account_not_active'),
+                    'message' => 'Tài khoản đã bị khóa',
                     'data' => []
                 ], Response::HTTP_OK);
             }
@@ -154,7 +154,7 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => Constant::FALSE_CODE,
                     'errorCode' => 'E_UC2_3',
-                    'message' => trans('messages.errors.users.password_not_correct'),
+                    'message' => 'Tài khoản hoặc mật khẩu không đúng',
                     'data' => []
                 ], Response::HTTP_OK);
             }

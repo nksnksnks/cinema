@@ -126,19 +126,18 @@ class TicketController extends Controller
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              @OA\Property(property="amount", type="10000"),
-     *              @OA\Property(property="cinema_id", type="1"),
-     *              @OA\Property(property="show_time_id", type="13"),
-     *              @OA\Property(property="extraData", type="1"),
+     *              @OA\Property(property="amount", type="integer", example="10000"),
+     *              @OA\Property(property="cinema_id", type="integer", example="1"),
+     *              @OA\Property(property="show_time_id", type="integer", example="7"),
+     *              @OA\Property(property="extraData", type="string", example="1"),
      *              @OA\Property(
-     *                  property="food_id",
+     *                  property="food",
      *                  type="array",
-     *                  @OA\Items(type="integer", example="1")
-     *              ),
-     *              @OA\Property(
-     *                  property="food_quantity",
-     *                  type="array",
-     *                  @OA\Items(type="integer", example="2")
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="food_id", type="integer", example="1"),
+     *                      @OA\Property(property="food_quantity", type="integer", example=4)
+     *                  )
      *              ),
      *          )
      *     ),
