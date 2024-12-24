@@ -53,57 +53,57 @@ class TicketController extends Controller
         $this->ipnUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
     }
 
-    /**
-     * @author son.nk
-     * @OA\Post (
-     *     path="/api/app/ticket/reservation",
-     *     tags={"App Đặt vé"},
-     *     summary="Giữ chỗ",
-     *     operationId="user/ticket/reservation",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *          @OA\JsonContent(
-     *              type="object",
-     *              @OA\Property(property="cinema_id", type="string"),
-     *              @OA\Property(property="seat_id", type="string"),
-     *              @OA\Property(property="show_time_id", type="string"),
-     *          @OA\Examples(
-     *              summary="Examples",
-     *              example = "Examples",
-     *              value = {
-     *                          "cinema_id" : "1",
-     *                          "show_time_id" : "7",
-     *                          "seat_ids" : "[5, 6, 7, 8, 9]"
-     *                      },
-     *              ),
-     *          )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Success",
-     *             @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Success."),
-     *          )
-     *     ),
-     * )
-     */
-    public function createReservation(Request $request){
-        try {
-            $data = $request->all();
-            Redis::setex($data['cinema_id'] . '_' . $data['show_time_id'] . '_' . $this->getCurrentLoggedIn()->id , 600, $data['seat_ids']);
-            return response()->json([
-                'status' => Constant::SUCCESS_CODE,
-                'message' => trans('messages.success.success'),
-                'data' => []
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => $th->getMessage(),
-                'data' => []
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
+//    /**
+//     * @author son.nk
+//     * @OA\Post (
+//     *     path="/api/app/ticket/reservation",
+//     *     tags={"App Đặt vé"},
+//     *     summary="Giữ chỗ",
+//     *     operationId="user/ticket/reservation",
+//     *     security={{"bearerAuth":{}}},
+//     *     @OA\RequestBody(
+//     *          @OA\JsonContent(
+//     *              type="object",
+//     *              @OA\Property(property="cinema_id", type="string"),
+//     *              @OA\Property(property="seat_id", type="string"),
+//     *              @OA\Property(property="show_time_id", type="string"),
+//     *          @OA\Examples(
+//     *              summary="Examples",
+//     *              example = "Examples",
+//     *              value = {
+//     *                          "cinema_id" : "1",
+//     *                          "show_time_id" : "7",
+//     *                          "seat_ids" : "[5, 6, 7, 8, 9]"
+//     *                      },
+//     *              ),
+//     *          )
+//     *     ),
+//     *     @OA\Response(
+//     *         response=200,
+//     *         description="Success",
+//     *             @OA\JsonContent(
+//     *             @OA\Property(property="message", type="string", example="Success."),
+//     *          )
+//     *     ),
+//     * )
+//     */
+//    public function createReservation(Request $request){
+//        try {
+//            $data = $request->all();
+//            Redis::setex($data['cinema_id'] . '_' . $data['show_time_id'] . '_' . $this->getCurrentLoggedIn()->id , 600, $data['seat_ids']);
+//            return response()->json([
+//                'status' => Constant::SUCCESS_CODE,
+//                'message' => trans('messages.success.success'),
+//                'data' => []
+//            ]);
+//        } catch (\Throwable $th) {
+//            return response()->json([
+//                'status' => Constant::FALSE_CODE,
+//                'message' => $th->getMessage(),
+//                'data' => []
+//            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+//        }
+//    }
     /**
      * @author Sonnk
      * @OA\Post (
@@ -183,18 +183,9 @@ class TicketController extends Controller
         $secretKey = $this->secretKey;
         $orderInfo = $this->orderInfo;
         $key = $data['cinema_id'] . '_' . $data['show_time_id'] . '_' . $this->getCurrentLoggedIn()->id;
-        if(!Redis::get($key)){
-            return response()->json([
-                'status' => Constant::SUCCESS_CODE,
-                'message' => trans('messages.errors.ticket.time_out'),
-                'data' => []
-            ], Constant::SUCCESS_CODE);
-        }
         $orderId = $key . '_' . time();
-        $food = $data['food'];
-        Redis::expire($orderId, 600);
-        Redis::setex('extraData_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'] , 600, $data['extraData']);
-        Redis::setex('food_' . $this->getCurrentLoggedIn()->id . '_' . $data['cinema_id'] . '_' . $data['show_time_id'], 600, json_encode($food));
+        Redis::setex('reservation_' . $this->getCurrentLoggedIn()->id, 600, json_encode($data));
+
         $redirectUrl = $this->redirectUrl;
         $ipnUrl = $this->ipnUrl;
         $extraData = "";
@@ -248,8 +239,8 @@ class TicketController extends Controller
          if ($generatedSignature == $signature) {
              if($responseData['resultCode'] == '0') {
 
-                 $data = $this->ticketRepository->createBill($orderId, $amount);
-                 return redirect()->away('http://movieease.com/'); 
+                 $data = $this->ticketRepository->createBill($this->getCurrentLoggedIn()->id);
+                 return redirect()->away('http://movieease.com/');
              }
              else{
                  $data = $this->ticketRepository->cancelReservation($orderId);

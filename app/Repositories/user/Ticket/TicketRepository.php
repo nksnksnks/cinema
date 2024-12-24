@@ -3,6 +3,7 @@
 namespace App\Repositories\user\Ticket;
 
 use App\Models\Bill;
+use App\Models\Cinema;
 use App\Models\Food;
 use App\Models\FoodBillJoin;
 use App\Models\Movie;
@@ -25,63 +26,18 @@ class TicketRepository{
         return Ticket::class;
     }
 
-    public function getDatareservation($key){
-        list($cinemaId, $showTimeId, $userId, $time) = explode('_', $key, 4);
-        $data = Redis::get($cinemaId . '_' . $showTimeId . '_' . $userId);
-        return [
-            'cinema_id' => $cinemaId,
-            'show_time_id' => $showTimeId,
-            'user_id' => $userId,
-            'seat_list' => $data
-        ];
-    }
-
-    // public function createBill($key, $amount)
-    // {
-    //     $data = self::getDatareservation($key);
-    //     list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
-    //     if($data['seat_list']){
-    //         $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
-    //         $currentTime = Carbon::now()->format('YmdHis');  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
-    //         $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
-    //         $billId = Bill::create([
-    //             'ticket_code' =>  $ticketCode,
-    //             'account_id' => (int)$data['user_id'],
-    //             'cinema_id' => $data['cinema_id'],
-    //             'total' => $amount,
-    //             'status' => '1'
-    //         ])->id;
-    //         foreach (json_decode($data['seat_list']) as $key){
-    //             $ticket = Ticket::create([
-    //                 'seat_id' => $key,
-    //                 'bill_id' => $billId,
-    //                 'movie_showtime_id' => (int)$showTimeId,
-    //                 'price' => 1000
-    //             ]);
-    //         }
-    //         return $billId;
-    //     }
-    //     self::cancelReservation($key);
-    //     return false;
-    // }
-
-
-
-
-    public function createBill($key, $amount)
+    public function createBill($userId)
     {
-        $data = self::getDatareservation($key);
-        list($cinemaId, $showTimeId, $userId , $time) = explode('_', $key, 4);
-        $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $food = json_decode($food);
-        // $userId = Auth::id();
+        $data = Redis::get('reservation_' . $userId);
+        $data = json_decode($data);
+        $userId = Auth::id();
+        $extraId = $data->extraData;
         $promotion = Promotion::where('id', $extraId)
-        ->where('status', 1)
-        ->where('start_date', '<=', now()->toDateString())
-        ->where('end_date', '>=', now()->toDateString())
-        ->where('quantity', '>', 0)
-        ->first();
+            ->where('status', 1)
+            ->where('start_date', '<=', now()->toDateString())
+            ->where('end_date', '>=', now()->toDateString())
+            ->where('quantity', '>', 0)
+            ->first();
         if ($promotion && !$promotion->users()->where('account_id', $userId)->exists()) {
             $promotion->users()->attach($userId);
             $promotion->decrement('quantity');
@@ -90,7 +46,7 @@ class TicketRepository{
             $extraId = null;
         }
         $account = Account::find($data['user_id']);
-        if ($data['seat_list']) {
+        if ($data->seat_ids) {
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
             $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
@@ -100,9 +56,9 @@ class TicketRepository{
                     'ticket_code' => $ticketCode,
                     'account_id' => (int)$data['user_id'],
                     'cinema_id' => $data['cinema_id'],
-                    'movie_show_time_id' => $showTimeId,
-                    'total' => $amount,
-                    'staff_check' => $account->id,
+                    'movie_show_time_id' => $data->show_time_id,
+                    'total' => $data->amount,
+                    'staff_check' => Auth::user()->id,
                     'status' => '1'
                 ])->id;
             }else{
@@ -110,15 +66,15 @@ class TicketRepository{
                 $billId = Bill::create([
                     'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,
-                    'account_id' => (int)$data['user_id'],
-                    'cinema_id' => $data['cinema_id'],
-                    'movie_show_time_id' => $showTimeId,
-                    'total' => $amount,
+                    'account_id' => (int)$userId,
+                    'cinema_id' => $data->cinema_id,
+                    'movie_show_time_id' => $data->show_time_id,
+                    'total' => $data->amount,
                     'status' => '0'
                 ])->id;
             }
             if($billId){
-                foreach ($food as $f){
+                foreach ($data->food as $f){
                     $foodPrice = Food::find($f->food_id)->first();
                     FoodBillJoin::create([
                         'bill_id' => $billId,
@@ -130,34 +86,27 @@ class TicketRepository{
             }
 
             // $user = Auth::user()->id;
-            
+
             if ($account) {
                 $account->update(['cinema_id' => $data['cinema_id']]);
             }
-            $seatIds = json_decode($data['seat_list']);
+            $seatIds = $data->seat_ids;
             $seatCodes = [];
 
             foreach ($seatIds as $seatId) {
-                $showTime = MovieShowtime::find($showTimeId)->first();
+                $showTime = MovieShowtime::find($data->show_time_id)->first();
                 $ticketPrice = WeeklyTicketPricesRepository::getTicketPrice($showTime->start_date, $showTime->start_time);
                 $seats = Seat::with('seatType')
                     ->where('id', $seatId)
                     ->first();
                 $price = (int)$ticketPrice + $seats->seatType->extra_fee;
-                // if($seats->seatType->id == 1){
-                //     $price = (int)$ticketPrice + 10000;
-                // }else{
-                //     $price = (int)$ticketPrice;
-                // }
-                // Tạo vé cho từng ghế
                 Ticket::create([
                     'seat_id' => $seatId,
                     'bill_id' => $billId,
-                    'movie_showtime_id' => (int)$showTimeId,
+                    'movie_showtime_id' => (int)$data->show_time_id,
                     'price' => $price
                 ]);
 
-                // Lấy mã ghế từ bảng ci_seat
                 $seat = Seat::find($seatId);
                 if ($seat) {
                     $seatCodes[] = $seat->seat_code; // Thêm mã ghế vào danh sách
@@ -166,22 +115,21 @@ class TicketRepository{
             $bill = Bill::find($billId);
             $cinema_name = $bill->cinema->name;
             $total_bill = $bill->total;
-            $movieShowtime = MovieShowtime::find($showTimeId);
+            $movieShowtime = MovieShowtime::find($data->show_time_id);
             $movie_name = $movieShowtime->movie->name;
             $room = $movieShowtime->room->name;
             $start_time = $movieShowtime->start_time;
             $seatListString = implode(', ', $seatCodes);
 
-            $user = Account::find($data['user_id']);
+            $user = Account::find($userId);
             if ($user && $user->email && $seatListString) {
-                // Gửi email cho người dùng
                 Mail::to($user->email)->send(new TicketConfirmationMail($user->username, $ticketCode, $seatListString, $cinema_name, $movie_name, $room, $start_time, $total_bill));
             }
 
             return $billId;
         }
 
-        self::cancelReservation($key);
+        self::cancelReservation($userId);
         return false;
     }
 
@@ -192,11 +140,10 @@ class TicketRepository{
         return $data;
     }
 
-    public static function cancelReservation($key)
+    public static function cancelReservation($userId)
     {
-        list($cinemaId, $showTimeId, $userId, $time) = explode('_', $key, 4);
-        $data = Redis::del($cinemaId . '_' . $showTimeId . '_' . $userId);
-        return 0;
+        $data = Redis::del('reservation_' . $userId);
+        return $data;
     }
 
     public function getBill($memberId, $type){
@@ -295,7 +242,6 @@ class TicketRepository{
         $ticket = $ticket->get();
         $response['movie'] = Movie::find($ticket[0]['movie_id']);
         $response['ticket'] = $ticket;
-        if($bill['extra_id'])
         $response['voucher'] = Promotion::find($bill['extra_id'])->first();
         $response['foods'] = Food::select('ci_foods.*', 'fbj.quantity', 'fbj.total')
             ->join('ci_food_bill_join as fbj', 'fbj.food_id', '=', 'ci_foods.id')
@@ -311,16 +257,11 @@ class TicketRepository{
         }
         $dataPayment = json_decode($dataPayment);
         $orderId = $dataPayment->orderId;
-        list($cinemaId, $showTimeId, $userId , $time) = explode('_', $orderId, 4);
-        $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
-        $food = json_decode($food);
-        $extra = Promotion::find($extraId)->first();
-
-        $data = self::getDatareservation($orderId);
-        $dataSeat = [];
-        foreach (json_decode($data['seat_list']) as $d){
-            $showTime = MovieShowtime::find($showTimeId)->first();
+        $data = Redis::get('reservation_' . $userId);
+        $data = json_decode($data);
+        $data->extraData = Promotion::where('id', $data->extraData)->first();
+        foreach ($data->seat_ids as $d){
+            $showTime = MovieShowtime::where('id', $data->show_time_id)->first();
             $ticketPrice = WeeklyTicketPricesRepository::getTicketPrice($showTime->start_date, $showTime->start_time);
             $seats = Seat::with('seatType')
                 ->where('id', $d)
@@ -332,17 +273,31 @@ class TicketRepository{
             }
             $dataSeat[] = [
                 'seat_id' => $d,
-                'seat_name' => $seats->name,
-                'movie_showtime_id' => (int)$showTimeId,
+                'seat_name' => $seats->seat_code,
+                'movie_showtime_id' => (int)$data->show_time_id,
                 'price' => $price
             ];
         }
-        $data['seat_list'] = $dataSeat;
+        $foods = [];
+        foreach ($data->food as $f){
+            $food = Food::where('id', $f->food_id)->first();
+            $food['quantity'] = $f->food_quantity;
+            $foods[] = $food;
+        }
+        $data->seat_ids = $dataSeat;
+        $data->food = $foods;
+        $response = [
+            'cinema' => Cinema::where('id', $data->cinema_id)->first(),
+            'show_time' => MovieShowtime::where('id', $data->show_time_id)->first(),
+            'extra' => $data->extraData,
+            'seat_list' => $data->seat_ids,
+            'food' => $data->food,
+            'amount' => $data->amount,
+        ];
+//        return $data->show_time_id;
         return [
             'data_payment' => $dataPayment,
-            'food' => $food,
-            'extra_data' => $extra,
-            'data_seat' => $data
+            'data_bill' => $response
             ];
     }
 

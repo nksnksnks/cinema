@@ -40,17 +40,17 @@ class CommentRepository
     }
     public function getComment($movieId, $accountId = null)
     {
-        $comment['by_user'] = DB::table('ci_evaluate as e')
+        $comment[] = DB::table('ci_evaluate as e')
             ->select('e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', $accountId)
             ->get();
-        $comment['by_all'] = DB::table('ci_evaluate as e')
+        $comment[] = DB::table('ci_evaluate as e')
             ->select('e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
-//            ->where('e.account_id', '<>', $accountId)
+            ->where('e.account_id', '<>', $accountId)
             ->orderBy('created_at', 'DESC')
             ->get();
         return $comment;

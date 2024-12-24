@@ -33,7 +33,7 @@ class RoomRepository{
             ->get();
         $seatMap = json_decode($room->seat_map);
         $data = [];
-        $pattern = $room->cinema_id . '_' . $id . '_*';
+        $pattern = 'reservation_*';
         $keys = Redis::keys($pattern);
         $listSeats = [];
         foreach ($keys as $key) {
@@ -41,7 +41,7 @@ class RoomRepository{
             $seatIdsJson = Redis::get($key);
 
             $seatIdsArray = json_decode($seatIdsJson, true);
-
+            $seatIdsArray = $seatIdsArray->seat_ids;
             if (is_array($seatIdsArray)) {
                 $listSeats = array_merge($listSeats, $seatIdsArray);
             }
