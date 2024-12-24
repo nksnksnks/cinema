@@ -83,7 +83,7 @@ class MovieShowTimeController extends Controller
     
             // Lấy tất cả dữ liệu từ request
             $data = $request->all();
-    
+            
             // Kiểm tra xem showtime có bị trùng thời gian không
             $existingShowtime = MovieShowtime::where('room_id', $data['room_id'])
             ->where('start_date', $data['start_date'])
@@ -93,12 +93,9 @@ class MovieShowTimeController extends Controller
             })
             ->exists();
 
-    
             if ($existingShowtime) {
                 // Nếu có showtime trùng, hiển thị lỗi và không tạo mới
-                return redirect()
-                    ->route('movieshowtime.create')
-                    ->with('error', 'trùng thời gian');
+                return back()->withErrors(['start_time' => 'Thời gian trùng với showtime khác.', 'end_time' => 'Thời gian trùng với showtime khác.']);
             }
     
             // Tạo mới MovieShowtime nếu không trùng thời gian
@@ -241,7 +238,7 @@ class MovieShowTimeController extends Controller
             DB::beginTransaction();
             if($this->movieShowTimeRepository->getShowtimeCheck($request)){
                 return response()->json([
-                    'status' => Constant::SUCCESS_CODE,
+                    'status' => Constant::FALSE_CODE,
                     'message' => trans('messages.errors.show_time.exist'),
                     'data' => []
                 ], Constant::SUCCESS_CODE);

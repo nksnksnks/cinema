@@ -249,11 +249,7 @@ class TicketController extends Controller
              if($responseData['resultCode'] == '0') {
 
                  $data = $this->ticketRepository->createBill($orderId, $amount);
-                 return response()->json([
-                     'status' => Constant::SUCCESS_CODE,
-                     'message' => trans('messages.success.success'),
-                     'data' => $data
-                 ], Constant::SUCCESS_CODE);
+                 return redirect()->away('http://movieease.com/'); 
              }
              else{
                  $data = $this->ticketRepository->cancelReservation($orderId);

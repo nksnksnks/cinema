@@ -90,7 +90,7 @@
                                 <div class="form-row">
                                     <label for="start_time" class="control-label text-left">Start_time <span class="text-danger">(*)</span></label>
                                     <input 
-                                        type="text"
+                                        type="time"
                                         name="start_time"
                                         id="start_time"
                                         value="{{ old('start_time', $movieshowtime->start_time ?? '') }}"
@@ -109,7 +109,7 @@
                                 <div class="form-row">
                                     <label for="end_time" class="control-label text-left">End_time <span class="text-danger">(*)</span></label>
                                     <input 
-                                        type="text"
+                                        type="time"
                                         name="end_time"
                                         id="end_time"
                                         value="{{ old('end_time', $movieshowtime->end_time ?? '') }}"

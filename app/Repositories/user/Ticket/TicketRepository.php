@@ -75,23 +75,26 @@ class TicketRepository{
         $food = Redis::get('food_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
         $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
         $food = json_decode($food);
-        $userId = Auth::id();
+        // $userId = Auth::id();
         $promotion = Promotion::where('id', $extraId)
         ->where('status', 1)
         ->where('start_date', '<=', now()->toDateString())
         ->where('end_date', '>=', now()->toDateString())
         ->where('quantity', '>', 0)
         ->first();
-        if ($promotion) {
+        if ($promotion && !$promotion->users()->where('account_id', $userId)->exists()) {
             $promotion->users()->attach($userId);
             $promotion->decrement('quantity');
+            $extraId = $promotion->id;
+        }else{
+            $extraId = null;
         }
-        
+        $account = Account::find($data['user_id']);
         if ($data['seat_list']) {
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
             $ticketCode = $randomNumber . $currentTime;  // Kết hợp cả hai phần
-            if(Auth::user()->role_id != 4){
+            if($account->role_id != 4){
                 $billId = Bill::create([
                     'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,
@@ -99,12 +102,13 @@ class TicketRepository{
                     'cinema_id' => $data['cinema_id'],
                     'movie_show_time_id' => $showTimeId,
                     'total' => $amount,
-                    'staff_check' => Auth::user()->id,
+                    'staff_check' => $account->id,
                     'status' => '1'
                 ])->id;
             }else{
                 // Tạo Bill
                 $billId = Bill::create([
+                    'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,
                     'account_id' => (int)$data['user_id'],
                     'cinema_id' => $data['cinema_id'],
@@ -123,10 +127,10 @@ class TicketRepository{
                         'total' => $f->food_quantity * $foodPrice['price']
                     ]);
                 }
-                }
+            }
 
-            $user = Auth::user()->id;
-            $account = Account::find($user);
+            // $user = Auth::user()->id;
+            
             if ($account) {
                 $account->update(['cinema_id' => $data['cinema_id']]);
             }
@@ -139,11 +143,12 @@ class TicketRepository{
                 $seats = Seat::with('seatType')
                     ->where('id', $seatId)
                     ->first();
-                if($seats->seatType->id == 1){
-                    $price = (int)$ticketPrice + 10000;
-                }else{
-                    $price = (int)$ticketPrice;
-                }
+                $price = (int)$ticketPrice + $seats->seatType->extra_fee;
+                // if($seats->seatType->id == 1){
+                //     $price = (int)$ticketPrice + 10000;
+                // }else{
+                //     $price = (int)$ticketPrice;
+                // }
                 // Tạo vé cho từng ghế
                 Ticket::create([
                     'seat_id' => $seatId,
