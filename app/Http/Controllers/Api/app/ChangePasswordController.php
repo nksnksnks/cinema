@@ -80,11 +80,11 @@ public function changePassword(Request $request)
             ], 200);
         }
 
-        // Kiểm tra mật khẩu hiện tại có đúng không
-        if (!Hash::check($request->current_password, $user->password)) {
+        //kiểm tra mật khẩu mới có min 6 kí tự không
+        if (strlen($request->new_password) < 6) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
-                'message' => 'Mật khẩu hiện tại không chính xác'
+                'message' => 'Mật khẩu mới phải có ít nhất 6 kí tự'
             ], 200);
         }
 
@@ -95,6 +95,15 @@ public function changePassword(Request $request)
                 'message' => 'Mật khẩu mới và mật khẩu xác nhận không khớp'
             ], 200);
         }
+
+        // Kiểm tra mật khẩu hiện tại có đúng không
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Mật khẩu hiện tại không chính xác'
+            ], 200);
+        }
+
 
         // Cập nhật mật khẩu
         $user->password = Hash::make($request->new_password);

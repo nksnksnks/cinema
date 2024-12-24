@@ -11,9 +11,10 @@
                         <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">{{$profile->name}}</strong>
                          </span> <span class="text-muted text-xs block">{{$user->role->name}} <b class="caret"></b></span> </span> </a>
                     <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                        <li><a href="{{route('auth.profile')}}">Profile</a></li>
+                        <li><a href="{{route('auth.profile')}}">Thông tin</a></li>
+                        <li><a href="{{route('auth.view-change-password')}}">Đổi mật khẩu</a></li>
                         <li class="divider"></li>
-                        <li><a href="{{route('auth.logout')}}">Logout</a></li>
+                        <li><a href="{{route('auth.logout')}}">Đăng xuất</a></li>
                     </ul>
                 </div>
                 <div class="logo-element">

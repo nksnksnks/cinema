@@ -516,15 +516,20 @@ class PromotionController extends Controller
             $userId = Auth::id(); // Lấy ID của người dùng hiện tại
 
             // Lấy danh sách khuyến mãi có status = 1
-            $promotions = Promotion::where('status', 1)->get();
-
-            // Thêm trường "isUsed" để xác định người dùng đã sử dụng mã hay chưa
-            $promotions->transform(function ($promotion) use ($userId) {
-                $promotion->isUsed = $promotion->users()->where('account_id', $userId)->exists() 
-                    ? true 
-                    : false;
-                return $promotion;
-            });
+            $promotions = Promotion::where('status', 1)
+            ->where('start_date','<=',now()->toDateString())
+            ->where('end_date','>=',now()->toDateString())
+            ->where('quantity','>',0)
+            ->get();
+            if ($promotions->isEmpty()) {
+                // Thêm trường "isUsed" để xác định người dùng đã sử dụng mã hay chưa
+                $promotions->transform(function ($promotion) use ($userId) {
+                    $promotion->isUsed = $promotion->users()->where('account_id', $userId)->exists() 
+                        ? true 
+                        : false;
+                    return $promotion;
+                });
+            }
 
             if ($promotions->isEmpty()) {
                 return response()->json([
