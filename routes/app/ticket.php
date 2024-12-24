@@ -12,6 +12,7 @@ Route::group(['prefix' => '/ticket'], function () {
     Route::get('/get/{type}', [TicketController::class, 'getTicket']);
     Route::get('/detail/{id}', [TicketController::class, 'detailTicket']);
     Route::get('/get-info-payment', [TicketController::class, 'getInfoPayment']);
+    Route::get('/delete-reservation', [TicketController::class, 'deleteReservation']);
 
 });
 

@@ -146,6 +146,12 @@ class TicketRepository{
         return $data;
     }
 
+    public function cancelRevi($userId)
+    {
+        $data = Redis::del('reservation_' . $userId);
+        return $data;
+    }
+
     public function getBill($memberId, $type){
         $bill = Bill::select('ci_bill.*', 'ci_cinema.name as cinema_name', 'ci_cinema.address as cinema_address')
             ->join('ci_cinema', 'ci_bill.cinema_id', '=', 'ci_cinema.id')

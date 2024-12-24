@@ -218,6 +218,46 @@ class TicketController extends Controller
         ], Constant::SUCCESS_CODE);
     }
 
+    /**
+     * @author son.nk
+     * @OA\Get (
+     *     path="/api/app/ticket/delete-reservation",
+     *     tags={"App Đặt vé"},
+     *     summary="Hủy đặt chỗ",
+     *     operationId="app/ticket/delete-reservation",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success.")
+     *         )
+     *     ),
+     * )
+     */
+
+    public function deleteReservation()
+    {
+        try {
+            $userId = $this->getCurrentLoggedIn()->id;
+
+            $data = $this->ticketRepository->cancelRevi($userId);
+
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => $data
+            ], Constant::SUCCESS_CODE);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
      public function handleMomoPayment(Request $request){
