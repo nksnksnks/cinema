@@ -2,8 +2,9 @@
 
 namespace App\Repositories\user\Movie;
 
-use App\Models\Movie;use App\Models\Evaluate;
+use App\Models\Movie;
 use App\Models\Ticket;
+use App\Models\Evaluate;
 
 class MovieRepository
 {
@@ -15,6 +16,8 @@ class MovieRepository
             ->where('b.account_id', $accountId)
             ->where('st.movie_id', $movieId)
             ->count();
+        $evaluate = Evaluate::where('movie_id', $movieId)->where('account_id', $accountId)->first();
+        $movie['isEva'] = $evaluate ? true : false;
         $movie['seen_status'] = 0;
         if($ticket > 0)
             $movie['seen_status'] = 1;
