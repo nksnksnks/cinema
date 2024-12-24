@@ -282,6 +282,7 @@ class TicketRepository{
         $ticket = $ticket->get();
         $response['movie'] = Movie::find($ticket[0]['movie_id']);
         $response['ticket'] = $ticket;
+        if($bill['extra_id'])
         $response['voucher'] = Promotion::find($bill['extra_id'])->first();
         $response['foods'] = Food::select('ci_foods.*', 'fbj.quantity', 'fbj.total')
             ->join('ci_food_bill_join as fbj', 'fbj.food_id', '=', 'ci_foods.id')
