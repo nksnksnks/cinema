@@ -521,7 +521,7 @@ class PromotionController extends Controller
             ->where('end_date','>=',now()->toDateString())
             ->where('quantity','>',0)
             ->get();
-            if ($promotions->isEmpty()) {
+            if ($promotions) {
                 // Thêm trường "isUsed" để xác định người dùng đã sử dụng mã hay chưa
                 $promotions->transform(function ($promotion) use ($userId) {
                     $promotion->isUsed = $promotion->users()->where('account_id', $userId)->exists() 

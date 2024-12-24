@@ -9,6 +9,7 @@ use App\Models\MovieShowtime;
 use App\Models\Genre;
 use App\Models\Country;
 use App\Models\Rated;
+use App\Models\Evaluate;
 use App\Repositories\user\Movie\MovieRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -243,7 +244,7 @@ class MovieController extends Controller
 
         // Xóa ảnh avatar trên Cloudinary
         $oldAvatar = $movie->avatar;
-        if ($oldAvatar) {
+        if ($oldAvatar && str_starts_with($oldAvatar, 'https://res.cloudinary.com/')) {
             $path = parse_url($oldAvatar, PHP_URL_PATH);
             $parts = explode('/movie/', $path);
             $avatarPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME);
@@ -252,7 +253,7 @@ class MovieController extends Controller
 
         // Xóa ảnh poster trên Cloudinary
         $oldPoster = $movie->poster;
-        if ($oldPoster) {
+        if ($oldPoster && str_starts_with($oldPoster, 'https://res.cloudinary.com/')) {
             $path = parse_url($oldPoster, PHP_URL_PATH);
             $parts = explode('/movie/', $path);
             $posterPart = 'movie/' . pathinfo($parts[1], PATHINFO_FILENAME);
@@ -262,6 +263,7 @@ class MovieController extends Controller
         // Xóa các liên kết `movie_genre`
         Movie_Genre::where('movie_id', $movie->id)->delete();
         MovieShowtime::where('movie_id', $movie->id)->delete();
+        Evaluate::where('movie_id', $movie->id)->delete();
         // Xóa phim
         $movie->delete();
 

@@ -10,7 +10,7 @@
             </th>
             <th class="text-center">Name</th>
             <th class="text-center">Description</th>
-            <th class="text-center">Slug</th>
+            <!-- <th class="text-center">Slug</th> -->
             <th class="text-center">Genre</th>
             <th class="text-center">Country</th>
             <th class="text-center">Ngày khởi chiếu</th>
@@ -33,11 +33,11 @@
                 {{ $mov->name }}
             </td>
             <td>
-                {{ $mov->description }}
+                {{ Str::limit(strip_tags($mov->description), 50, '...') }}
             </td>
-            <td>
+            <!-- <td>
                 {{ $mov->slug }}
-            </td>
+            </td> -->
 
             <td>
                 @foreach($mov->movie_genre as $genre)
