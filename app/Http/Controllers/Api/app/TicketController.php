@@ -278,8 +278,9 @@ class TicketController extends Controller
          $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
          if ($generatedSignature == $signature) {
              if($responseData['resultCode'] == '0') {
-
-                 $data = $this->ticketRepository->createBill($this->getCurrentLoggedIn()->id);
+                 $parts = explode('_', $orderId);
+                 $userId = $parts[2];
+                 $data = $this->ticketRepository->createBill($userId);
                  return redirect()->away('http://movieease.com/');
              }
              else{

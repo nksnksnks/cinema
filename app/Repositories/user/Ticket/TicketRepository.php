@@ -30,7 +30,6 @@ class TicketRepository{
     {
         $data = Redis::get('reservation_' . $userId);
         $data = json_decode($data);
-        $userId = Auth::id();
         $extraId = $data->extraData;
         $promotion = Promotion::where('id', $extraId)
             ->where('status', 1)
@@ -45,7 +44,7 @@ class TicketRepository{
         }else{
             $extraId = null;
         }
-        $account = Account::find($data['user_id']);
+        $account = Account::find($userId);
         if ($data->seat_ids) {
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
@@ -54,7 +53,7 @@ class TicketRepository{
                 $billId = Bill::create([
                     'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,
-                    'account_id' => (int)$data['user_id'],
+                    'account_id' => (int)$userId,
                     'cinema_id' => $data['cinema_id'],
                     'movie_show_time_id' => $data->show_time_id,
                     'total' => $data->amount,
