@@ -619,7 +619,6 @@ class TicketController extends Controller
         ], [
             'ticket_code.required' => 'Ticket_code là bắt buộc.',
             'ticket_code.exists' => 'Hóa đơn không tồn tại.'
-
         ]);
 
         if ($validator->fails()) {

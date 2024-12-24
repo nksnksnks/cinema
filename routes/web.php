@@ -42,6 +42,8 @@ Route::post('/reset-password/{token}', [ForgotPasswordController::class, 'resetP
 Route::group(['middleware' => 'authenticate'], function(){
     Route::group(['middleware' => ['checkrole:4','checkrole:3']], function () {
         Route::get('/dashboard', [ThongkeController::class, 'index'])->name('dashboard.index');
+        Route::get('/change-password', [AuthAdminController::class, 'viewChangePassword'])-> name('auth.view-change-password');
+        Route::post('/change-password', [AuthAdminController::class, 'ChangePassword'])-> name('auth.change-password');
         //cinema
         Route::get('cinema', [CinemaController::class,'index'])->name('cinema.index');
         Route::get('cinema/store', [CinemaController::class,'create'])->name('cinema.store');

@@ -60,7 +60,7 @@ class AuthAdminController extends Controller
             'username' => 'required|unique:ci_account,username',
             'password' => 'required|min:6|max:55',
             'name' => 'required',
-            'phone_number' => 'required|numeric',
+            'phone_number'=> 'required|numeric|min:10|max:11|unique:ci_profile'
         ], [
             'email.unique' => 'Email đã tồn tại',
             'email.email' => 'Email sai định dạng',
@@ -72,6 +72,9 @@ class AuthAdminController extends Controller
             'name.required' => 'Tên là trường bắt buộc',
             'phone_number.required' => 'Số điện thoại là trường bắt buộc',
             'phone_number.numeric' => 'Số điện thoại phải là số',
+            'phone_number.unique' => 'Số điện thoại đã tồn tại',
+            'phone_number.min' => 'Số điện thoại có độ dài không phù hợp',
+            'phone_number.max' => 'Số điện thoại có độ dài không phù hợp',
 
         ]);
        $account = Account::create([
@@ -90,11 +93,36 @@ class AuthAdminController extends Controller
 
         return redirect()->route("auth.login")->with('success', 'Đăng ký thành công! Bạn có thể đăng nhập ngay.');
     }
+    public function viewChangePassword()
+    {
+        return view("admin.auth.change-password");
+    }
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('auth.login');
+    }
+
+    public function ChangePassword(Request $request){
+        $validatedData = $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|confirmed|min:6',
+        ], [
+            'current_password.required' => 'Mật khẩu hiện tại là trường bắt buộc',
+            'new_password.required' => 'Mật khẩu mới là trường bắt buộc',
+            'new_password.confirmed' => 'Mật khẩu xác nhận không khớp',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 kí tự',
+        ]);
+        $user = $request->user();
+        // Kiểm tra mật khẩu hiện tại có chính xác không
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
+        }
+        
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        return back()->with('success', 'Đổi mật khẩu thành công.');
     }
 }

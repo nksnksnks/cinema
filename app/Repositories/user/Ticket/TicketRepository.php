@@ -76,9 +76,17 @@ class TicketRepository{
         $extraId = Redis::get('extraData_'. $userId . '_' . $cinemaId . '_' . $showTimeId);
         $food = json_decode($food);
         $userId = Auth::id();
-        $promotion = Promotion::find($extraId);
-        $promotion->users()->attach($userId);
-        $promotion->decrement('quantity');
+        $promotion = Promotion::where('id', $extraId)
+        ->where('status', 1)
+        ->where('start_date', '<=', now()->toDateString())
+        ->where('end_date', '>=', now()->toDateString())
+        ->where('quantity', '>', 0)
+        ->first();
+        if ($promotion) {
+            $promotion->users()->attach($userId);
+            $promotion->decrement('quantity');
+        }
+        
         if ($data['seat_list']) {
             $randomNumber = mt_rand(10000, 99999);  // Tạo 5 số ngẫu nhiên
             $currentTime = Carbon::now()->timestamp;  // Lấy ngày tháng năm + giờ phút giây (YmdHis)
