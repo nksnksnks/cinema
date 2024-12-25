@@ -185,6 +185,21 @@ class TicketController extends Controller
 //        $this->appointmentTime = $request->appointmentTime;
         $data = $request->all();
         $amount = $data['amount'];
+        $show_time_id = $data['show_time_id'];
+        $seat_ids = $data['seat_ids'];
+
+        // Kiểm tra xem ghế đã được đặt hay chưa
+        $bookedSeats = Ticket::where('movie_showtime_id', $show_time_id)
+            ->whereIn('seat_id', $seat_ids)
+            ->get();
+
+        if ($bookedSeats) {
+            return response()->json([
+                'status' => -1, // Hoặc mã lỗi tùy bạn quy định
+                'message' => 'Rất tiếc, đã có người vừa đặt ghế của bạn mất rồi. Vui lòng chọn ghế khác',
+                'data' => []
+            ], 400); // Trả về mã lỗi 400 Bad Request
+        }
         $endpoint = $this->endpoint;
         $partnerCode = $this->partnerCode;
         $accessKey = $this->accessKey;
