@@ -247,7 +247,12 @@ class TicketRepository{
         $ticket = $ticket->get();
         $response['movie'] = Movie::find($ticket[0]['movie_id']);
         $response['ticket'] = $ticket;
-        $response['voucher'] = Promotion::find($bill['extra_id'])->first();
+        if (isset($bill['extra_id'])) {
+            $promotion = Promotion::find($bill['extra_id']); // Bỏ ->first()
+            $response['voucher'] = $promotion;
+        } else {
+            $response['voucher'] = null;
+        }
         $response['foods'] = Food::select('ci_foods.*', 'fbj.quantity', 'fbj.total')
             ->join('ci_food_bill_join as fbj', 'fbj.food_id', '=', 'ci_foods.id')
             ->where('fbj.bill_id', '=', $billId)->get();
@@ -264,7 +269,7 @@ class TicketRepository{
         $orderId = $dataPayment->orderId;
         $data = Redis::get('reservation_' . $userId);
         $data = json_decode($data);
-        $data->extraData = Promotion::where('id', $data->extraData)->first();
+        $data->extraData = Promotion::find('id', $data->extraData);
         foreach ($data->seat_ids as $d){
             $showTime = MovieShowtime::where('id', $data->show_time_id)->first();
             $ticketPrice = WeeklyTicketPricesRepository::getTicketPrice($showTime->start_date, $showTime->start_time);
