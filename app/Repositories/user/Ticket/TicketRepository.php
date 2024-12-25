@@ -19,6 +19,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TicketConfirmationMail;
 use Illuminate\Support\Facades\Auth;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+use Cloudinary\Cloudinary;
 
 class TicketRepository{
 
@@ -119,10 +122,35 @@ class TicketRepository{
             $room = $movieShowtime->room->name;
             $start_time = $movieShowtime->start_time;
             $seatListString = implode(', ', $seatCodes);
+            // Tạo mã QR
+                $qrCode = Builder::create()
+                ->writer(new PngWriter()) // Định dạng PNG
+                ->data($ticketCode) // Dữ liệu QR (VD: mã vé)
+                ->size(200) // Kích thước mã QR
+                ->margin(10) // Khoảng cách xung quanh mã QR
+                ->build();
 
+                // $qrCode->saveToFile(storage_path('app/public/qrcode.png'));
+
+                // $qrCodeBase64 = base64_encode(file_get_contents(storage_path('app/public/qrcode.png')));
+                // $qrCodeBase64 = base64_encode($qrCode->getString());
+                // Tạo file tạm thời
+                $tempFilePath = tempnam(sys_get_temp_dir(), 'qr_'); // Tạo tên file tạm thời trong thư mục tạm của hệ thống
+                $qrCode->saveToFile($tempFilePath);
+
+                // Upload lên Cloudinary từ file tạm thời
+                $qrCodeResult = cloudinary()->upload($tempFilePath, [
+                    'folder' => 'qr-code',
+                    'upload_preset' => 'upload-qrcode',
+                ]);
+                $qrCodeUrl = $qrCodeResult->getSecurePath();
+
+                // Xóa file tạm thời
+                unlink($tempFilePath);
+            
             $user = Account::find($userId);
             if ($user && $user->email && $seatListString) {
-                Mail::to($user->email)->send(new TicketConfirmationMail($user->username, $ticketCode, $seatListString, $cinema_name, $movie_name, $room, $start_time, $total_bill));
+                Mail::to($user->email)->send(new TicketConfirmationMail($user->username, $ticketCode, $seatListString, $cinema_name, $movie_name, $room, $start_time, $total_bill,$qrCodeUrl));
             }
 
             return $billId;

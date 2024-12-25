@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\admin;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Foundation\Http\FormRequest as BaseFormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use app\Enums\Constant;
 
-class MovieShowtimeRequest extends FormRequest
+class MovieShowtimeRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

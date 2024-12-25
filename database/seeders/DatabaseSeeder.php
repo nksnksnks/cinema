@@ -15,10 +15,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            CountrySeeder::class,
-            GenreSeeder::class,
-            MovieSeeder::class,
-            RoomSeeder::class,
+            // CountrySeeder::class,
+            // GenreSeeder::class,
+            // MovieSeeder::class,
+            // RoomSeeder::class,
             ShowTimeSeeder::class,
         ]);
     }

@@ -11,5 +11,9 @@
     <p>Phòng: {{ $room }}</p>
     <p>Thời gian bắt đầu chiếu: {{ $show_time }}</p>
     <p>Ghế đã đặt: {{ $seatList }}</p>
+    <div>
+        <img src="{{ $qrCodeUrl }}" alt="QR Code"> 
+    </div>
+
 </body>
 </html>

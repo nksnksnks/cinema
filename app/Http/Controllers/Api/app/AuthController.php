@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\app;
+namespace app\Http\Controllers\Api\app;
 
 use App\Enums\Constant;
 use App\Http\Requests\app\AuthRequest;

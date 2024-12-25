@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin;
+namespace app\Http\Controllers\Api\admin;
 
 use App\Enums\Constant;
 use App\Http\Controllers\Controller;

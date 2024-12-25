@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin\Auth;
+namespace app\Http\Controllers\Api\admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\app\ProfileRequest;

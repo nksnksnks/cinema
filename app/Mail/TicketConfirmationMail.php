@@ -26,7 +26,9 @@ class TicketConfirmationMail extends Mailable
     public $show_time;
     public $total;
     public $room;
-    public function __construct($username, $ticketCode, $seatList, $cinema_name, $movie_name,$room, $show_time, $total)
+
+    public $qrCodeUrl;
+    public function __construct($username, $ticketCode, $seatList, $cinema_name, $movie_name,$room, $show_time, $total, $qrCodeUrl)
     {
         $this->username = $username;
         $this->ticketCode = $ticketCode;
@@ -36,6 +38,7 @@ class TicketConfirmationMail extends Mailable
         $this->show_time = $show_time;
         $this->total = $total;
         $this->room = $room;
+        $this->qrCodeUrl = $qrCodeUrl;
     }
    
 

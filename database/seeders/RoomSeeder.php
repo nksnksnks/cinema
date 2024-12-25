@@ -30,19 +30,21 @@ class RoomSeeder extends Seeder
         ];
         $matrix2 = '[[0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]]';
         $room = Room::create([
-            'name' => 'Cinema 1',
+            'name' => 'Cinema 3',
             'cinema_id' => '1',
             'seat_map' => $matrix2
         ]);
         $rows = range('A', 'Z');
 
         foreach ($matrix as $rowIndex => $row) {
+            $col = 1;
             foreach ($row as $colIndex => $value) {
                 if ($value === 1) {
                     if($rowIndex < 3 || $rowIndex > 8) {
+                        $col+=1;
                         $seat_list = [
                             'seat_type_id' => 2,
-                            'seat_code' => $rows[$rowIndex] . ($colIndex + 1),
+                            'seat_code' => $rows[$rowIndex] . ($col),
                             'room_id' => $room->id
                         ];
                         Seat::create($seat_list);
@@ -69,19 +71,21 @@ class RoomSeeder extends Seeder
             }
         }
         $room = Room::create([
-            'name' => 'Cinema 2',
+            'name' => 'Cinema 4',
             'cinema_id' => '1',
             'seat_map' => $matrix2
         ]);
         $rows = range('A', 'Z');
 
         foreach ($matrix as $rowIndex => $row) {
+            $col =1;
             foreach ($row as $colIndex => $value) {
                 if ($value === 1) {
+                    $col +=1;
                     if($rowIndex < 3 || $rowIndex > 8) {
                         $seat_list = [
                             'seat_type_id' => 2,
-                            'seat_code' => $rows[$rowIndex] . ($colIndex + 1),
+                            'seat_code' => $rows[$rowIndex] . ($col),
                             'room_id' => $room->id
                         ];
                         Seat::create($seat_list);
@@ -90,7 +94,7 @@ class RoomSeeder extends Seeder
                         if($colIndex < 3 || $colIndex >= 12 ){
                             $seat_list = [
                                 'seat_type_id' => 1,
-                                'seat_code' => $rows[$rowIndex] . ($colIndex + 1),
+                                'seat_code' => $rows[$rowIndex] . ($col),
                                 'room_id' => $room->id
                             ];
                             Seat::create($seat_list);

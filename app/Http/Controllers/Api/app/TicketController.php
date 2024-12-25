@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\app;
+namespace app\Http\Controllers\Api\app;
 
 use App\Enums\Constant;
 use App\Helpers\CommonHelper;
@@ -49,8 +49,10 @@ class TicketController extends Controller
         $this->secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
         $this->orderInfo = "Thanh toán qua MoMo";
         $this->requestType = "captureWallet";
-        $this->redirectUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
-        $this->ipnUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
+        // $this->redirectUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
+        // $this->ipnUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
+        $this->redirectUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
+        $this->ipnUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
     }
     
 
