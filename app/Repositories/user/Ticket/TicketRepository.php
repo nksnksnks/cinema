@@ -87,7 +87,7 @@ class TicketRepository{
             // $user = Auth::user()->id;
 
             if ($account) {
-                $account->update(['cinema_id' => $data['cinema_id']]);
+                $account->update(['cinema_id' => $data->cinema_id]);
             }
             $seatIds = $data->seat_ids;
             $seatCodes = [];
