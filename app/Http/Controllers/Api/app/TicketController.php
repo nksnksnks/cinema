@@ -193,12 +193,12 @@ class TicketController extends Controller
             ->whereIn('seat_id', $seat_ids)
             ->get();
 
-        if ($bookedSeats) {
+        if ($bookedSeats->isNotEmpty()) {
             return response()->json([
                 'status' => -1, // Hoặc mã lỗi tùy bạn quy định
                 'message' => 'Rất tiếc, đã có người vừa đặt ghế của bạn mất rồi. Vui lòng chọn ghế khác',
                 'data' => []
-            ], 400); // Trả về mã lỗi 400 Bad Request
+            ], 200);
         }
         $endpoint = $this->endpoint;
         $partnerCode = $this->partnerCode;
