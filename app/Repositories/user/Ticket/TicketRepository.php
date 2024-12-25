@@ -54,7 +54,7 @@ class TicketRepository{
                     'extra_id' => $extraId,
                     'ticket_code' => $ticketCode,
                     'account_id' => (int)$userId,
-                    'cinema_id' => $data['cinema_id'],
+                    'cinema_id' => $data->cinema_id,
                     'movie_show_time_id' => $data->show_time_id,
                     'total' => $data->amount,
                     'staff_check' => Auth::user()->id,
