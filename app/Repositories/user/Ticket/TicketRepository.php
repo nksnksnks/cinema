@@ -75,7 +75,7 @@ class TicketRepository{
                     'status' => '0'
                 ])->id;
             }
-            if($billId){
+            if($billId && !empty($data->food)){
                 foreach ($data->food as $f){
                     $foodPrice = Food::find($f->food_id)->first();
                     FoodBillJoin::create([
