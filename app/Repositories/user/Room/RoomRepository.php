@@ -36,16 +36,33 @@ class RoomRepository{
         $pattern = 'reservation_*';
         $keys = Redis::keys($pattern);
         $listSeats = [];
-        foreach ($keys as $key) {
-            $key = str_replace('laravel_database_', '', $key);
-            $seatIdsJson = Redis::get($key);
+    foreach ($keys as $key) {
+        $key = str_replace('laravel_database_', '', $key);
+        $seatIdsJson = Redis::get($key);
 
-            $seatIdsArray = json_decode($seatIdsJson, true);
-            $seatIdsArray = $seatIdsArray->seat_ids;
-            if (is_array($seatIdsArray)) {
-                $listSeats = array_merge($listSeats, $seatIdsArray);
+        $seatIdsArray = json_decode($seatIdsJson, true);
+
+        // Kiểm tra nếu $seatIdsArray là array thì gán trực tiếp,
+        // nếu là object thì lấy property seat_ids
+        if (is_array($seatIdsArray) && isset($seatIdsArray['seat_ids']))
+        {
+            if(is_array($seatIdsArray['seat_ids'])){
+                $seatIdsArray = $seatIdsArray['seat_ids'];
             }
+            else{
+                $seatIdsArray = [];
+            }
+        } else if (is_array($seatIdsArray)) {
+
         }
+          else {
+            $seatIdsArray = [];
+        }
+
+        if (is_array($seatIdsArray)) {
+            $listSeats = array_merge($listSeats, $seatIdsArray);
+        }
+    }
         $listSeatSold = $this->ticketRepository->getSeatSold($id);
         $arrayListSeatSold = [];
         foreach ($listSeatSold as $sold){
