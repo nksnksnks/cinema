@@ -128,8 +128,16 @@ class TicketController extends Controller
      *              type="object",
      *              @OA\Property(property="amount", type="integer", example="10000"),
      *              @OA\Property(property="cinema_id", type="integer", example="1"),
-     *              @OA\Property(property="show_time_id", type="integer", example="7"),
+     *              @OA\Property(property="show_time_id", type="integer", example="17"),
      *              @OA\Property(property="extraData", type="string", example="1"),
+     *              @OA\Property(
+     *                  property="seat_ids",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="integer",
+     *                      example="90"
+     *                  )
+     *              ),
      *              @OA\Property(
      *                  property="food",
      *                  type="array",
@@ -138,7 +146,7 @@ class TicketController extends Controller
      *                      @OA\Property(property="food_id", type="integer", example="1"),
      *                      @OA\Property(property="food_quantity", type="integer", example=4)
      *                  )
-     *              ),
+     *              )
      *          )
      *     ),
      *     @OA\Response(
