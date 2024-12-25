@@ -360,7 +360,7 @@ class ThongkeController extends Controller
         ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
         ->where('ci_movie_show_time.movie_id', $movieId)
         ->where('ci_bill.cinema_id', $cinemaId)
-        ->min('ci_bill.created_at');
+        ->min('ci_bill.start_date');
 
     // Nếu không tìm thấy ngày bắt đầu, trả về mảng rỗng
     if (!$startDate) {
