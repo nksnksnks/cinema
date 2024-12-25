@@ -380,9 +380,9 @@ class ThongkeController extends Controller
         ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
         ->where('ci_bill.cinema_id', $cinemaId)
         ->where('ci_movie_show_time.movie_id', $movieId)
-        ->whereBetween(DB::raw('DATE(ci_bill.created_at)'), [$startDate, $endDate])
+        ->whereBetween(DB::raw('DATE(ci_ticket.created_at)'), [$startDate, $endDate])
         ->selectRaw(
-            "DATE(ci_bill.created_at) as date, " .
+            "DATE(ci_ticket.created_at) as date, " .
             "SUM(ci_ticket.price) as daily_revenue, " .
             "COUNT(ci_ticket.id) as daily_tickets" // Thêm trường đếm số vé
         )
