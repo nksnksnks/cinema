@@ -57,7 +57,7 @@ class TicketRepository{
                     'cinema_id' => $data->cinema_id,
                     'movie_show_time_id' => $data->show_time_id,
                     'total' => $data->amount,
-                    'staff_check' => Auth::user()->id,
+                    'staff_check' => $account->id,
                     'status' => '1'
                 ])->id;
             }else{
