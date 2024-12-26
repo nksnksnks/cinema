@@ -26,6 +26,8 @@ class Food extends Model
         'status',
     ];
     public $timestamps = true;
-
-    
+    public function foodBillJoin()
+    {
+        return $this->belongsToMany(Bill::class, 'ci_food_bill_join', 'bill_id','food_id') ->withPivot('quantity', 'total');;
+    }
 }

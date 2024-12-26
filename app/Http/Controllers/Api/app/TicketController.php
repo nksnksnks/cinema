@@ -285,7 +285,6 @@ class TicketController extends Controller
     }
 
 
-
      public function handleMomoPayment(Request $request){
          $responseData = $request->all();
          $partnerCode = $this->partnerCode;
@@ -557,7 +556,8 @@ class TicketController extends Controller
         $bill = Bill::with([
             'movieShowTime:id,start_time,end_time,start_date,room_id,movie_id',
             'account:id,email',
-            'cinema:id,name'
+            'cinema:id,name',
+            'foodBillJoin'
         ])
         ->where('ticket_code', $request->ticket_code)->first();
 
@@ -568,6 +568,8 @@ class TicketController extends Controller
                 'data' => []
             ], 200);
         }
+
+
 
         if($bill->status==1 && $bill->staff_check!=0 ){
             $name_nv = Profile::find($bill->staff_check)->name;
@@ -587,6 +589,13 @@ class TicketController extends Controller
                 'start_date' => $bill->movieShowTime->start_date,
                 'room' => Room::find($bill->movieShowTime->room_id)->name,
                 'cinema' => $bill->cinema->name,
+                'foods' => $bill->foodBillJoin->map(function ($food) {
+                        return [
+                            'name' => $food->name,            // Tên món ăn từ bảng food
+                            'quantity' => $food->pivot->quantity, // Số lượng từ bảng trung gian
+                            'price' => $food->pivot->total,  // Giá từ bảng trung gian
+                        ];
+                    }),
                 'seats' => Seat::whereIn('id', function ($query) use ($bill) {
                     $query->select('seat_id')
                           ->from('ci_ticket')

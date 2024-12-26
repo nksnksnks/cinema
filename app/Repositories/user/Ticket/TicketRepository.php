@@ -75,17 +75,20 @@ class TicketRepository{
                     'status' => '0'
                 ])->id;
             }
-            if($billId && !empty($data->food)){
-                foreach ($data->food as $f){
-                    $foodPrice = Food::find($f->food_id)->first();
-                    FoodBillJoin::create([
-                        'bill_id' => $billId,
-                        'food_id' => $f->food_id,
-                        'quantity' => $f->food_quantity,
-                        'total' => $f->food_quantity * $foodPrice['price']
-                    ]);
+            if ($billId && !empty($data->food)) {
+                foreach ($data->food as $f) {
+                    $food = Food::find($f->food_id); // Lấy đúng món ăn theo food_id
+                    if ($food) { // Kiểm tra nếu món ăn tồn tại
+                        FoodBillJoin::create([
+                            'bill_id' => $billId,
+                            'food_id' => $f->food_id,
+                            'quantity' => $f->food_quantity,
+                            'total' => $f->food_quantity * $food->price // Lấy đúng giá của món ăn
+                        ]);
+                    }
                 }
             }
+            
 
             // $user = Auth::user()->id;
 

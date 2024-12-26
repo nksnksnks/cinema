@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\FoodBillJoin;
+use App\Models\Food;
 class Bill extends Model
 {
     use HasFactory, SoftDeletes;
@@ -53,4 +55,10 @@ class Bill extends Model
     {
         return $this->belongsTo('App\Models\MovieShowTime', 'movie_show_time_id', 'id');
     }
+
+    public function foodBillJoin()
+    {
+        return $this->belongsToMany(Food::class, 'ci_food_bill_join', 'bill_id','food_id') ->withPivot('quantity', 'total');;
+    }
+   
 }
