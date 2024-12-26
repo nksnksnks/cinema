@@ -129,7 +129,7 @@ class AuthRequest extends FormRequest
     {
         $errors = (new ValidationException($validator))->errors();
         throw new HttpResponseException(response()->json([
-            'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+            'status' => Constant::FALSE_CODE,
             'message' => $errors,
             'data' => []
         ], Constant::SUCCESS_CODE));
