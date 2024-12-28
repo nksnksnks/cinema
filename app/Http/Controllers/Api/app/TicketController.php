@@ -735,5 +735,112 @@ class TicketController extends Controller
         ], 200);
     }
 
+    /**
+     * @author Sonnk
+     * @OA\Post (
+     *     path="/api/app/ticket/cash-payment",
+     *     tags={"App Đặt vé"},
+     *     summary="Thanh toán tiền mặt",
+     *     security={{"bearerAuth":{}}},
+     *     operationId="ticket/cash-payment",
+     *     @OA\Parameter(
+     *          in="header",
+     *          name="X-localication",
+     *          required=false,
+     *          description="Ngôn ngữ",
+     *          @OA\Schema(
+     *            type="string",
+     *            example="vi",
+     *          )
+     *     ),
+     *     @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="amount", type="integer", example="10000"),
+     *              @OA\Property(property="cinema_id", type="integer", example="1"),
+     *              @OA\Property(property="show_time_id", type="integer", example="17"),
+     *              @OA\Property(property="extraData", type="string", example="1"),
+     *              @OA\Property(
+     *                  property="seat_ids",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="integer",
+     *                      example="90"
+     *                  )
+     *              ),
+     *              @OA\Property(
+     *                  property="food",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="food_id", type="integer", example="1"),
+     *                      @OA\Property(property="food_quantity", type="integer", example=4)
+     *                  )
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *             @OA\JsonContent(
+     *              @OA\Property(property="status", type="integer", example=200),
+     *              @OA\Property(property="message", type="string", example="Success."),
+     *              @OA\Property(property="data", type="object",
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     * )
+     */
+    public function cashPayment(Request $request){
+        $data = $request->all();
+        $show_time_id = $data['show_time_id'];
+        $seat_ids = $data['seat_ids'];
+
+        // Kiểm tra xem ghế đã được đặt hay chưa
+        $bookedSeats = Ticket::where('movie_showtime_id', $show_time_id)
+            ->whereIn('seat_id', $seat_ids)
+            ->get();
+
+        if ($bookedSeats->isNotEmpty()) {
+            return response()->json([
+                'status' => -1, // Hoặc mã lỗi tùy bạn quy định
+                'message' => 'Rất tiếc, đã có người vừa đặt ghế của bạn mất rồi. Vui lòng chọn ghế khác',
+                'data' => []
+            ], 200);
+        }
+
+        // Lưu thông tin đặt vé vào Redis (tương tự như momoPayment)
+        $key = $data['cinema_id'] . '_' . $data['show_time_id'] . '_' . $this->getCurrentLoggedIn()->id;
+        $orderId = $key . '_' . time();
+        Redis::setex('reservation_' . $this->getCurrentLoggedIn()->id, 600, json_encode($data));
+
+        // Tạo bill ngay lập tức sau khi nhân viên xác nhận
+        $userId = $this->getCurrentLoggedIn()->id;
+        $dataBill = $this->ticketRepository->createBill($userId);
+
+        if($dataBill['status'] == 200){
+            return response()->json([
+                'status' => Constant::SUCCESS_CODE,
+                'message' => trans('messages.success.success'),
+                'data' => []
+            ], Constant::SUCCESS_CODE);
+        }
+        else{
+             return response()->json([
+                'status' => -1,
+                'message' => trans('messages.errors.errors'),
+                'data' => []
+             ], 200);
+        }
+    }
 
 }

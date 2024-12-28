@@ -30,8 +30,8 @@ class RoomSeeder extends Seeder
         ];
         $matrix2 = '[[0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],[1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]]';
         $room = Room::create([
-            'name' => 'Cinema 3',
-            'cinema_id' => '1',
+            'name' => 'Cinema 1',
+            'cinema_id' => '2',
             'seat_map' => $matrix2
         ]);
         $rows = range('A', 'Z');
@@ -71,8 +71,8 @@ class RoomSeeder extends Seeder
             }
         }
         $room = Room::create([
-            'name' => 'Cinema 4',
-            'cinema_id' => '1',
+            'name' => 'Cinema 2',
+            'cinema_id' => '2',
             'seat_map' => $matrix2
         ]);
         $rows = range('A', 'Z');

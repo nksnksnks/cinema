@@ -97,7 +97,7 @@ class RoomController extends Controller
 
         // Lấy dữ liệu ghế từ seat_list trong request
         $seatList = json_decode($request->input('seat_list'), true); // Chuyển đổi từ chuỗi JSON sang mảng
-
+       
         // Kiểm tra nếu seat_list không rỗng và là mảng hợp lệ
         if ($seatList && is_array($seatList)) {
             foreach ($seatList as $data) {

@@ -156,11 +156,25 @@ class TicketRepository{
                 Mail::to($user->email)->send(new TicketConfirmationMail($user->username, $ticketCode, $seatListString, $cinema_name, $movie_name, $room, $start_time, $total_bill,$qrCodeUrl));
             }
 
-            return $billId;
+            // Thay vì return $billId;
+        return [
+            'status' => 200,
+            'message' => trans('messages.success.create_bill'), // Thêm thông báo thành công vào file language
+            'data' => [
+                'bill_id' => $billId,
+                // Thêm các thông tin khác nếu cần, ví dụ:
+                'ticket_code' => $ticketCode,
+                'total' => $total_bill
+            ]
+        ];
         }
 
         self::cancelReservation($userId);
-        return false;
+        return [
+            'status' => -1,
+            'message' => trans('messages.errors.create_bill_failed'), // Thêm thông báo lỗi vào file language
+            'data' => [] // Có thể thêm thông tin lỗi chi tiết hơn nếu cần
+        ];
     }
 
     public function getSeatSold($showTimeId)
