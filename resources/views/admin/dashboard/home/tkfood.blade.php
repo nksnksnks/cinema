@@ -68,7 +68,7 @@
                     <h5>Thống kê doanh thu theo món ăn</h5>
                     <div class="pull-right">
                         <div class="btn-group" id="ajax">
-                            <form action="{{route('thongke.movie.index')}}" method="GET">
+                            <form action="{{route('thongke.food.index')}}" method="GET">
                                 <div class="row">
                                     @php
                                         if(Auth::user()->role_id == 1){
@@ -85,6 +85,7 @@
                                                 $cinemas = App\Models\Cinema::all();
                                             @endphp
                                             <select class="form-control select-cinema" data-account-id="{{ $acc->id }}">
+                                                <option name = "cinema_id"  value="0">Tất cả chi nhánh</option>
                                                 @foreach($cinemas as $cinema)
                                                     <option name="cinema_id" value="{{ $cinema->id }}"
                                                         {{ $acc->cinema_id == $cinema->id ? 'selected' : '' }}>

@@ -21,11 +21,10 @@ use App\Models\FoodBillJoin;
 class ThongkeController extends Controller
 {
 
-    private function getMonthlyRevenue($cinema_id,$startOfMonth,$endOfMonth)
+    private function getMonthlyRevenue($cinema_id, $startOfMonth, $endOfMonth)
     {
-        // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
         $monthlyRevenue = DB::table('ci_bill')
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('total');
 
@@ -36,7 +35,7 @@ class ThongkeController extends Controller
         // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
         $monthlyRevenue = DB::table('ci_food_bill_join')
             ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
             ->sum('ci_food_bill_join.total');
 
@@ -47,7 +46,7 @@ class ThongkeController extends Controller
         // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
         $monthlyRevenue = DB::table('ci_food_bill_join')
             ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
             ->sum('quantity');
 
@@ -58,7 +57,7 @@ class ThongkeController extends Controller
         // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id
         $monthlyRevenueId = DB::table('ci_food_bill_join')
             ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('ci_food_bill_join.created_at', [$startOfMonth, $endOfMonth])
             ->select('ci_food_bill_join.food_id', DB::raw('COUNT(*) as food_count'))
             ->groupBy('ci_food_bill_join.food_id')
@@ -85,7 +84,7 @@ class ThongkeController extends Controller
         // Tính tổng doanh thu từ đầu tháng đến ngày hiện tại theo cinema_id, dựa vào bảng ci_ticket
         $monthlyRevenue = DB::table('ci_ticket')
             ->join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
-            ->where('ci_bill.cinema_id', $cinema_id) // Lọc theo cinema_id
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
             ->whereBetween('ci_ticket.created_at', [$startOfMonth, $endOfMonth]) // Sử dụng created_at của ci_ticket
             ->sum('ci_ticket.price'); // Tính tổng price từ ci_ticket
 
@@ -97,7 +96,7 @@ class ThongkeController extends Controller
         // Tính tổng số vé trong tháng theo cinema_id
         $monthlyTickets = DB::table('ci_ticket')
             ->join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
-            ->where('ci_bill.cinema_id', $cinema_id) // Lọc theo cinema_id
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
             ->whereBetween('ci_ticket.created_at', [$startOfMonth, $endOfMonth])
             ->count();
 
@@ -111,7 +110,7 @@ class ThongkeController extends Controller
             ->join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id') // Join với bảng ci_bill
             ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id') // Join với bảng ci_movie_show_time
             ->select('ci_movie_show_time.movie_id', DB::raw('COUNT(*) as ticket_count'))
-            ->where('ci_bill.cinema_id', $cinema_id) // Lọc theo cinema_id
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
             ->whereBetween('ci_ticket.created_at', [$startOfMonth, $endOfMonth])
             ->groupBy('ci_movie_show_time.movie_id')
             ->orderByDesc('ticket_count')
@@ -136,7 +135,7 @@ class ThongkeController extends Controller
     {
         // Tính tổng số người dùng mới trong tháng của chi nhánh
         $newUsers = DB::table('ci_account')
-            ->where('cinema_id', $cinema_id) // Lọc theo cinema_id (Giả sử bảng ci_account có cột cinema_id)
+        ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->count();
 
@@ -183,7 +182,7 @@ class ThongkeController extends Controller
         // Lấy danh sách doanh thu theo từng năm nếu khoảng thời gian > 1 năm
         $statistics = DB::table('ci_bill')
             ->selectRaw("YEAR(created_at) as year, SUM(total) as total_revenue")
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('year')
             ->orderBy('year')
@@ -200,7 +199,7 @@ class ThongkeController extends Controller
         // Lấy danh sách doanh thu theo từng tháng nếu khoảng thời gian > 30 ngày
         $statistics = DB::table('ci_bill')
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total_revenue")
-            ->where('cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('month')
             ->orderBy('month')
@@ -215,7 +214,7 @@ class ThongkeController extends Controller
             });
     } else {
         // Lấy danh sách các ngày giữa khoảng thời gian
-        $dates = DB::table('ci_bill')->where('cinema_id', $cinema_id)
+        $dates = DB::table('ci_bill')->when($cinema_id != 0, fn ($query) => $query->where('cinema_id', $cinema_id))
             ->selectRaw("DATE(created_at) as date")
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('date')
@@ -302,12 +301,14 @@ class ThongkeController extends Controller
 
         // Lấy danh sách movie show times trong khoảng thời gian, thuộc cinema_id và có room thuộc cinema đó
         $movieShowTimes = MovieShowTime::whereBetween('start_date', [$startDate, $endDate])
-            ->whereHas('room', function ($query) use ($cinema_id) {
-                $query->whereHas('cinema', function ($subQuery) use ($cinema_id) {
-                    $subQuery->where('id', $cinema_id);
-                });
-            })
-            ->get();
+        ->when($cinema_id != 0, fn ($query) =>
+            $query->whereHas('room', fn ($subQuery) =>
+                $subQuery->whereHas('cinema', fn ($subSubQuery) =>
+                    $subSubQuery->where('id', $cinema_id)
+                )
+            )
+        )
+        ->get();
 
         $movieRevenues = [];
 
@@ -317,13 +318,13 @@ class ThongkeController extends Controller
 
             // Tính tổng tiền vé cho mỗi movie_showtime_id
             $totalRevenue = Ticket::join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id')
-                ->where('ci_bill.cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
                 ->where('ci_ticket.movie_showtime_id', $showTime->id)
                 ->sum('ci_ticket.price');
 
             // Tính tổng số vé bán ra cho mỗi movie_showtime_id
             $totalTickets = Ticket::join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id')
-                ->where('ci_bill.cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
                 ->where('ci_ticket.movie_showtime_id', $showTime->id)
                 ->count();
 
@@ -352,14 +353,14 @@ class ThongkeController extends Controller
     public function getMovieStatistics(Request $request)
 {
     $movieId = $request->input('movie_id');
-    $cinemaId = Auth::user()->cinema_id;
+    $cinema_id = Auth::user()->cinema_id;
 
     // Lấy ngày bắt đầu chiếu phim (dựa vào ngày tạo hóa đơn đầu tiên)
     $startDate = DB::table('ci_bill')
         ->join('ci_ticket', 'ci_bill.id', '=', 'ci_ticket.bill_id')
         ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
         ->where('ci_movie_show_time.movie_id', $movieId)
-        ->where('ci_bill.cinema_id', $cinemaId)
+        ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
         ->min('ci_movie_show_time.start_date');
 
     // Nếu không tìm thấy ngày bắt đầu, trả về mảng rỗng
@@ -378,7 +379,7 @@ class ThongkeController extends Controller
     $dailyStatistics = DB::table('ci_ticket')
         ->join('ci_bill', 'ci_ticket.bill_id', '=', 'ci_bill.id')
         ->join('ci_movie_show_time', 'ci_ticket.movie_showtime_id', '=', 'ci_movie_show_time.id')
-        ->where('ci_bill.cinema_id', $cinemaId)
+        ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
         ->where('ci_movie_show_time.movie_id', $movieId)
         ->whereBetween(DB::raw('DATE(ci_ticket.created_at)'), [$startDate, $endDate])
         ->selectRaw(
@@ -434,7 +435,7 @@ class ThongkeController extends Controller
         $foodStats = DB::table('ci_food_bill_join')
             ->join('ci_bill', 'ci_food_bill_join.bill_id', '=', 'ci_bill.id')
             ->join('ci_foods', 'ci_food_bill_join.food_id', '=', 'ci_foods.id') // Join với bảng ci_food để lấy thông tin món ăn (nếu cần)
-            ->where('ci_bill.cinema_id', $cinema_id)
+            ->when($cinema_id != 0, fn ($query) => $query->where('ci_bill.cinema_id', $cinema_id))
             ->whereBetween('ci_bill.created_at', [$startDate, $endDate]) // Dùng ci_bill.created_at để lọc thời gian
             ->select(
                 'ci_food_bill_join.food_id',
