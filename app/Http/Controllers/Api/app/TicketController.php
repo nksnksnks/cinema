@@ -546,7 +546,7 @@ class TicketController extends Controller
         if ($validator->fails()) {
             $errors = (new ValidationException($validator))->errors();
             throw new HttpResponseException(response()->json([
-                'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'status' => -1,
                 'message' => $errors,
                 'data' => []
             ], Constant::SUCCESS_CODE)); // Giả sử SUCCESS_CODE = 200
@@ -681,17 +681,15 @@ class TicketController extends Controller
     public function checkBill(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'ticket_code' => 'required|exists:ci_bill,ticket_code'
+            'ticket_code' => 'required'
         ], [
             'ticket_code.required' => 'Ticket_code là bắt buộc.',
-            'ticket_code.exists' => 'Hóa đơn không tồn tại.'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => Constant::FALSE_CODE,
-                'message' => 'Lỗi validation',
-                'errors' => $validator->errors()
+                'message' => $validator->errors()
             ], 200);
         }
 
