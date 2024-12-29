@@ -573,7 +573,7 @@ class TicketController extends Controller
 
 
         if($bill->status==1 && $bill->staff_check!=0 ){
-            $name_nv = Profile::find($bill->staff_check)->name;
+            $name_nv = Profile::where('account_id',$bill->staff_check)->first()->name;
             $message = 'Vé đã được duyệt bởi nhân viên '.$name_nv;
         }else{
             $message = 'Vé chưa được duyệt';
