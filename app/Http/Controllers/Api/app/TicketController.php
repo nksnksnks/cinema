@@ -556,6 +556,7 @@ class TicketController extends Controller
         $bill = Bill::with([
             'movieShowTime:id,start_time,end_time,start_date,room_id,movie_id',
             'account:id,email',
+            'account.profile:account_id,name,phone_number', 
             'cinema:id,name',
             'foodBillJoin'
         ])
@@ -583,6 +584,8 @@ class TicketController extends Controller
             'data' => [
                 'ticket_code' => $bill->ticket_code,
                 'email' => $bill->account->email,
+                'name' => $bill->account->profile->name,
+                'phone_number' => $bill->account->profile->phone_number,
                 'movie' => Movie::find($bill->movieShowTime->movie_id)->name,
                 'start_time' => $bill->movieShowTime->start_time,
                 'end_time' => $bill->movieShowTime->end_time,
