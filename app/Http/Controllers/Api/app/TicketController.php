@@ -306,7 +306,7 @@ class TicketController extends Controller
                  $parts = explode('_', $orderId);
                  $userId = $parts[2];
                  $data = $this->ticketRepository->createBill($userId);
-                 return redirect()->away('http://movieease.com');
+                 return redirect()->away('movie://movieease.com');
              }
              else{
                  $data = $this->ticketRepository->cancelReservation($orderId);
