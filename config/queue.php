@@ -9,6 +9,10 @@ return [
         'sync' => [
             'driver' => 'sync',
         ],
+        
+        'immediate' => [
+        'driver' => 'sync',
+        ],
 
         'database' => [
             'driver' => 'database',

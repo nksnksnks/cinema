@@ -14,6 +14,7 @@ use App\Models\Movie;
 use App\Models\Room;
 use App\Models\Seat;
 use App\Models\Profile;
+use App\Jobs\CreateBillJob;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -306,6 +307,7 @@ class TicketController extends Controller
                  $parts = explode('_', $orderId);
                  $userId = $parts[2];
                  $data = $this->ticketRepository->createBill($userId);
+                // CreateBillJob::dispatch($userId)->onConnection('immediate');
                  return redirect()->away('movie://movieease.com');
              }
              else{
