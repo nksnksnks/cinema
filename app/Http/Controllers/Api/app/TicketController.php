@@ -552,6 +552,15 @@ class TicketController extends Controller
             ], Constant::SUCCESS_CODE)); // Giả sử SUCCESS_CODE = 200
         }
 
+        // Lấy thông tin nhân viên đang đăng nhập
+        $staff = Auth::user();
+        if($staff->role_id == 4){
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Bạn không có quyền check vé',
+                'data' => []
+            ], 200);
+        }
 
         $bill = Bill::with([
             'movieShowTime:id,start_time,end_time,start_date,room_id,movie_id',
@@ -569,8 +578,6 @@ class TicketController extends Controller
                 'data' => []
             ], 200);
         }
-
-
 
         if($bill->status==1 && $bill->staff_check!=0 ){
             $name_nv = Profile::where('account_id',$bill->staff_check)->first()->name;
@@ -693,6 +700,16 @@ class TicketController extends Controller
             ], 200);
         }
 
+        // Lấy thông tin nhân viên đang đăng nhập
+        $staff = Auth::user();
+        if($staff->role_id == 4){
+            return response()->json([
+                'status' => Constant::FALSE_CODE,
+                'message' => 'Bạn không có quyền duyệt vé',
+                'data' => []
+            ], 200);
+        }
+
         $bill = Bill::where('ticket_code', $request->ticket_code)->first();
 
         if (!$bill) {
@@ -711,15 +728,7 @@ class TicketController extends Controller
             ], 200);
         }
 
-        // Lấy thông tin nhân viên đang đăng nhập
-        $staff = Auth::user();
-        if($staff->role_id == 4){
-            return response()->json([
-                'status' => Constant::FALSE_CODE,
-                'message' => 'Bạn không có quyền duyệt vé',
-                'data' => []
-            ], 200);
-        }
+        
         // Cập nhật trạng thái và id nhân viên duyệt
         $bill->status = 1;
         $bill->staff_check = $staff->id;
