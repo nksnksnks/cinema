@@ -290,7 +290,7 @@ class TicketRepository{
             ->where('ci_ticket.bill_id', '=', $billId);
         $total = $ticket->count();
         $ticket = $ticket->get();
-        $response['movie'] = Movie::find($ticket[0]['movie_id']);
+        $response['movie'] = Movie::with('movie_genre','rated')->find($ticket[0]['movie_id']);
         $response['ticket'] = $ticket;
         if (isset($bill['extra_id'])) {
             $promotion = Promotion::find($bill['extra_id']); // Bỏ ->first()
