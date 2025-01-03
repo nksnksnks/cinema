@@ -134,6 +134,7 @@ class TicketController extends Controller
      *              @OA\Property(property="cinema_id", type="integer", example="1"),
      *              @OA\Property(property="show_time_id", type="integer", example="17"),
      *              @OA\Property(property="extraData", type="string", example="1"),
+     *              @OA\Property(property="deviceOs", type="string", example="mobile"),
      *              @OA\Property(
      *                  property="seat_ids",
      *                  type="array",
@@ -303,12 +304,15 @@ class TicketController extends Controller
              "&responseTime=" . $responseData["responseTime"] . "&resultCode=" . $responseData["resultCode"] . "&transId=" . $responseData["transId"];
          $generatedSignature = hash_hmac("sha256", $rawHash, $secretKey);
          if ($generatedSignature == $signature) {
-             if($responseData['resultCode'] == '0') {
+             if($responseData['resultCode'] == '0'){ 
                  $parts = explode('_', $orderId);
                  $userId = $parts[2];
                  $data = $this->ticketRepository->createBill($userId);
                 // CreateBillJob::dispatch($userId)->onConnection('immediate');
+                if($responseData['deviceOs'] == 'desktop')
                  return redirect()->away('movie://movieease.com');
+                else if($responseData['deviceOs'] == 'mobile')
+                 return redirect()->away('http://movieease.com');
              }
              else{
                  $data = $this->ticketRepository->cancelReservation($orderId);
