@@ -62,20 +62,29 @@ class CommentController extends Controller
      *     ),
      * )
      */
-    public function createComment(Request $request){
+    public function createComment(Request $request)
+    {
         try {
             DB::beginTransaction();
             $data = $request->all();
-            $comment = $this->commentRepository->createComment($data, $this->getCurrentLoggedIn()->id);
-            if($comment['status'] == 'create'){
-                $movieDetail = $this->movieRepository->getMovieDetail($data['movie_id']);
-                if($movieDetail->voting){
-                    $movieDetail->voting = 0;
-                    $movieDetail->vote_total = 0;
+            $userId = $this->getCurrentLoggedIn()->id;
+
+            // Tạo comment
+            $comment = $this->commentRepository->createComment($data, $userId);
+
+            // Lấy chi tiết phim từ repository
+            $movieDetail = $this->movieRepository->getMovieDetail($data['movie_id']);
+
+            // Kiểm tra trạng thái comment
+            if ($comment['status'] == 'create') {
+                if ($movieDetail && $movieDetail['voting']) {
+                    $movieDetail['voting'] = 0;
+                    $movieDetail['vote_total'] = 0;
                 }
-                $movie = Movie::where('id', $data['movie_id'])->first();
+
+                $movie = Movie::find($data['movie_id']);
                 if ($movie) {
-                    $newVoteTotal = (int)$movie['vote_total'] + 1;
+                    $newVoteTotal = (int)$movie->vote_total + 1;
                     $newVoting = ((float)$movie->vote_total * (float)$movie->voting + $data['vote_star']) / $newVoteTotal;
 
                     $movie->update([
@@ -83,12 +92,12 @@ class CommentController extends Controller
                         'vote_total' => $newVoteTotal,
                     ]);
                 }
-            }else{
-                $movieDetail = $this->movieRepository->getMovieDetail($data['movie_id']);
-                if($movieDetail->voting){
-                    $movieDetail->voting = 0;
-                    $movieDetail->vote_total = 0;
+            } else {
+                if ($movieDetail && $movieDetail['voting']) {
+                    $movieDetail['voting'] = 0;
+                    $movieDetail['vote_total'] = 0;
                 }
+
                 $movie = Movie::find($data['movie_id']);
                 if ($movie) {
                     $dataOld = $comment['data'];
@@ -101,21 +110,25 @@ class CommentController extends Controller
                     ]);
                 }
             }
+
             DB::commit();
+
             return response()->json([
                 'status' => Constant::SUCCESS_CODE,
                 'message' => trans('messages.success.success'),
-                'data' => $comment
+                'data' => $comment,
             ], Constant::SUCCESS_CODE);
-
         } catch (\Throwable $th) {
+            DB::rollBack();
+
             return response()->json([
                 'status' => Constant::FALSE_CODE,
                 'message' => $th->getMessage(),
-                'data' => []
+                'data' => [],
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
     /**
      * @author son.nk
      * @OA\Get (
