@@ -40,19 +40,41 @@ class CommentRepository
     }
     public function getComment($movieId, $accountId = null)
     {
-        $comment[] = DB::table('ci_evaluate as e')
-            ->select('e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
+        $first = DB::table('ci_evaluate as e')
+            ->select('e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', $accountId)
-            ->get();
-        $comment[] = DB::table('ci_evaluate as e')
-            ->select('e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
+            ->first();
+            if($first){
+                $comment[] = $first;
+            }else{
+                $comment[] = [
+                    'account_id' => null,
+                    'comment' => null,
+                    'vote_star' => null,
+                    'created_at' => null,
+                    'name' => null,
+                    'avatar' => null
+                ];
+            }
+        $data = DB::table('ci_evaluate as e')
+            ->select('e.id','e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', '<>', $accountId)
             ->orderBy('created_at', 'DESC')
             ->get();
+        foreach($data as $d){
+            $comment[] = [
+                'account_id' => $d->account_id,
+                'comment' => $d->comment ,
+                'vote_star' => $d->vote_star,
+                'created_at' => $d->created_at,
+                'name' => $d->name,
+                'avatar' => $d->avatar
+            ];
+        }
         return $comment;
     }
     public function deleteComment($movieId, $accountId = null)
