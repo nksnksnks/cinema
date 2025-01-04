@@ -308,10 +308,12 @@ class TicketController extends Controller
                  $parts = explode('_', $orderId);
                  $userId = $parts[2];
                  $data = $this->ticketRepository->createBill($userId);
+                 $dt = Redis::get('reservation_' . $userId);
+                 $dt = json_decode($dt);
                 // CreateBillJob::dispatch($userId)->onConnection('immediate');
-                if($responseData['deviceOs'] == 'desktop')
+                if($dt->deviceOs == 'desktop')
                  return redirect()->away('movie://movieease.com');
-                else if($responseData['deviceOs'] == 'mobile')
+                else if($dt->deviceOs == 'mobile')
                  return redirect()->away('http://movieease.com');
              }
              else{
