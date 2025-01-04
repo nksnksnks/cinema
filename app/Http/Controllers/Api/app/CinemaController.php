@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\admin\CinemaRequest;
 use App\Repositories\user\MovieShowTime\MovieShowTimeRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 

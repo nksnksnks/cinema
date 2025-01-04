@@ -52,8 +52,8 @@ class TicketController extends Controller
         $this->requestType = "captureWallet";
         // $this->redirectUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
         // $this->ipnUrl = "http://192.168.0.104:8000/api/app/ticket/handle-momo-payment";
-        $this->redirectUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
-        $this->ipnUrl = "http://127.0.0.1:8000/api/app/ticket/handle-momo-payment";
+        $this->redirectUrl = "http://103.98.152.214:8000/api/app/ticket/handle-momo-payment";
+        $this->ipnUrl = "http://103.98.152.214:8000/api/app/ticket/handle-momo-payment";
     }
     
 
