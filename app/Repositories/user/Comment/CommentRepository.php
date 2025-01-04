@@ -41,7 +41,7 @@ class CommentRepository
     public function getComment($movieId, $accountId = null)
     {
         $first = DB::table('ci_evaluate as e')
-            ->select('e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
+            ->select('e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar', 'e.id')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', $accountId)
@@ -50,6 +50,7 @@ class CommentRepository
                 $comment[] = $first;
             }else{
                 $comment[] = [
+                    'e.id' => null,
                     'account_id' => null,
                     'comment' => null,
                     'vote_star' => null,
@@ -59,7 +60,7 @@ class CommentRepository
                 ];
             }
         $data = DB::table('ci_evaluate as e')
-            ->select('e.id','e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
+            ->select('e.account_id','e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar', 'e.id')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', '<>', $accountId)
@@ -67,6 +68,7 @@ class CommentRepository
             ->get();
         foreach($data as $d){
             $comment[] = [
+                'e.id' => $d->id,
                 'account_id' => $d->account_id,
                 'comment' => $d->comment ,
                 'vote_star' => $d->vote_star,
