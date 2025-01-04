@@ -389,7 +389,6 @@ final class Factory
         return new Database(
             GuzzleUtils::uriFor($databaseUrl),
             new Database\ApiClient($http, $resourceUrlBuilder),
-            $resourceUrlBuilder,
         );
     }
 
@@ -540,7 +539,7 @@ final class Factory
 
         $config = [...$this->httpClientOptions->guzzleConfig(), ...$config];
 
-        $handler = HandlerStack::create();
+        $handler = HandlerStack::create($config['handler'] ?? null);
 
         if ($this->httpLogMiddleware) {
             $handler->push($this->httpLogMiddleware, 'http_logs');

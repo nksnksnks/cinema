@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Repositories\user\Movie;
+
+use App\Models\Movie;
+use App\Models\Ticket;
+use App\Models\Evaluate;
+
+class MovieRepository
+{
+    public function getMovieDetail($movieId, $accountId = null)
+{
+    // Lấy thông tin chi tiết phim
+    $movie = Movie::with(['movie_genre', 'country', 'rated'])
+        ->where('status', 1)
+        ->find($movieId);
+
+    if (!$movie) {
+        return null; // Hoặc trả về response lỗi nếu cần
+    }
+
+    // Kiểm tra vé
+    $hasTicket = Ticket::join('ci_movie_show_time as st', 'st.id', '=', 'ci_ticket.movie_showtime_id')
+        ->join('ci_bill as b', 'b.id', '=', 'ci_ticket.bill_id')
+        ->where('b.account_id', $accountId)
+        ->where('st.movie_id', $movieId)
+        ->exists();
+
+    // Kiểm tra đánh giá
+    $hasEvaluate = Evaluate::where('movie_id', $movieId)
+        ->where('account_id', $accountId)
+        ->exists();
+
+    // Chuẩn bị dữ liệu để trả về
+    $movieDetails = [
+        "id" => $movie->id,
+        "name" => $movie->name,
+        "slug" => $movie->slug,
+        "genre" => $movie->movie_genre ? $movie->movie_genre->map(function ($genre) {
+            return [
+                "id" => $genre->id,
+                "name" => $genre->name,
+            ];
+        }) : [],
+        "country" => $movie->country ? $movie->country->name : null,
+        "rated" => $movie->rated ? $movie->rated->name : null,
+        "avatar" => $movie->avatar,
+        "poster" => $movie->poster,
+        "trailer_url" => $movie->trailer_url,
+        "duration" => $movie->duration,
+        "date" => $movie->date,
+        "performer" => $movie->performer,
+        "director" => $movie->director,
+        "description" => $movie->description,
+        "vote_total" => $movie->vote_total,
+        "voting" => $movie->voting,
+        "created_at" => $movie->created_at,
+        "updated_at" => $movie->updated_at,
+        "status" => $movie->status,
+        "deleted_at" => $movie->deleted_at,
+        "isEva" => $hasEvaluate,
+        "seen_status" => $hasTicket ? 1 : 0,
+    ];
+
+    return $movieDetails;
+}
+
+}

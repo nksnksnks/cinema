@@ -50,17 +50,17 @@
         "psr/log": "^1.1|^2.0|^3.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.57.1",
-        "google/cloud-firestore": "^1.43.2",
-        "phpstan/extension-installer": "^1.3.1",
-        "phpstan/phpstan": "^1.11.10",
-        "phpstan/phpstan-deprecation-rules": "^1.2",
+        "friendsofphp/php-cs-fixer": "^3.64.0",
+        "google/cloud-firestore": "^1.47.1",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^1.12.9",
+        "phpstan/phpstan-deprecation-rules": "^1.2.1",
         "phpstan/phpstan-phpunit": "^1.4.0",
-        "phpunit/phpunit": "^10.5.20",
-        "rector/rector": "^1.0.5",
-        "shipmonk/composer-dependency-analyser": "^1.5.3",
-        "symfony/var-dumper": "^6.3.5 || ^7.0.7",
-        "vlucas/phpdotenv": "^5.6"
+        "phpunit/phpunit": "^10.5.38",
+        "rector/rector": "^1.2.10",
+        "shipmonk/composer-dependency-analyser": "^1.7.0",
+        "symfony/var-dumper": "^6.4.14 || ^7.0.7",
+        "vlucas/phpdotenv": "^5.6.1"
     },
     "suggest": {
         "google/cloud-firestore": "^1.0 to use the Firestore component"
@@ -76,6 +76,9 @@
         }
     },
     "config": {
+        "platform": {
+            "php": "8.1"
+        },
         "sort-packages": true,
         "allow-plugins": {
             "phpstan/extension-installer": true
@@ -108,6 +111,7 @@
             "tests/bin/reset-project"
         ],
         "test": [
+            "Composer\\Config::disableProcessTimeout",
             "@analyze",
             "@test-dependencies",
             "vendor/bin/phpunit --stop-on-error --stop-on-failure"
