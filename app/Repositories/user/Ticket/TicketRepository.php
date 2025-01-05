@@ -225,16 +225,17 @@ class TicketRepository{
                     $query->where('ci_movie_show_time.start_date', '>', Carbon::now()->toDateString())
                         ->orWhere(function ($query) {
                             $query->where('ci_movie_show_time.start_date', '=', Carbon::now()->toDateString())
-                                ->where('ci_movie_show_time.start_time', '>', Carbon::now()->format('H:i'));
+                                ->where('ci_movie_show_time.end_time', '>', Carbon::now()->format('H:i'));
                         });
                 });
             }else{
                 $ticket = $ticket->where(function ($query) {
-                    $query->where('ci_movie_show_time.start_date', '<', Carbon::now()->toDateString())
-                        ->orWhere(function ($query) {
-                            $query->where('ci_movie_show_time.start_date', '=', Carbon::now()->toDateString())
-                                ->where('ci_movie_show_time.end_time', '<', Carbon::now()->format('H:i'));
-                        });
+                    $query->where(function ($subQuery) {
+                        $subQuery->where('ci_movie_show_time.start_date', '<', Carbon::now()->toDateString());
+                    })->orWhere(function ($subQuery) {
+                        $subQuery->where('ci_movie_show_time.start_date', '=', Carbon::now()->toDateString())
+                                 ->whereRaw('TIME(ci_movie_show_time.end_time) < ?', [Carbon::now()->format('H:i')]);
+                    });
                 });
             }
             $total = $ticket->count();

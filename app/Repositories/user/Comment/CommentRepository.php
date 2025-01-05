@@ -40,49 +40,45 @@ class CommentRepository
     }
     public function getComment($movieId, $accountId = null)
     {
+        $comment = [];
+        
         $first = DB::table('ci_evaluate as e')
-            ->select('e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar', 'e.id')
+            ->select('e.id', 'e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', $accountId)
             ->first();
-            if($first){
-                $comment[] = $first;
-            }else{
-                $comment[] = [
-                    'e.id' => null,
-                    'account_id' => null,
-                    'comment' => null,
-                    'vote_star' => null,
-                    'created_at' => null,
-                    'name' => null,
-                    'avatar' => null
-                ];
-            }
+        
+        if ($first) {
+            $comment[] = $first;
+        }
+
         $data = DB::table('ci_evaluate as e')
-            ->select('e.account_id','e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar', 'e.id')
+            ->select('e.account_id', 'e.comment', 'e.vote_star', 'e.created_at', 'p.name', 'p.avatar', 'e.id')
             ->join('ci_profile as p', 'p.account_id', '=', 'e.account_id')
             ->where('e.movie_id', $movieId)
             ->where('e.account_id', '<>', $accountId)
             ->orderBy('created_at', 'DESC')
             ->get();
-        foreach($data as $d){
+
+        foreach ($data as $d) {
             $comment[] = [
-                'e.id' => $d->id,
+                'id' => $d->id,
                 'account_id' => $d->account_id,
-                'comment' => $d->comment ,
+                'comment' => $d->comment,
                 'vote_star' => $d->vote_star,
                 'created_at' => $d->created_at,
                 'name' => $d->name,
-                'avatar' => $d->avatar
+                'avatar' => $d->avatar,
             ];
         }
+
         return $comment;
     }
     public function deleteComment($movieId, $accountId = null)
     {
-        $comment = Evaluate::select('ci_evaluate.*')->where('movie_id', $movieId)->where('account_id', $accountId)->first();
-        $delete = Evaluate::where('movie_id', $movieId)->where('account_id', $accountId)->delete();
+        $comment = DB::table('ci_evaluate')->where('movie_id', $movieId)->where('account_id', $accountId)->first();
+        $delete = DB::table('ci_evaluate')->where('movie_id', $movieId)->where('account_id', $accountId)->delete();
         return $comment;
     }
 }

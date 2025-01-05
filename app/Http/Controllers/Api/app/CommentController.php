@@ -162,7 +162,7 @@ class CommentController extends Controller
             }
             if (!$data) {
                 return response()->json([
-                    'status' => Constant::FALSE_CODE,
+                    'status' => Constant::SUCCESS_CODE,
                     'message' => trans('messages.errors.cinema.id_found'),
                     'data' => []
                 ], Constant::SUCCESS_CODE);
@@ -175,7 +175,7 @@ class CommentController extends Controller
 
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => Constant::FALSE_CODE,
+                'status' => Constant::SUCCESS_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -213,9 +213,9 @@ class CommentController extends Controller
                 $data = $this->commentRepository->deleteComment($id, $this->getCurrentLoggedIn()->id);
                 $movie = Movie::where('id', $data->movie_id)->first();
                 if ($movie) {
-                    $newVoteTotal = (int)$movie['vote_total'] - 1;
+                    $newVoteTotal = (int)$movie->vote_total - 1;
                     if($newVoteTotal > 0)
-                        $newVoting = ((float)$movie->vote_total * (float)$movie->voting + $data['vote_star']) / $newVoteTotal;
+                        $newVoting = ((float)$movie->vote_total * (float)$movie->voting - $data->vote_star) / $newVoteTotal;
                     else
                         $newVoting = 0;
                     $movie->update([
@@ -226,7 +226,7 @@ class CommentController extends Controller
             }
             if (!$data) {
                 return response()->json([
-                    'status' => Constant::FALSE_CODE,
+                    'status' => Constant::SUCCESS_CODE,
                     'message' => trans('messages.errors.cinema.id_found'),
                     'data' => []
                 ], Constant::SUCCESS_CODE);
@@ -240,7 +240,7 @@ class CommentController extends Controller
 
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => Constant::FALSE_CODE,
+                'status' => Constant::SUCCESS_CODE,
                 'message' => $th->getMessage(),
                 'data' => []
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
