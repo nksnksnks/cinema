@@ -43,7 +43,7 @@ class MovieRequest extends FormRequest
                     'date' => 'required|date',
                     'performer' => 'nullable|string|max:255',
                     'director' => 'nullable|string|max:255',
-                    'description' => 'nullable|string|max:255',
+                    'description' => 'nullable|string',
                     'genre_ids' => 'required|array',
                     'genre_ids.*' => 'integer|exists:ci_genre,id', // Kiểm tra từng phần tử trong mảng genre_ids
                 ];
@@ -60,7 +60,7 @@ class MovieRequest extends FormRequest
                     'date' => 'required|date',
                     'performer' => 'nullable|string|max:255',
                     'director' => 'nullable|string|max:255',
-                    'description' => 'nullable|string|max:255',
+                    'description' => 'nullable|string',
                     'genre_ids' => 'required|array',
                     'genre_ids.*' => 'integer|exists:ci_genre,id',
                 ];
